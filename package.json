@@ -1,0 +1,27 @@
+{
+  "name": "type-utils",
+  "version": "0.0.1",
+  "description": "Type utilities for Typescript and also Javascript",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SrHenry/type-utils.git"
+  },
+  "keywords": [
+    "type",
+    "type guard",
+    "typescript",
+    "type utils",
+    "utils",
+    "validation"
+  ],
+  "author": "SrHenry",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SrHenry/type-utils/issues"
+  },
+  "homepage": "https://github.com/SrHenry/type-utils#readme"
+}
