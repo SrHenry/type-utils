@@ -1,6 +1,6 @@
 {
   "name": "@srhenry/type-utils",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Type utilities for Typescript and also Javascript",
   "main": "index.js",
   "types": "types/index.d.ts",
