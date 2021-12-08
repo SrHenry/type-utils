@@ -33,7 +33,7 @@ export namespace Validators
 
     export type Unpack<T extends ValidatorMap<any>> = T extends ValidatorMap<infer U> ? Sanitize<U> : never
 
-    type Sanitize<T> = {
+    export type Sanitize<T> = {
         [K in RequiredKeys<T>]-?: T[K]
     } & {
             [P in OptionalKeys<T>]+?: Exclude<T[P], undefined>
@@ -45,10 +45,8 @@ export namespace Validators
         {
             const o = ensureInstanceOf(arg, Object) as Record<string, unknown>
 
-            if (required.length === 0 && optional.length === 0)
-            {
-                for (const [prop, validator] of Object.entries<TypeGuard>(validators))
-                {
+            if (required.length === 0 && optional.length === 0) {
+                for (const [prop, validator] of Object.entries<TypeGuard>(validators)) {
                     if (!(prop in o))
                         throw new TypeGuardError(`Property ${prop} is not defined`, o)
 
@@ -209,7 +207,8 @@ export namespace Validators
                         fn(...args)(arg)
 
             return Array.from(Object.entries({ ...Schema }))
-                .filter((entry): entry is [string, Exclude<typeof entry[1], typeof optional>] => {
+                .filter((entry): entry is [string, Exclude<typeof entry[1], typeof optional>] =>
+                {
                     const [, exported] = entry
                     return exported !== optional
                 })
@@ -221,9 +220,9 @@ export namespace Validators
             return schema
         }
 
-        export function object<T>(schema: Validators.ValidatorMap<T>): TypeGuard<T>
+        export function object<T>(schema: Validators.ValidatorMap<T>): TypeGuard<Sanitize<T>>
         {
-            return (arg: unknown): arg is T => branchIfOptional(arg, []) || Validators.BaseValidator.hasValidProperties(arg, { validators: schema })
+            return (arg: unknown): arg is Sanitize<T> => branchIfOptional(arg, []) || Validators.BaseValidator.hasValidProperties(arg, { validators: schema })
         }
 
         export function array(): TypeGuard<any[]>
