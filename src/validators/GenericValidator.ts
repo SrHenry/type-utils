@@ -195,7 +195,10 @@ export namespace Validators
 
         export function string<str extends string = string>(rules: Rules.String[] = []): TypeGuard<str>
         {
-            return (arg: unknown): arg is str => branchIfOptional(arg, rules) || typeof arg === "string"
+            return (arg: unknown): arg is str => branchIfOptional(arg, rules) || (
+                typeof arg === "string" &&
+                isFollowingRules(arg, rules)
+            )
         }
 
         export function optional(): optionalCircular
