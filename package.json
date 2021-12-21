@@ -6,7 +6,7 @@
   "types": "types/index.d.ts",
   "scripts": {
     "test": "test",
-    "preinstall": "tsc"
+    "preinstall": "npx tsc"
   },
   "repository": "github:SrHenry/type-utils.git",
   "keywords": [
@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/SrHenry/type-utils#readme",
   "dependencies": {
-    "typescript": "^4.5.2",
-    "@types/node": "^16.11.12"
+    "@types/node": "^16.11.12",
+    "typescript": "^4.5.2"
   }
 }
