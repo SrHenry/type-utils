@@ -209,13 +209,13 @@ export namespace Validators
                         Rules.getRule("optional")(arg) ||
                         fn(...args)(arg)
 
-            return Array.from(Object.entries({ ...Schema }))
+            return Array.from(Object.entries(Schema))
                 .filter((entry): entry is [string, Exclude<typeof entry[1], typeof optional>] =>
                 {
                     const [, exported] = entry
                     return exported !== optional
                 })
-                .reduce<optionalCircular>((obj, [, exp]) => Object.assign(obj, { key: wrapOptional(exp) }) as optionalCircular, {} as optionalCircular)
+                .reduce<optionalCircular>((obj, [key , exp]) => Object.assign(obj, { [key]: wrapOptional(exp) }) as optionalCircular, {} as optionalCircular)
         }
 
         export function useSchema<T>(schema: TypeGuard<T>): TypeGuard<T>
@@ -316,6 +316,7 @@ export namespace Validators
 
             "Array.max": "__Array.max__",
             "Array.min": "__Array.min__",
+            "Array.unique": "__Array.unique__",
 
             "String.max": "__String.max__",
             "String.min": "__String.min__",
@@ -329,6 +330,29 @@ export namespace Validators
         const max = (arg: number, n: number) => arg <= n
         const min = (arg: number, n: number) => arg >= n
 
+        const equals = (a: any, b: any): boolean => {
+            if (a === b) return true
+            if (typeof a !== "object" || typeof b !== "object") return false
+
+            for (const key in a) {
+                if (typeof b !== "object" || !(key in b)) return false
+            }
+
+            for (const key in b) {
+                if (typeof a !== "object" || !(key in a)) return false
+            }
+
+            return [...new Set(Object.keys(a)).values()]
+                .map(key => {
+                    return equals(a[key], b[key])
+                }).every(bool => bool)
+        }
+        const count = (element: unknown, arr: unknown[]) => {
+            if (arr.length === 0) return 0
+
+            return arr.filter(item => equals(item, element)).length
+        }
+
         const bindings = {
             [keys["Number.nonZero"]]: (arg: number) => arg !== 0,
             [keys["Number.max"]]: max,
@@ -336,6 +360,9 @@ export namespace Validators
 
             [keys["Array.max"]]: (arg: unknown[], n: number) => max(arg.length, n),
             [keys["Array.min"]]: (arg: unknown[], n: number) => min(arg.length, n),
+            [keys["Array.unique"]]: (arg: unknown[]) =>
+                getRule("Array.max").call(null, arg, 0) ||
+                arg.every((item, _, arr) => count(item, arr) === 1),
 
             [keys["String.max"]]: (arg: string, n: number) => max(arg.length, n),
             [keys["String.min"]]: (arg: string, n: number) => min(arg.length, n),
@@ -393,6 +420,7 @@ export namespace Validators
         export const Array = {
             min: (n: number) => [keys['Array.min'], [n]] as [rule: keys['Array.min'], args: [n: number]],
             max: (n: number) => [keys['Array.max'], [n]] as [rule: keys['Array.max'], args: [n: number]],
+            unique: () => [keys['Array.unique'], []] as [rule: keys['Array.unique'], args: []],
             optional,
         } as const
         export type Array = ReturnType<typeof Rules.Array[keyof typeof Rules.Array]>
