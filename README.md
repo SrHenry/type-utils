@@ -317,7 +317,7 @@ npm run build
 > import { Schema, ensureInterface } from "@srhenry/type-utils"
 >
 > //...
-> const { foo, bar } = ensureInterface( value, Schema.object({ foo: Schema.number, bar: Schema.string() }) ) //throws error if validation fails!
+> const { foo, bar } = ensureInterface( value, Schema.object({ foo: Schema.number(), bar: Schema.string() }) ) //throws error if validation fails!
 > console.log("foo", foo)
 > console.log("bar", bar)
 > ```
@@ -327,7 +327,7 @@ npm run build
   > ```typescript
   > import { Schema } from "@srhenry/type-utils"
   >
-  > const hasFoo = Schema.object({ foo: Schema.number }) )
+  > const hasFoo = Schema.object({ foo: Schema.number() }) )
   > 
   > //...
   > if ( hasFoo(obj) ) {
