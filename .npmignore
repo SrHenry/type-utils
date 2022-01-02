@@ -1,0 +1,10 @@
+.vscode
+.history
+node_modules
+/dist
+dist
+dist/**
+/types
+.env
+**/*.draft.*
+**/*.draft

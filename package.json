@@ -6,7 +6,8 @@
   "types": "types/index.d.ts",
   "scripts": {
     "test": "test",
-    "postinstall": "npx tsc"
+    "postinstall": "npx tsc",
+    "prepublish": "npx tsc"
   },
   "repository": "github:SrHenry/type-utils.git",
   "keywords": [
