@@ -7,7 +7,7 @@
   "scripts": {
     "test": "test",
     "postinstall": "npx tsc",
-    "prepublish": "npx tsc"
+    "prepare": "npx tsc"
   },
   "repository": "github:SrHenry/type-utils.git",
   "keywords": [
