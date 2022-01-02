@@ -312,14 +312,14 @@ npm run build
 
 > `ensureInterface`
 >
-> It checks a given value against a given schema or validator and throws an error if schema didn't match the value.
+> It checks a given value against a given schema or validator and returns the checked value with schema inferred type if schema matches the value or throws an error if schema didn't match the value. Pretty clean to use with destructuring pattern.
 > ```typescript
 > import { Schema, ensureInterface } from "@srhenry/type-utils"
 >
 > //...
-> ensureInterface( value, Schema.object({ foo: Schema.number }) ) //throws error if validation fails!
-> // value is object and contains a string property named `foo`
-> // value.foo is safely acessible now
+> const { foo, bar } = ensureInterface( value, Schema.object({ foo: Schema.number, bar: Schema.string() }) ) //throws error if validation fails!
+> console.log("foo", foo)
+> console.log("bar", bar)
 > ```
 
   `NOTE:` You can use schema directly to validate a value.
