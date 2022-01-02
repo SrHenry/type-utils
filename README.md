@@ -1,4 +1,4 @@
-[npm]: https://npmjs.com/package/@srhenry/type-util
+[npm]: https://npmjs.com/package/@srhenry/type-utils
 
 # Type Utils
 
