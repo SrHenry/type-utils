@@ -2,10 +2,10 @@ import { TypeOfTag } from "typescript"
 
 export namespace Generics
 {
-    export const TypeOfTag = ["undefined", "number", "bigint", "boolean", "string", "symbol", "object", "function"] as const;
-    export const Primitives = ["string", "number", "boolean"] as const;
+    export const Primitives = ["string", "number", "boolean", "symbol", "null", "undefined"] as const;
+    export const TypeOfTag = [...Primitives, "bigint", "object", "function"] as const;
     export declare interface GenericObject<T = any> { [key: string]: T }
-    export declare type PrimitiveType = string | number | boolean
+    export declare type PrimitiveType = string | number | boolean | symbol | null | undefined
     export declare type Primitives = Extract<TypeOfTag, typeof Primitives>
     export declare type FinalType = FinalType[] | PrimitiveType
     export declare type IsFunction<T> = T extends Function ? T : never
