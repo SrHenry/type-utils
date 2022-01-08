@@ -147,6 +147,7 @@ npm run build
 > ```
 
 > `Schema.optional`
+>
 > `Schema.optional.*`
 >
 > It represents a optional value to typescript's type infers and runtime validation. It returns recursive structure of schema helpers to narrow validation.
