@@ -246,8 +246,6 @@ export namespace Validators
 
             const config: ValidatorArgs<T> = { validators: schema, required, optional }
 
-            console.log(config)
-
             return (arg: unknown): arg is Sanitize<T> => branchIfOptional(arg, []) ||
                 Validators.BaseValidator.hasValidProperties(arg, config)
         }
