@@ -7,12 +7,12 @@
 <br/>
 
 <div align="center">
-  
+
   [![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/SrHenry/type-utils)
   [![Npm package version](https://badgen.net/npm/v/@srhenry/type-utils)][npm]
   [![Npm package total downloads](https://badgen.net/npm/dt/@srhenry/type-utils)][npm]
   [![Npm package license](https://badgen.net/npm/license/@srhenry/type-utils)][npm]
-  
+
 </div>
 
 ## **Table of Contents**
@@ -184,7 +184,7 @@ npm run build
 
 > `Schema.and`
 >
-> It creates an union between two or more schemas.
+> It creates an intersection between two or more schemas.
 > ```typescript
 > import { Schema } from "@srhenry/type-utils"
 >
@@ -305,7 +305,7 @@ npm run build
 >
 > //...
 > if ( is( value, Schema.string() ) ) {
->   // value is string 
+>   // value is string
 > } else {
 >   // value is not a string
 > }
@@ -324,12 +324,12 @@ npm run build
 > ```
 
   `NOTE:` You can use schema directly to validate a value.
-  > Ex.: 
+  > Ex.:
   > ```typescript
   > import { Schema } from "@srhenry/type-utils"
   >
   > const hasFoo = Schema.object({ foo: Schema.number() }) )
-  > 
+  >
   > //...
   > if ( hasFoo(obj) ) {
   >   // obj is object and contains a string property named `foo`
