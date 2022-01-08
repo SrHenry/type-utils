@@ -184,6 +184,13 @@ export namespace Validators
         const branchIfOptional = (arg: unknown, rules: Rules.All[]) => (rules.some(isOptional) ? Rules.getRule(rules.find(isOptional)![0]).call(null, arg) : false)
         const isFollowingRules = (arg: unknown, rules: Rules.All[]) => AND(...(rules.filter(isRequired).map(([rule, args]) => Rules.getRule<typeof rule, Rule>(rule).call(null, arg, ...args))))
 
+        const _hasOptionalProp = (schema: TypeGuard): boolean =>
+        {
+            const hasFlag = (o: any): o is { __optional__: boolean } => "__optional__" in o
+
+            return hasFlag(schema)
+        }
+
         export function number(rules: Rules.Number[] = []): TypeGuard<number>
         {
 
@@ -205,9 +212,16 @@ export namespace Validators
         {
             const wrapOptional = <T extends TypeGuardClosure>(fn: T): OptionalizeTypeGuardClosure<T> =>
                 (...args: Parameters<T>) =>
-                    (arg: unknown): arg is GetTypeGuard<ReturnType<T>> =>
+                {
+                    const closure = (arg: unknown): arg is GetTypeGuard<ReturnType<T>> =>
                         Rules.getRule("optional")(arg) ||
                         fn(...args)(arg)
+
+                    closure["__optional__"] = true
+
+                    return closure
+                }
+
 
             return Array.from(Object.entries(Schema))
                 .filter((entry): entry is [string, Exclude<typeof entry[1], typeof optional>] =>
@@ -215,7 +229,7 @@ export namespace Validators
                     const [, exported] = entry
                     return exported !== optional
                 })
-                .reduce<optionalCircular>((obj, [key , exp]) => Object.assign(obj, { [key]: wrapOptional(exp) }) as optionalCircular, {} as optionalCircular)
+                .reduce<optionalCircular>((obj, [key, exp]) => Object.assign(obj, { [key]: wrapOptional(exp) }) as optionalCircular, {} as optionalCircular)
         }
 
         export function useSchema<T>(schema: TypeGuard<T>): TypeGuard<T>
@@ -225,7 +239,17 @@ export namespace Validators
 
         export function object<T>(schema: Validators.ValidatorMap<T>): TypeGuard<Sanitize<T>>
         {
-            return (arg: unknown): arg is Sanitize<T> => branchIfOptional(arg, []) || Validators.BaseValidator.hasValidProperties(arg, { validators: schema })
+            const keys = Object.keys(schema) as (keyof T)[]
+
+            const optional = keys.filter((key) => _hasOptionalProp(schema[key as keyof typeof schema]))
+            const required = keys.filter((key) => !_hasOptionalProp(schema[key as keyof typeof schema]))
+
+            const config: ValidatorArgs<T> = { validators: schema, required, optional }
+
+            console.log(config)
+
+            return (arg: unknown): arg is Sanitize<T> => branchIfOptional(arg, []) ||
+                Validators.BaseValidator.hasValidProperties(arg, config)
         }
 
         export function array(): TypeGuard<any[]>
@@ -330,7 +354,8 @@ export namespace Validators
         const max = (arg: number, n: number) => arg <= n
         const min = (arg: number, n: number) => arg >= n
 
-        const equals = (a: any, b: any): boolean => {
+        const equals = (a: any, b: any): boolean =>
+        {
             if (a === b) return true
             if (typeof a !== "object" || typeof b !== "object") return false
 
@@ -343,11 +368,13 @@ export namespace Validators
             }
 
             return [...new Set(Object.keys(a)).values()]
-                .map(key => {
+                .map(key =>
+                {
                     return equals(a[key], b[key])
                 }).every(bool => bool)
         }
-        const count = (element: unknown, arr: unknown[]) => {
+        const count = (element: unknown, arr: unknown[]) =>
+        {
             if (arr.length === 0) return 0
 
             return arr.filter(item => equals(item, element)).length
