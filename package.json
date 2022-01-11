@@ -1,31 +1,33 @@
 {
-  "name": "@srhenry/type-utils",
-  "version": "0.0.18",
-  "description": "Type utilities for Typescript and also Javascript",
-  "main": "dist/index.js",
-  "types": "types/index.d.ts",
-  "scripts": {
-    "test": "test",
-    "postinstall": "npx tsc",
-    "prepare": "npx tsc"
-  },
-  "repository": "github:SrHenry/type-utils.git",
-  "keywords": [
-    "type",
-    "type guard",
-    "typescript",
-    "type utils",
-    "utils",
-    "validation"
-  ],
-  "author": "SrHenry",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/SrHenry/type-utils/issues"
-  },
-  "homepage": "https://github.com/SrHenry/type-utils#readme",
-  "dependencies": {
-    "@types/node": "^16.11.12",
-    "typescript": "^4.5.2"
-  }
+    "name": "@srhenry/type-utils",
+    "version": "0.0.18",
+    "description": "Type utilities for Typescript and also Javascript",
+    "main": "dist/index.js",
+    "types": "types/index.d.ts",
+    "scripts": {
+        "test": "test",
+        "postinstall": "npx tsc",
+        "prepare": "npx tsc",
+        "postprepare": "npm run docs",
+        "docs": "npx typedoc"
+    },
+    "repository": "github:SrHenry/type-utils.git",
+    "keywords": [
+        "type",
+        "type guard",
+        "typescript",
+        "type utils",
+        "utils",
+        "validation"
+    ],
+    "author": "SrHenry",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/SrHenry/type-utils/issues"
+    },
+    "homepage": "https://github.com/SrHenry/type-utils#readme",
+    "dependencies": {
+        "@types/node": "^16.11.12",
+        "typescript": "^4.5.2"
+    }
 }

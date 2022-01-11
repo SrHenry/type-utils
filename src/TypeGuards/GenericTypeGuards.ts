@@ -31,14 +31,20 @@ export function ensureInterface<Interface, Instance = unknown>(
 ): Interface
 export function ensureInterface<Interface, Instance = unknown>(
     value: Instance,
-    validator: (value: unknown) => boolean
+    validator: ((value: unknown) => boolean) & { __message__?: string }
 ): Interface {
     if (!(validator as TypeGuard<Interface>)(value))
+    {
+        let message = `Failed while ensuring interface type constraint of ${JSON.stringify(value)} against ${JSON.stringify(validator)}`
+        if ('__message__' in validator)
+            message = `Failed while ensuring interface type constraint of ${JSON.stringify(value)} against ${JSON.stringify(validator['__message__'])}`
+
         throw new TypeGuardError(
-            'Failed while ensuring interface type constraint',
+            message,
             value,
             validator
         )
+    }
 
     return value
 }
@@ -120,3 +126,37 @@ ensureInstanceOf[util.promisify.custom] = Promisify.ensureInstanceOf
 
 export const ensureInterfaceAsync = util.promisify(ensureInterface)
 export const ensureInstanceOfAsync = util.promisify(ensureInstanceOf)
+
+export const imprintMessage = <T>(message: string, arg: T): T => {
+    return Object.assign(arg, { __message__: message })
+}
+export const retrieveMessage = <T>(arg: T): string => {
+    const hasMessage = (arg: any): arg is { __message__?: string } =>
+        arg &&
+        '__message__' in arg &&
+        typeof arg['__message__'] === 'string'
+
+    try {
+        const { __message__ } = ensureInterface(arg, hasMessage)
+        return String(__message__)
+    } catch {
+        return ''
+    }
+}
+
+export const imprintMessageFormator = <T>(formator: (...args: any[]) => string, arg: T): T => {
+    return Object.assign(arg, { __message_formator__: formator })
+}
+export const retrieveMessageFormator = <T>(arg: T) => {
+    const hasMessageFormator = (arg: any): arg is { __message_formator__?(...args: any[]): string } =>
+        arg &&
+        '__message_formator__' in arg &&
+        typeof arg['__message_formator__'] === 'function'
+
+    try {
+        const { __message_formator__ } = ensureInterface(arg, hasMessageFormator)
+        return __message_formator__ ?? (() => '')
+    } catch {
+        return () => ''
+    }
+}

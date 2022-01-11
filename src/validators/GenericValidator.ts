@@ -1,6 +1,6 @@
 import { Generics } from "../Generics"
 import { AND } from "../helpers"
-import { ensureInstanceOf, ensureInterface, GetTypeGuard, is, TypeGuard } from "../TypeGuards/GenericTypeGuards"
+import { ensureInstanceOf, ensureInterface, GetTypeGuard, imprintMessage, imprintMessageFormator, is, retrieveMessage, retrieveMessageFormator, TypeGuard } from "../TypeGuards/GenericTypeGuards"
 import { TypeGuardError } from "../TypeGuards/TypeErrors"
 import * as _Rules from "./Rules"
 
@@ -191,21 +191,42 @@ export namespace Validators
             return hasFlag(schema)
         }
 
+        const getRuleMessages = (rules: Rules.All[]) => rules
+            .map(([rule, args]) => ({rule: Rules.getRule(rule), args}))
+            .map(({ rule, args }) => `${retrieveMessageFormator(rule)(...args)}`)
+
+        function enpipeRuleMessageIntoGuard<T>(prepend: string, guard: TypeGuard<T>): typeof guard
+        function enpipeRuleMessageIntoGuard<T>(prepend: string, guard: TypeGuard<T>, rules: Rules.All[]): typeof guard
+        function enpipeRuleMessageIntoGuard<T>(prepend: string, guard: TypeGuard<T>, rules?: Rules.All[])
+        {
+            const message = getRuleMessages(rules ?? [])
+                .map(msg => `& ${msg}`)
+                .join("")
+
+            if (Rules.getRule("String.nonEmpty")(message))
+                return imprintMessage(`${prepend} ${message}`, guard)
+
+            return imprintMessage(prepend, guard)
+        }
+
         export function number(rules: Rules.Number[] = []): TypeGuard<number>
         {
-
-            return (arg: unknown): arg is number => branchIfOptional(arg, rules) || (
+            const guard = (arg: unknown): arg is number => branchIfOptional(arg, rules) || (
                 typeof arg === "number" &&
                 isFollowingRules(arg, rules)
             )
+
+            return enpipeRuleMessageIntoGuard("number", guard, rules)
         }
 
         export function string<str extends string = string>(rules: Rules.String[] = []): TypeGuard<str>
         {
-            return (arg: unknown): arg is str => branchIfOptional(arg, rules) || (
+            const guard = (arg: unknown): arg is str => branchIfOptional(arg, rules) || (
                 typeof arg === "string" &&
                 isFollowingRules(arg, rules)
             )
+
+            return enpipeRuleMessageIntoGuard("string", guard, rules)
         }
 
         export function optional(): optionalCircular
@@ -219,7 +240,7 @@ export namespace Validators
 
                     closure["__optional__"] = true
 
-                    return closure
+                    return imprintMessage(retrieveMessage(fn(...args)), closure)
                 }
 
 
@@ -246,8 +267,10 @@ export namespace Validators
 
             const config: ValidatorArgs<T> = { validators: schema, required, optional }
 
-            return (arg: unknown): arg is Sanitize<T> => branchIfOptional(arg, []) ||
+            const guard = (arg: unknown): arg is Sanitize<T> => branchIfOptional(arg, []) ||
                 Validators.BaseValidator.hasValidProperties(arg, config)
+
+            return enpipeRuleMessageIntoGuard(`{ ${Object.entries(schema).map(([k, v]) => `${k}${optional.some(key => key === k) ? '?': ''}: ${retrieveMessage(v)}`).join(", ")} }`, guard)
         }
 
         export function array(): TypeGuard<any[]>
@@ -259,26 +282,39 @@ export namespace Validators
         export function array<T>(rules: Rules.Array[] | TypeGuard<T> | null | undefined = void 0, _schema: TypeGuard<T> = any()): TypeGuard<T[]>
         {
             if (!rules || typeof rules === "function")
-                return (arg: unknown): arg is T[] => Array.isArray(arg) && arg.every(item => _schema(item))
+            {
+                _schema = rules ?? _schema
+                const guard = (arg: unknown): arg is T[] => Array.isArray(arg) && arg.every(item => _schema(item))
 
-            return (arg: unknown): arg is T[] => branchIfOptional(arg, rules) ||
+                return enpipeRuleMessageIntoGuard(`Array<${retrieveMessage(_schema)}>`, guard)
+            }
+
+            const guard = (arg: unknown): arg is T[] => branchIfOptional(arg, rules) ||
                 (Array.isArray(arg) && isFollowingRules(arg, rules) &&
                     arg.every(item => _schema(item)))
+
+            return enpipeRuleMessageIntoGuard(`Array<${retrieveMessage(_schema)}>`, guard, rules)
         }
 
         export function boolean(): TypeGuard<boolean>
         {
-            return (arg: unknown): arg is boolean => branchIfOptional(arg, []) || typeof arg === "boolean"
+            const guard = (arg: unknown): arg is boolean => branchIfOptional(arg, []) || typeof arg === "boolean"
+
+            return enpipeRuleMessageIntoGuard("boolean", guard)
         }
 
         export function symbol(): TypeGuard<symbol>
         {
-            return (arg: unknown): arg is symbol => branchIfOptional(arg, []) || typeof arg === "symbol"
+            const guard = (arg: unknown): arg is symbol => branchIfOptional(arg, []) || typeof arg === "symbol"
+
+            return enpipeRuleMessageIntoGuard("symbol", guard)
         }
 
         export function asNull(): TypeGuard<null>
         {
-            return (arg: unknown): arg is null => branchIfOptional(arg, []) || arg === null
+            const guard = (arg: unknown): arg is null => branchIfOptional(arg, []) || arg === null
+
+            return enpipeRuleMessageIntoGuard("null", guard)
         }
 
         // asEnum(["aa", "bb"])
@@ -293,12 +329,16 @@ export namespace Validators
         // export function asEnum<T extends []>(values: T): TypeGuard<T[number]>
         // export function asEnum<T extends Generics.PrimitiveType | TypeGuard<any>>(values: T[]): TypeGuard<ResolveIfTypeGuard<T>>
         {
-            return (arg: unknown): arg is T => branchIfOptional(arg, []) || primitive()(arg) && values.some(value => value === arg)
+            const guard = (arg: unknown): arg is T => branchIfOptional(arg, []) || primitive()(arg) && values.some(value => value === arg)
+
+            return enpipeRuleMessageIntoGuard(`enum [ ${values.map(String).join(" | ")} ]`, guard)
         }
 
         export function primitive(): TypeGuard<Generics.PrimitiveType>
         {
-            return (arg: unknown): arg is Generics.PrimitiveType => branchIfOptional(arg, []) || (Generics.Primitives as readonly string[]).includes(typeof arg)
+            const guard = (arg: unknown): arg is Generics.PrimitiveType => branchIfOptional(arg, []) || (Generics.Primitives as readonly string[]).includes(typeof arg)
+
+            return enpipeRuleMessageIntoGuard("primitive (string | number | boolean | symbol | null | undefined)", guard)
         }
 
         export function or<T1, T2>(guard1: TypeGuard<T1>, guard2: TypeGuard<T2>): TypeGuard<T1 | T2>
@@ -309,7 +349,9 @@ export namespace Validators
 
         export function or<T extends TypeGuard<any>>(...args: T[]): TypeGuard<GetTypeGuard<T>>
         {
-            return (arg: unknown): arg is GetTypeGuard<T> => args.some(typeGuard => typeGuard(arg))
+            const guard = (arg: unknown): arg is GetTypeGuard<T> => args.some(typeGuard => typeGuard(arg))
+
+            return enpipeRuleMessageIntoGuard(`${args.map(retrieveMessage).join(" | ")}`, guard)
         }
 
         export function and<T1, T2>(guard1: TypeGuard<T1>, guard2: TypeGuard<T2>): TypeGuard<T1 & T2>
@@ -320,17 +362,25 @@ export namespace Validators
 
         export function and<T extends TypeGuard<any>>(...args: T[]): TypeGuard<GetTypeGuard<T>>
         {
-            return (arg: unknown): arg is GetTypeGuard<T> => args.every(typeGuard => typeGuard(arg))
+            const guard = (arg: unknown): arg is GetTypeGuard<T> => args.every(typeGuard => typeGuard(arg))
+
+            return enpipeRuleMessageIntoGuard(`${args.map(retrieveMessage).join(" & ")}`, guard)
         }
 
         export function any(): TypeGuard<any>
         {
-            return (_: unknown): _ is any => true
+            const guard = (_: unknown): _ is any => true
+
+            return enpipeRuleMessageIntoGuard("any", guard)
         }
     }
 
     export namespace Rules
     {
+
+        type OmitFirstItem<T extends any[]> = T extends [any, ...any[]] ? [...T[1]] : never
+        export type RuleTuple = [rule: keys[keyof keys], args: OmitFirstItem<Parameters<bindings[keyof bindings]>>]
+
         export const keys = {
             "Number.nonZero": "__Number.nonZero__",
             "Number.max": "__Number.max__",
@@ -349,8 +399,23 @@ export namespace Validators
         } as const
         type keys = typeof keys
 
+        export const template = (message: string) => `[rule: ${message}]`
+
         const max = (arg: number, n: number) => arg <= n
+        const maxFormator = (n: number) => template(`max(${n})`)
+        const arrayMaxFormator = (n: number) => template(`max ${n} items`)
+        const stringMaxFormator = (n: number) => template(`max ${n} items`)
+
         const min = (arg: number, n: number) => arg >= n
+        const minFormator = (n: number) => template(`min(${n})`)
+        const arrayMinFormator = (n: number) => template(`min ${n} items`)
+        const stringMinFormator = (n: number) => template(`min ${n} items`)
+
+        const nonZero = (arg: number) => arg !== 0
+        const nonZeroFormator = () => template(`!= 0`)
+
+        const regexFormator = (regex: RegExp) => template(`matches ${regex}`)
+        const nonEmptyFormator = () => template(`non empty`)
 
         const equals = (a: any, b: any): boolean =>
         {
@@ -378,21 +443,24 @@ export namespace Validators
             return arr.filter(item => equals(item, element)).length
         }
 
+        const unique = (arg: unknown[]) =>
+            getRule("Array.max").call(null, arg, 0) ||
+            arg.every((item, _, arr) => count(item, arr) === 1)
+        const uniqueFormator = () => template(`unique items`)
+
         const bindings = {
-            [keys["Number.nonZero"]]: (arg: number) => arg !== 0,
-            [keys["Number.max"]]: max,
-            [keys["Number.min"]]: min,
+            [keys["Number.nonZero"]]: imprintMessageFormator(nonZeroFormator, nonZero),
+            [keys["Number.max"]]: imprintMessageFormator(maxFormator, max),
+            [keys["Number.min"]]: imprintMessageFormator(minFormator, min),
 
-            [keys["Array.max"]]: (arg: unknown[], n: number) => max(arg.length, n),
-            [keys["Array.min"]]: (arg: unknown[], n: number) => min(arg.length, n),
-            [keys["Array.unique"]]: (arg: unknown[]) =>
-                getRule("Array.max").call(null, arg, 0) ||
-                arg.every((item, _, arr) => count(item, arr) === 1),
+            [keys["Array.max"]]: imprintMessageFormator(arrayMaxFormator, (arg: unknown[], n: number) => max(arg.length, n)),
+            [keys["Array.min"]]: imprintMessageFormator(arrayMinFormator, (arg: unknown[], n: number) => min(arg.length, n)),
+            [keys["Array.unique"]]: imprintMessageFormator(uniqueFormator, unique),
 
-            [keys["String.max"]]: (arg: string, n: number) => max(arg.length, n),
-            [keys["String.min"]]: (arg: string, n: number) => min(arg.length, n),
-            [keys["String.regex"]]: (arg: string, regex: RegExp) => regex.test(arg),
-            [keys["String.nonEmpty"]]: (arg: string) => getRule("Number.nonZero")?.(arg.length),
+            [keys["String.max"]]: imprintMessageFormator(stringMaxFormator, (arg: string, n: number) => max(arg.length, n)),
+            [keys["String.min"]]: imprintMessageFormator(stringMinFormator, (arg: string, n: number) => min(arg.length, n)),
+            [keys["String.regex"]]: imprintMessageFormator(regexFormator, (arg: string, regex: RegExp) => regex.test(arg)),
+            [keys["String.nonEmpty"]]: imprintMessageFormator(nonEmptyFormator, (arg: string) => getRule("Number.nonZero")?.(arg.length)),
 
             [keys.optional]: (arg: unknown) => arg === void 0,
         } as const
@@ -418,6 +486,12 @@ export namespace Validators
                 return bindings[name]
 
             throw new Error(`Rule not found`)
+        }
+
+        export function parseRule<R extends RuleTuple>(rule: R): bindings[typeof rule[0]]
+        export function parseRule(rule: RuleTuple): bindings[keyof bindings]
+        {
+            return getRule(rule[0])
         }
 
         export type optional = [rule: keys['optional'], args: []]
@@ -451,6 +525,8 @@ export namespace Validators
         export type Array = ReturnType<typeof Rules.Array[keyof typeof Rules.Array]>
 
         export type All = Rules.String | Rules.Number | Rules.Array
+
+        parseRule(Number.nonZero())
     }
     export type Rule<Arg = any, Args = any> = (arg: Arg, ...args: Args[]) => boolean
 }
