@@ -6,7 +6,7 @@ export namespace Generics
     export const TypeOfTag = [...Primitives, "bigint", "object", "function"] as const;
     export declare interface GenericObject<T = any> { [key: string]: T }
     export declare type PrimitiveType = string | number | boolean | symbol | null | undefined
-    export declare type Primitives = Extract<TypeOfTag, typeof Primitives>
+    export declare type Primitives = Extract<TypeOfTag, typeof Primitives[number]>
     export declare type FinalType = FinalType[] | PrimitiveType
     export declare type IsFunction<T> = T extends Function ? T : never
     export declare type IsNotFunction<T> = T extends Function ? never : T
