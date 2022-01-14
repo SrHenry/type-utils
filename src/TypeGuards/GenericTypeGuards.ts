@@ -127,6 +127,23 @@ ensureInstanceOf[util.promisify.custom] = Promisify.ensureInstanceOf
 export const ensureInterfaceAsync = util.promisify(ensureInterface)
 export const ensureInstanceOfAsync = util.promisify(ensureInstanceOf)
 
+export const imprintMetadata = <T, U>(key: string | symbol, metadata: T, arg: U): U => {
+    return Object.assign(arg, { [key]: metadata })
+}
+export const retrieveMetadata = <T, U extends string | symbol, V extends TypeGuard>(key: U, arg: T, metadataSchema?: V): GetTypeGuard<V> | undefined => {
+    const hasMetadata = (arg: any): arg is { [K in U]: GetTypeGuard<V> } =>
+        arg &&
+        key in arg &&
+        (metadataSchema?.(arg[key]) ?? true)
+
+    try {
+        const { [key]: __metadata__ } = ensureInterface(arg, hasMetadata)
+        return __metadata__
+    } catch {
+        return void 0
+    }
+}
+
 export const imprintMessage = <T>(message: string, arg: T): T => {
     return Object.assign(arg, { __message__: message })
 }
