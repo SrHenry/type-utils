@@ -1,4 +1,4 @@
-import { ensureInterface, is, TypeGuardError } from '../TypeGuards'
+import { ensureInterface, imprintMetadata, is, retrieveMetadata, TypeGuardError } from '../TypeGuards'
 import { Schema, Rules } from '../validators'
 
 console.log(Schema.optional())
@@ -63,3 +63,10 @@ console.log("test unique array", is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], Schema.arra
 console.log("test unique array", is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10], Schema.array([Rules.Array.unique()], Schema.number())))
 console.log("test unique array", is([{ a: 1 }, { b: { c: 0 } }, { a: 1, b: 0 }, { a: 2 }], Schema.array([Rules.Array.unique()])))
 
+const __metadata__ = Symbol('__metadata__')
+const f1 = imprintMetadata(__metadata__, { a:1 }, function () { void 0 })
+
+const _b = retrieveMetadata(__metadata__, f1)
+const _b2 = retrieveMetadata(__metadata__, f1, Schema.object({ a: Schema.number() }))
+
+console.log('metadata', _b, _b2)
