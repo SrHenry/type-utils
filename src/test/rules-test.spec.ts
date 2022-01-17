@@ -1,5 +1,6 @@
+import { Generics } from '../Generics'
 import { ensureInterface, imprintMetadata, is, retrieveMetadata, TypeGuard, TypeGuardError } from '../TypeGuards'
-import { Schema, Rules } from '../validators'
+import { Schema, Rules, Validators } from '../validators'
 
 console.log(Schema.optional())
 
@@ -75,3 +76,64 @@ const getMetadataOf = <T>(schema: TypeGuard<T>) => console.log('metadata of sche
 
 getMetadataOf(_schema)
 getMetadataOf(schema)
+
+const EnvSchema = Schema.object({
+    AUTENTICADOR_URL: Schema.string(),
+    APP_PORT: Schema.number(),
+
+    JWT_SECRET: Schema.string(),
+    JWT_EXPIRES_IN: Schema.optional().number(),
+
+    JWT_REFRESH_SECRET: Schema.string(),
+    JWT_REFRESH_EXPIRES_IN: Schema.optional().number(),
+})
+
+const envSchemaTree = Schema.getStructMetadata(EnvSchema).tree
+const envSchemaKeys = Object.keys(envSchemaTree) as (keyof typeof envSchemaTree)[]
+
+const preEnvSchema = Schema.object({
+    ...envSchemaKeys
+        .map(key => ({ [key]: Schema.optional().any() }))
+        .reduce((acc, item) => Object.assign(acc, item), {}),
+}) as TypeGuard<
+    Validators.Sanitize<{
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [K in keyof typeof envSchemaTree]?: any
+    }>
+>
+
+const aaa = {
+    AUTENTICADOR_URL: 'http://localhost:8080',
+    APP_PORT: '8080',
+    JWT_SECRET: 'secret',
+    JWT_EXPIRES_IN: '900',
+    JWT_REFRESH_SECRET: 'refresh',
+    JWT_REFRESH_EXPIRES_IN: '86400',
+}
+if (!is(aaa, preEnvSchema)) throw new Error('Missing required environment variables')
+
+const tryParse = (value: string, to: Exclude<Generics.Primitives, 'symbol' | 'undefined'>) => {
+    switch (to) {
+        case 'number':
+            if (isNaN(Number(value))) throw new Error(`${value} is not a number`)
+            return Number(value)
+        case 'boolean':
+            if (!['true', 'false'].includes(value)) throw new Error(`${value} is not a boolean`)
+            return value === 'true'
+        case 'string':
+            return value
+        default:
+            throw new Error(`'${to}' is not a valid type`)
+    }
+}
+
+const parsed = Object.entries(aaa)
+    .map(([key, value]) => ({
+        [key]: tryParse(
+            value,
+            Schema.getStructMetadata(EnvSchema).tree[key as keyof typeof aaa]?.type as "number" | "boolean" | "string"
+        )
+    }))
+    .reduce((acc, item) => Object.assign(acc, item), {})
+
+console.log(parsed)

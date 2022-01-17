@@ -217,6 +217,10 @@ export namespace Validators
                 }
             : T extends "any" ?
                 BaseStruct<"any", any>
+            : T extends "undefined" ?
+                BaseStruct<"undefined", undefined>
+            : T extends "null" ?
+                BaseStruct<"null", null>
             : U extends boolean ?
                 BaseStruct<"boolean", boolean>
             : BaseStruct<T, U> & {
@@ -392,6 +396,13 @@ export namespace Validators
             const guard = (arg: unknown): arg is symbol => branchIfOptional(arg, []) || typeof arg === "symbol"
 
             return enpipeSchemaStructIntoGuard({ type: "symbol", guard, optional: false }, enpipeRuleMessageIntoGuard("symbol", guard))
+        }
+
+        export function asUndefined(): TypeGuard<undefined>
+        {
+            const guard = (arg: unknown): arg is undefined => branchIfOptional(arg, []) || arg === undefined
+
+            return enpipeSchemaStructIntoGuard({ type: "undefined", guard, optional: false }, enpipeRuleMessageIntoGuard("undefined", guard))
         }
 
         export function asNull(): TypeGuard<null>
