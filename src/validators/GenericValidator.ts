@@ -1,6 +1,6 @@
 import { Generics } from "../Generics"
 import { AND } from "../helpers"
-import { ensureInstanceOf, ensureInterface, GetTypeGuard, imprintMessage, imprintMessageFormator, is, retrieveMessage, retrieveMessageFormator, TypeGuard } from "../TypeGuards/GenericTypeGuards"
+import { ensureInstanceOf, ensureInterface, GetTypeGuard, imprintMessage, imprintMessageFormator, imprintMetadata, is, retrieveMessage, retrieveMessageFormator, retrieveMetadata, TypeGuard } from "../TypeGuards/GenericTypeGuards"
 import { TypeGuardError } from "../TypeGuards/TypeErrors"
 import * as _Rules from "./Rules"
 
@@ -157,7 +157,7 @@ export namespace Validators
 
         type TypeGuardClosure<T = any, Params extends any[] = any[]> = (...args: Params) => TypeGuard<T>
 
-        type optionalCircular = Optionalize<Omit<typeof Schema, 'optional' | 'array' | 'and' | 'or' | 'asEnum' | 'useSchema'>> & {
+        type optionalCircular = Optionalize<Omit<typeof Schema, 'optional' | 'array' | 'and' | 'or' | 'asEnum' | 'useSchema' | 'SchemaStruct' | 'Struct' | 'getStructMetadata'>> & {
             array(): OptionalizeTypeGuard<TypeGuard<any[]>>
             array(rules: Rules.Array[]): OptionalizeTypeGuard<TypeGuard<any[]>>
             array<T>(rules: Rules.Array[], schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
@@ -178,6 +178,61 @@ export namespace Validators
             asEnum<T extends Generics.PrimitiveType>(values: T[]): OptionalizeTypeGuard<TypeGuard<T>>
             useSchema<T>(schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T>>
         }
+
+        export type GetSchemaStruct<T extends TypeGuard> = GetStruct<GetTypeGuard<T>>
+
+        export type GetStruct<T> =
+            T extends Array<infer Inner> ?
+                GetStruct<Inner>[]
+            : T extends Generics.PrimitiveType ?
+                Struct<Generics.GetPrimitiveTag<T>, T>
+            : T extends Function ?
+                never
+            : {
+                [K in keyof T]: GetStruct<T[K]>
+            }
+
+        type BaseTypes = typeof Generics.TypeOfTag[number] | "enum" | "primitive" | "union" | "intersection" | "any"
+
+        type BaseStruct<T extends BaseTypes, U> = {
+            type: T
+            guard: TypeGuard<U>
+            optional: boolean
+            // tree?: {
+            //     [K in keyof U]: BaseStruct<U[K] extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<U[K]> : "object", U[K]>
+            // }
+        }
+        export type Struct<T extends BaseTypes, U> = U extends Generics.PrimitiveType ?
+            T extends "enum" ?
+                BaseStruct<"enum", U>
+            : T extends "primitive" ?
+                BaseStruct<"primitive", Generics.PrimitiveType>
+            : T extends "union" ?
+                BaseStruct<"union", U> & {
+                    tree: Struct<U extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<U> : "object", U>[]
+                }
+            : T extends "intersection" ?
+                BaseStruct<"intersection", U> & {
+                    tree: Struct<U extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<U> : "object", U>[]
+                }
+            : T extends "any" ?
+                BaseStruct<"any", any>
+            : U extends boolean ?
+                BaseStruct<"boolean", boolean>
+            : BaseStruct<T, U> & {
+                tree?: undefined
+            }
+            : U extends Array<infer V> ?
+                BaseStruct<"object", U> & {
+                    entries: Struct<V extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<V> : "object", V>
+                }
+            : U extends Function ?
+                BaseStruct<"function", U>
+            : BaseStruct<"object", U> & {
+                tree: {
+                    [K in keyof U]: Struct<U[K] extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<U[K]> : "object", U[K]>
+                }
+            }
 
         const isOptional = (rule: Rules.All): rule is Rules.optional => rule[0] in Rules.keys && rule[0] === Rules.keys.optional
         const isRequired = (rule: Rules.All): rule is Exclude<Rules.All, Rules.optional> => !isOptional(rule)
@@ -209,6 +264,18 @@ export namespace Validators
             return imprintMessage(prepend, guard)
         }
 
+        const __metadata__ = Symbol("__metadata__")
+
+        function enpipeSchemaStructIntoGuard<T, U extends BaseTypes>(struct: Struct<U, T>, guard: TypeGuard<T>): typeof guard
+        {
+            return imprintMetadata(__metadata__, struct, guard)
+        }
+
+        export function getStructMetadata<T extends BaseTypes, U>(guard: TypeGuard<U>): Struct<T, U>
+        {
+            return retrieveMetadata(__metadata__, guard)
+        }
+
         export function number(rules: Rules.Number[] = []): TypeGuard<number>
         {
             const guard = (arg: unknown): arg is number => branchIfOptional(arg, rules) || (
@@ -216,17 +283,17 @@ export namespace Validators
                 isFollowingRules(arg, rules)
             )
 
-            return enpipeRuleMessageIntoGuard("number", guard, rules)
+            return enpipeSchemaStructIntoGuard({ type: "number", guard, optional: false }, enpipeRuleMessageIntoGuard("number", guard, rules))
         }
 
-        export function string<str extends string = string>(rules: Rules.String[] = []): TypeGuard<str>
+        export function string(rules: Rules.String[] = []): TypeGuard<string>
         {
-            const guard = (arg: unknown): arg is str => branchIfOptional(arg, rules) || (
+            const guard = (arg: unknown): arg is string => branchIfOptional(arg, rules) || (
                 typeof arg === "string" &&
                 isFollowingRules(arg, rules)
             )
 
-            return enpipeRuleMessageIntoGuard("string", guard, rules)
+            return enpipeSchemaStructIntoGuard({ type: "string", guard, optional: false }, enpipeRuleMessageIntoGuard("string", guard, rules)) //TODO: Checkpoint
         }
 
         export function optional(): optionalCircular
@@ -240,15 +307,15 @@ export namespace Validators
 
                     closure["__optional__"] = true
 
-                    return imprintMessage(retrieveMessage(fn(...args)), closure)
+                    return enpipeSchemaStructIntoGuard({ ...getStructMetadata(fn(...args)), optional: true }, imprintMessage(retrieveMessage(fn(...args)), closure))
                 }
 
 
             return Array.from(Object.entries(Schema))
-                .filter((entry): entry is [string, Exclude<typeof entry[1], typeof optional>] =>
+                .filter((entry): entry is [string, Exclude<typeof entry[1], typeof optional | typeof getStructMetadata>] =>
                 {
                     const [, exported] = entry
-                    return exported !== optional
+                    return (exported !== optional && exported !== getStructMetadata)
                 })
                 .reduce<optionalCircular>((obj, [key, exp]) => Object.assign(obj, { [key]: wrapOptional(exp) }) as optionalCircular, {} as optionalCircular)
         }
@@ -270,7 +337,24 @@ export namespace Validators
             const guard = (arg: unknown): arg is Sanitize<T> => branchIfOptional(arg, []) ||
                 Validators.BaseValidator.hasValidProperties(arg, config)
 
-            return enpipeRuleMessageIntoGuard(`{ ${Object.entries(schema).map(([k, v]) => `${k}${optional.some(key => key === k) ? '?': ''}: ${retrieveMessage(v)}`).join(", ")} }`, guard)
+            const message = '{ ' + Object.entries(schema)
+                .map(([k, v]) =>
+                    `${k}${optional.some(key => key === k) ? '?': ''}: ${retrieveMessage(v)}`)
+                .join(", ") + ' }'
+
+            const metadata = {
+                type: 'object' as const,
+                guard,
+                optional: false,
+                // ObjectConstructor interface is weird, it requires a length property if you annotate entries method overload
+                tree: Object.entries<TypeGuard<Sanitize<T>[keyof Sanitize<T>]>>(schema as unknown as Validators.ValidatorMap<Sanitize<T>> & {length: number})
+                    .map(([k, v]) =>
+                        ({ [k]: getStructMetadata(v) }))
+                    .reduce((acc, item) =>
+                        Object.assign(acc, item), {})
+            } as Struct<"object", Sanitize<T>>
+
+            return enpipeSchemaStructIntoGuard(metadata, enpipeRuleMessageIntoGuard(message, guard))
         }
 
         export function array(): TypeGuard<any[]>
@@ -293,28 +377,28 @@ export namespace Validators
                 (Array.isArray(arg) && isFollowingRules(arg, rules) &&
                     arg.every(item => _schema(item)))
 
-            return enpipeRuleMessageIntoGuard(`Array<${retrieveMessage(_schema)}>`, guard, rules)
+            return enpipeSchemaStructIntoGuard({ type: "object", guard, optional: false, entries: getStructMetadata(_schema) }, enpipeRuleMessageIntoGuard(`Array<${retrieveMessage(_schema)}>`, guard, rules))
         }
 
         export function boolean(): TypeGuard<boolean>
         {
             const guard = (arg: unknown): arg is boolean => branchIfOptional(arg, []) || typeof arg === "boolean"
 
-            return enpipeRuleMessageIntoGuard("boolean", guard)
+            return enpipeSchemaStructIntoGuard({ type:"boolean", guard, optional: false }, enpipeRuleMessageIntoGuard("boolean", guard))
         }
 
         export function symbol(): TypeGuard<symbol>
         {
             const guard = (arg: unknown): arg is symbol => branchIfOptional(arg, []) || typeof arg === "symbol"
 
-            return enpipeRuleMessageIntoGuard("symbol", guard)
+            return enpipeSchemaStructIntoGuard({ type: "symbol", guard, optional: false }, enpipeRuleMessageIntoGuard("symbol", guard))
         }
 
         export function asNull(): TypeGuard<null>
         {
             const guard = (arg: unknown): arg is null => branchIfOptional(arg, []) || arg === null
 
-            return enpipeRuleMessageIntoGuard("null", guard)
+            return enpipeSchemaStructIntoGuard({ type: "null", guard, optional: false }, enpipeRuleMessageIntoGuard("null", guard))
         }
 
         // asEnum(["aa", "bb"])
@@ -331,14 +415,14 @@ export namespace Validators
         {
             const guard = (arg: unknown): arg is T => branchIfOptional(arg, []) || primitive()(arg) && values.some(value => value === arg)
 
-            return enpipeRuleMessageIntoGuard(`enum [ ${values.map(String).join(" | ")} ]`, guard)
+            return enpipeSchemaStructIntoGuard({ type: "enum", guard, optional: false } as Struct<"enum", T>, enpipeRuleMessageIntoGuard(`enum [ ${values.map(String).join(" | ")} ]`, guard))
         }
 
         export function primitive(): TypeGuard<Generics.PrimitiveType>
         {
             const guard = (arg: unknown): arg is Generics.PrimitiveType => branchIfOptional(arg, []) || (Generics.Primitives as readonly string[]).includes(typeof arg)
 
-            return enpipeRuleMessageIntoGuard("primitive (string | number | boolean | symbol | null | undefined)", guard)
+            return enpipeSchemaStructIntoGuard({ type: "primitive", guard, optional: false }, enpipeRuleMessageIntoGuard("primitive (string | number | boolean | symbol | null | undefined)", guard))
         }
 
         export function or<T1, T2>(guard1: TypeGuard<T1>, guard2: TypeGuard<T2>): TypeGuard<T1 | T2>
@@ -351,7 +435,7 @@ export namespace Validators
         {
             const guard = (arg: unknown): arg is GetTypeGuard<T> => args.some(typeGuard => typeGuard(arg))
 
-            return enpipeRuleMessageIntoGuard(`${args.map(retrieveMessage).join(" | ")}`, guard)
+            return enpipeSchemaStructIntoGuard({ type: "union", guard, optional: false, tree: args.map(getStructMetadata) } as Struct<"union", GetTypeGuard<T>>, enpipeRuleMessageIntoGuard(`${args.map(retrieveMessage).join(" | ")}`, guard))
         }
 
         export function and<T1, T2>(guard1: TypeGuard<T1>, guard2: TypeGuard<T2>): TypeGuard<T1 & T2>
@@ -364,14 +448,14 @@ export namespace Validators
         {
             const guard = (arg: unknown): arg is GetTypeGuard<T> => args.every(typeGuard => typeGuard(arg))
 
-            return enpipeRuleMessageIntoGuard(`${args.map(retrieveMessage).join(" & ")}`, guard)
+            return enpipeSchemaStructIntoGuard({ type: "intersection", guard, optional: false, tree: args.map(getStructMetadata) } as Struct<"intersection", GetTypeGuard<T>>, enpipeRuleMessageIntoGuard(`${args.map(retrieveMessage).join(" & ")}`, guard))
         }
 
         export function any(): TypeGuard<any>
         {
             const guard = (_: unknown): _ is any => true
 
-            return enpipeRuleMessageIntoGuard("any", guard)
+            return enpipeSchemaStructIntoGuard({ type: "any", guard, optional: false }, enpipeRuleMessageIntoGuard("any", guard))
         }
     }
 
