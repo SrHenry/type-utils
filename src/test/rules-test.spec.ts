@@ -1,4 +1,4 @@
-import { ensureInterface, imprintMetadata, is, retrieveMetadata, TypeGuardError } from '../TypeGuards'
+import { ensureInterface, imprintMetadata, is, retrieveMetadata, TypeGuard, TypeGuardError } from '../TypeGuards'
 import { Schema, Rules } from '../validators'
 
 console.log(Schema.optional())
@@ -70,3 +70,8 @@ const _b = retrieveMetadata(__metadata__, f1)
 const _b2 = retrieveMetadata(__metadata__, f1, Schema.object({ a: Schema.number() }))
 
 console.log('metadata', _b, _b2)
+
+const getMetadataOf = <T>(schema: TypeGuard<T>) => console.log('metadata of schema', Schema.getStructMetadata(schema))
+
+getMetadataOf(_schema)
+getMetadataOf(schema)
