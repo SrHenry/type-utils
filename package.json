@@ -6,7 +6,7 @@
     "types": "types/index.d.ts",
     "scripts": {
         "test": "test",
-        "postinstall": "npx tsc",
+        "postinstall": "npx tsc -p ./tsconfig.json",
         "docs": "npx typedoc"
     },
     "repository": "github:SrHenry/type-utils.git",
