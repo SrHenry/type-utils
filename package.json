@@ -7,8 +7,6 @@
     "scripts": {
         "test": "test",
         "postinstall": "npx tsc",
-        "prepare": "npx tsc",
-        "postprepare": "npm run docs",
         "docs": "npx typedoc"
     },
     "repository": "github:SrHenry/type-utils.git",
