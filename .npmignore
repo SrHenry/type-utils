@@ -1,9 +1,6 @@
 .vscode
 .history
 node_modules
-/dist
-dist
-dist/**
 docs
 docs/**
 /types
