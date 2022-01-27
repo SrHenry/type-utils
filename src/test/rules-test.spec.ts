@@ -1,5 +1,13 @@
 import { Generics } from '../Generics'
-import { ensureInterface, imprintMetadata, is, retrieveMetadata, TypeGuard, TypeGuardError } from '../TypeGuards'
+import {
+    ensureInterface,
+    imprintMetadata,
+    is,
+    retrieveMessage,
+    retrieveMetadata,
+    TypeGuard,
+    TypeGuardError,
+} from '../TypeGuards'
 import { Schema, Rules, Validators } from '../validators'
 
 console.log(Schema.optional())
@@ -11,27 +19,33 @@ const schema = Schema.object({
 })
 
 const a = {
-    ean: "1234567890123",
-    sku: "LV00EAN1234567890123",
+    ean: '1234567890123',
+    sku: 'LV00EAN1234567890123',
 }
 const b = {
-    ean: "123456789012sss3",
-    sku: "LEVO00EAN",
+    ean: '123456789012sss3',
+    sku: 'LEVO00EAN',
 }
 
-console.log(is({
-    ean: "1234567890123",
-    sku: "LV00EAN1234567890123",
-}, schema))
+console.log(
+    is(
+        {
+            ean: '1234567890123',
+            sku: 'LV00EAN1234567890123',
+        },
+        schema
+    )
+)
 
-console.log("===", is(undefined, Schema.optional().object({})))
+console.log('===', is(undefined, Schema.optional().object({})))
 
 console.log('a', is(a, schema))
 console.log('b', is(b, schema))
 
 console.log('__optional__' in Schema.optional().number())
 
-const isTypeError = (_: unknown): _ is TypeGuardError<typeof c, typeof _schema> => _ instanceof TypeGuardError && is(_, Schema.object({ checked: Schema.string() }))
+const isTypeError = (_: unknown): _ is TypeGuardError<typeof c, typeof _schema> =>
+    _ instanceof TypeGuardError && is(_, Schema.object({ checked: Schema.string() }))
 
 try {
     ensureInterface(b, schema)
@@ -40,7 +54,7 @@ try {
         // console.error(`Error: ${e.message} of "${e.checked}" against "${e.against}"`)
         console.error(String(e))
     } else {
-        console.error("(not type error)", e)
+        console.error('(not type error)', e)
     }
 }
 
@@ -60,19 +74,31 @@ try {
     }
 }
 
-console.log("test unique array", is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], Schema.array([Rules.Array.unique()], Schema.number())))
-console.log("test unique array", is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10], Schema.array([Rules.Array.unique()], Schema.number())))
-console.log("test unique array", is([{ a: 1 }, { b: { c: 0 } }, { a: 1, b: 0 }, { a: 2 }], Schema.array([Rules.Array.unique()])))
+console.log(
+    'test unique array',
+    is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], Schema.array([Rules.Array.unique()], Schema.number()))
+)
+console.log(
+    'test unique array',
+    is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10], Schema.array([Rules.Array.unique()], Schema.number()))
+)
+console.log(
+    'test unique array',
+    is([{ a: 1 }, { b: { c: 0 } }, { a: 1, b: 0 }, { a: 2 }], Schema.array([Rules.Array.unique()]))
+)
 
 const __metadata__ = Symbol('__metadata__')
-const f1 = imprintMetadata(__metadata__, { a:1 }, function () { void 0 })
+const f1 = imprintMetadata(__metadata__, { a: 1 }, function () {
+    void 0
+})
 
 const _b = retrieveMetadata(__metadata__, f1)
 const _b2 = retrieveMetadata(__metadata__, f1, Schema.object({ a: Schema.number() }))
 
 console.log('metadata', _b, _b2)
 
-const getMetadataOf = <T>(schema: TypeGuard<T>) => console.log('metadata of schema', Schema.getStructMetadata(schema))
+const getMetadataOf = <T>(schema: TypeGuard<T>) =>
+    console.log('metadata of schema', Schema.getStructMetadata(schema))
 
 getMetadataOf(_schema)
 getMetadataOf(schema)
@@ -131,9 +157,16 @@ const parsed = Object.entries(aaa)
     .map(([key, value]) => ({
         [key]: tryParse(
             value,
-            Schema.getStructMetadata(EnvSchema).tree[key as keyof typeof aaa]?.type as "number" | "boolean" | "string"
-        )
+            Schema.getStructMetadata(EnvSchema).tree[key as keyof typeof aaa]?.type as
+                | 'number'
+                | 'boolean'
+                | 'string'
+        ),
     }))
     .reduce((acc, item) => Object.assign(acc, item), {})
 
 console.log(parsed)
+
+const aa = Schema.string('aaa')
+
+console.log(retrieveMessage(aa))
