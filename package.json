@@ -7,7 +7,8 @@
     "scripts": {
         "test": "test",
         "build": "npx tsc -p ./tsconfig.json",
-        "docs": "npx typedoc"
+        "docs": "npx typedoc",
+        "publish-pipeline": "npm run build && npm run docs && npm publish"
     },
     "repository": "github:SrHenry/type-utils.git",
     "keywords": [

@@ -192,6 +192,7 @@ export namespace Validators {
         type optionalCircular = Optionalize<
             Omit<
                 typeof Schema,
+                | 'string'
                 | 'optional'
                 | 'array'
                 | 'and'
@@ -203,6 +204,11 @@ export namespace Validators {
                 | 'getStructMetadata'
             >
         > & {
+            string(): TypeGuard<string>
+            string(rules: Rules.String[]): TypeGuard<string>
+            string<T extends string>(matches: T): TypeGuard<T>
+            string(regex: RegExp): TypeGuard<string>
+
             array(): OptionalizeTypeGuard<TypeGuard<any[]>>
             array(rules: Rules.Array[]): OptionalizeTypeGuard<TypeGuard<any[]>>
             array<T>(
