@@ -1,5 +1,4 @@
-export const sleep = (milliseconds: number, onfulfilled?: () => any) =>
-{
+export const sleep = (milliseconds: number, onfulfilled?: () => any) => {
     return new Promise<void>(resolve => setTimeout(() => resolve(), milliseconds)).then(onfulfilled)
 }
 
@@ -13,8 +12,7 @@ export const sleep = (milliseconds: number, onfulfilled?: () => any) =>
  *
  * @returns {T} The list without the last element of it
  */
-export const removeLastElement = <T extends Array<U>, U>(list: T): T =>
-{
+export const removeLastElement = <T extends Array<U>, U>(list: T): T => {
     list.pop()
 
     return list
@@ -25,11 +23,9 @@ export const removeLastElement = <T extends Array<U>, U>(list: T): T =>
  * @param n the number to format
  * @param casas_decimais the decimal part output size
  */
-export const round = (n: number, casas_decimais: number = 0): string =>
-{
+export const round = (n: number, casas_decimais: number = 0): string => {
     let r = n - Math.floor(n)
-    for (let c = 0; c < casas_decimais; c++)
-        r *= 10
+    for (let c = 0; c < casas_decimais; c++) r *= 10
 
     r = Math.floor(r)
 
@@ -39,13 +35,11 @@ export const round = (n: number, casas_decimais: number = 0): string =>
     // console.log(r)
 
     let r_s = String(r)
-    for (let c = 0; c < (casas_decimais - r_s.length); c++)
-        r_s = "0".concat(r_s)
+    for (let c = 0; c < casas_decimais - r_s.length; c++) r_s = '0'.concat(r_s)
 
     console.log(r_s.length, r_s)
-    return String(Math.floor(n)).concat(".").concat(r_s)
+    return String(Math.floor(n)).concat('.').concat(r_s)
 }
-
 
 /**
  * A function that converts a Date Object into string wiht MySQL date format
@@ -54,9 +48,8 @@ export const round = (n: number, casas_decimais: number = 0): string =>
  *
  * @returns { string } The MySQL formatted date string
  */
-export const getDateTimeStringAsDB = function (date: Date = new Date(Date.now())): string
-{
-    return String(date.toISOString().split("T").join(" ").split(".")[0])
+export const getDateTimeStringAsDB = function (date: Date = new Date(Date.now())): string {
+    return String(date.toISOString().split('T').join(' ').split('.')[0])
 }
 
 /**
@@ -66,7 +59,7 @@ export const getDateTimeStringAsDB = function (date: Date = new Date(Date.now())
  *
  * @returns result of nested 'AND' Logic gate.
  */
-export const AND = (...values: any[]) => values.reduce<boolean>((p, v) => (p && !!v), true)
+export const AND = (...values: any[]) => values.reduce<boolean>((p, v) => p && !!v, true)
 
 /**
  * Logic gate 'OR' to many inputs.
@@ -75,11 +68,8 @@ export const AND = (...values: any[]) => values.reduce<boolean>((p, v) => (p && 
  *
  * @returns result of nested 'OR' Logic gate.
  */
-export const OR = (...values: any[]) =>
-{
-    for (const value of values)
-        if (!!value)
-            return true
+export const OR = (...values: any[]) => {
+    for (const value of values) if (!!value) return true
     return false
 }
 
@@ -120,7 +110,7 @@ export const NOR = (...values: any[]) => NOT(OR(...values))
  *
  * @returns result of 'XOR' Logic gate.
  */
-export const XOR = (...values: any[]) => OR(...values) && OR(...(values.map(NOT)))
+export const XOR = (...values: any[]) => OR(...values) && OR(...values.map(NOT))
 
 /**
  * Logic gate 'XNOR' (eXclusive Not OR) to many inputs.
@@ -148,8 +138,7 @@ export const XNOR = (...values: any[]) => NOT(XOR(...values))
  * isFunction(() => {}) // true
  * isFunction(function () {}) // true
  */
-export function isFunction(input: any): input is Function
-{
+export function isFunction(input: any): input is Function {
     return typeof input === 'function'
 }
 
@@ -161,8 +150,7 @@ export function isFunction(input: any): input is Function
  *
  * @returns {Boolean}
  */
-function __isAsyncFunction(input: any): boolean
-{
+function __isAsyncFunction(input: any): boolean {
     return isFunction(input) && input.constructor.name === 'AsyncFunction'
 }
 
@@ -179,12 +167,10 @@ function __isAsyncFunction(input: any): boolean
  * isPromise('no') // false
  * isPromise(new Promise(() => {})) // true
  */
-export function isPromise<T = any>(promise: any): promise is Promise<T>
-{
+export function isPromise<T = any>(promise: any): promise is Promise<T> {
     return !!promise && isFunction(promise.then)
 }
 
-export function isAsyncFunction(input: any): input is (...args: any[]) => Promise<any>
-{
+export function isAsyncFunction(input: any): input is (...args: any[]) => Promise<any> {
     return __isAsyncFunction(input)
 }
