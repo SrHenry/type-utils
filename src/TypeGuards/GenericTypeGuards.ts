@@ -108,24 +108,29 @@ namespace Promisify {
 export const ensureInterfaceAsync = Promisify.ensureInterface
 export const ensureInstanceOfAsync = Promisify.ensureInstanceOf
 
-export const imprintMetadata = <T, U>(key: string | symbol, metadata: T, arg: U): U => {
-    return Object.assign(arg, { [key]: metadata })
+export const imprintMetadata = <T, U>(key: string | symbol, metadata: T, into: U): U => {
+    return Object.assign(into, { [key]: metadata })
 }
+
 export const retrieveMetadata = <T, U extends string | symbol, V extends TypeGuard>(
     key: U,
-    arg: T,
+    from: T,
     metadataSchema?: V
 ): GetTypeGuard<V> | undefined => {
     const hasMetadata = (arg: any): arg is { [K in U]: GetTypeGuard<V> } =>
         arg && key in arg && (metadataSchema?.(arg[key]) ?? true)
 
     try {
-        const { [key]: __metadata__ } = ensureInterface(arg, hasMetadata)
+        const { [key]: __metadata__ } = ensureInterface(from, hasMetadata)
         return __metadata__
     } catch {
         return void 0
     }
 }
+
+// Aliases
+export const getMetadata = retrieveMetadata
+export const setMetadata = imprintMetadata
 
 export const imprintMessage = <T>(message: string, arg: T): T => {
     return Object.assign(arg, { __message__: message })
@@ -141,6 +146,10 @@ export const retrieveMessage = <T>(arg: T): string => {
         return ''
     }
 }
+
+//Aliases
+export const getMessage = retrieveMessage
+export const setMessage = imprintMessage
 
 export const imprintMessageFormator = <T>(formator: (...args: any[]) => string, arg: T): T => {
     return Object.assign(arg, { __message_formator__: formator })
@@ -158,3 +167,7 @@ export const retrieveMessageFormator = <T>(arg: T) => {
         return () => ''
     }
 }
+
+// Aliases
+export const getMessageFormator = retrieveMessageFormator
+export const setMessageFormator = imprintMessageFormator
