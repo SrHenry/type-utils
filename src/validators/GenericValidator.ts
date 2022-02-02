@@ -303,6 +303,48 @@ export namespace Validators {
             //     [K in keyof U]: BaseStruct<U[K] extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<U[K]> : "object", U[K]>
             // }
         }
+
+        type OptionalPropertyNames<T> = {
+            [K in keyof T]-?: {} extends { [P in K]: T[K] } ? K : never
+        }[keyof T]
+
+        type SpreadProperties<L, R, K extends keyof L & keyof R> = {
+            [P in K]: L[P] | Exclude<R[P], undefined>
+        }
+
+        type Id<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
+
+        type SpreadTwo<L, R> = Id<
+            Pick<L, Exclude<keyof L, keyof R>> &
+                Pick<R, Exclude<keyof R, OptionalPropertyNames<R>>> &
+                Pick<R, Exclude<OptionalPropertyNames<R>, keyof L>> &
+                SpreadProperties<L, R, OptionalPropertyNames<R> & keyof L>
+        >
+
+        type Spread<A extends readonly [...any]> = A extends [infer L, ...infer R]
+            ? SpreadTwo<L, Spread<R>>
+            : unknown
+
+        // type Foo = Spread<[{ a: string }, { a?: number }]>
+
+        export type ObjectTree<T> = {
+            tree: {
+                [K in keyof T]: Struct<
+                    T[K] extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<T[K]> : 'object',
+                    T[K]
+                >
+            }
+        }
+        export type ObjectStruct<T> = Spread<
+            [
+                {
+                    [K1 in keyof BaseStruct<'object', T>]: BaseStruct<'object', T>[K1]
+                } & {
+                    [K2 in keyof ObjectTree<T>]: ObjectTree<T>[K2]
+                }
+            ]
+        >
+
         export type Struct<T extends BaseTypes, U> = U extends Generics.PrimitiveType
             ? T extends 'enum'
                 ? BaseStruct<'enum', U>
@@ -342,16 +384,9 @@ export namespace Validators {
               }
             : U extends Function
             ? BaseStruct<'function', U>
-            : BaseStruct<'object', U> & {
-                  tree: {
-                      [K in keyof U]: Struct<
-                          U[K] extends Generics.PrimitiveType
-                              ? Generics.GetPrimitiveTag<U[K]>
-                              : 'object',
-                          U[K]
-                      >
-                  }
-              }
+            : U extends object
+            ? ObjectStruct<U>
+            : never
 
         const isOptional = (rule: Rules.All): rule is Rules.optional =>
             rule[0] in Rules.keys && rule[0] === Rules.keys.optional
@@ -592,7 +627,15 @@ export namespace Validators {
                 const guard = (arg: unknown): arg is T[] =>
                     Array.isArray(arg) && arg.every(item => _schema(item))
 
-                return enpipeRuleMessageIntoGuard(`Array<${retrieveMessage(_schema)}>`, guard)
+                return enpipeSchemaStructIntoGuard(
+                    {
+                        type: 'object',
+                        guard,
+                        optional: false,
+                        entries: getStructMetadata(_schema),
+                    },
+                    enpipeRuleMessageIntoGuard(`Array<${retrieveMessage(_schema)}>`, guard)
+                )
             }
 
             const guard = (arg: unknown): arg is T[] =>
