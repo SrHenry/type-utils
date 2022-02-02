@@ -11,6 +11,7 @@ import {
     retrieveMessage,
     retrieveMessageFormator,
     retrieveMetadata,
+    setMetadata,
     TypeGuard,
 } from '../TypeGuards/GenericTypeGuards'
 import { TypeGuardError } from '../TypeGuards/TypeErrors'
@@ -169,6 +170,126 @@ export namespace Validators {
 
     export const validator = BaseValidator
 
+    // export interface Validated<T> {
+    //     value: T
+    //     error?: TypeGuardError<unknown, TypeGuard<T>> | undefined
+    // }
+
+    export type Validated<T> = {
+        value?: T
+        error?: TypeGuardError<unknown, TypeGuard<T>>
+        tree?: T extends Generics.PrimitiveType
+            ? undefined
+            : {
+                  [K in keyof T]?: Validated<T[K]>
+              }
+    }
+
+    export namespace V2 {
+        function handleObject<Interface extends object>(
+            value: unknown,
+            struct: Schema.ObjectStruct<Interface>
+        ): Validated<Interface | object> {
+            const validated: Validated<Interface | object> = {}
+            if (!is(value, Schema.object())) {
+                validated.error = new TypeGuardError(
+                    `Validation has failed for ${JSON.stringify(value)}. value is not an object`,
+                    value,
+                    Schema.object()
+                )
+
+                return validated
+            }
+
+            const { tree } = struct
+
+            validated.tree = {} as Record<string, unknown>
+
+            for (const key in tree) {
+                const innerStruct = tree[key as keyof typeof tree]
+
+                if (!(key in value)) {
+                    setMetadata(
+                        key,
+                        new TypeGuardError(`Property ${key} is not defined`, value),
+                        validated.tree
+                    )
+                    continue
+                }
+
+                function isObjectKindStruct<T>(struct: unknown): struct is Schema.ObjectStruct<T> {
+                    return Schema.object({ type: Schema.string('object') })(struct)
+                }
+
+                if (isObjectKindStruct(innerStruct)) {
+                    innerStruct.guard
+                    const { guard }: { guard: TypeGuard<Interface[string]> } = innerStruct
+                    const { error } = validate<Interface[keyof Interface]>(
+                        value[key as keyof typeof value],
+                        guard
+                    )
+                    if (error) errors.push(...error.errors)
+                }
+
+                if (!is(value, Schema.object({ [key]: innerStruct.guard }))) {
+                    errors.push(new TypeGuardError(`Property ${key} is not defined`, value))
+                }
+                const subValue = value[key]
+                const subError = validate(subValue, subValidator)
+                if (subError.errors.length > 0) {
+                    errors.push(...subError.errors)
+                }
+            }
+            return { value, errors }
+        }
+
+        class InvalidValidatorException<T, U> extends TypeGuardError<T, TypeGuard<U>> {
+            constructor(value: T, validator: TypeGuard<U>) {
+                super(
+                    `Validation has failed for ${JSON.stringify(
+                        value
+                    )}. Invalid validator was given.`,
+                    value,
+                    validator
+                )
+            }
+        }
+
+        export function validate<Interface>(
+            value: unknown,
+            validator: TypeGuard<Interface>
+        ): Validated<Interface> {
+            if (is(value, validator)) {
+                return { value }
+            } else {
+                const struct = Schema.getStructMetadata(validator)
+
+                switch (struct.type) {
+                    case 'object':
+                        if ('tree' in validator) {
+                            return handleObject(value, struct as Schema.ObjectStruct<Interface>)
+                        } else if ('entries' in validator) {
+                            return handleArray(value, struct as Schema.ArrayStruct<Interface>)
+                        } else {
+                            return {
+                                error: {
+                                    errors: [new InvalidValidatorException(value, validator)],
+                                },
+                            }
+                        }
+                    default:
+                        return {
+                            error: {
+                                errors: [new InvalidValidatorException(value, validator)],
+                            },
+                        }
+                }
+            }
+        }
+    }
+
+    export const validate = V2.validate
+
     export namespace Schema {
         type Optionalize<T> = {
             [K in keyof T]: T[K] extends () => TypeGuard<any | any[]>
@@ -202,8 +323,12 @@ export namespace Validators {
                 | 'SchemaStruct'
                 | 'Struct'
                 | 'getStructMetadata'
+                | 'object'
             >
         > & {
+            object(): TypeGuard<object>
+            object<T>(schema: Validators.ValidatorMap<T>): TypeGuard<Sanitize<T>>
+
             string(): TypeGuard<string>
             string(rules: Rules.String[]): TypeGuard<string>
             string<T extends string>(matches: T): TypeGuard<T>
@@ -287,8 +412,9 @@ export namespace Validators {
                   [K in keyof T]: GetStruct<T[K]>
               }
 
-        type BaseTypes =
+        export type BaseTypes =
             | typeof Generics.TypeOfTag[number]
+            | 'array'
             | 'enum'
             | 'primitive'
             | 'union'
@@ -303,25 +429,240 @@ export namespace Validators {
             //     [K in keyof U]: BaseStruct<U[K] extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<U[K]> : "object", U[K]>
             // }
         }
-        export type Struct<T extends BaseTypes, U> = U extends Generics.PrimitiveType
+
+        type OptionalPropertyNames<T> = {
+            [K in keyof T]-?: {} extends { [P in K]: T[K] } ? K : never
+        }[keyof T]
+
+        type SpreadProperties<L, R, K extends keyof L & keyof R> = {
+            [P in K]: L[P] | Exclude<R[P], undefined>
+        }
+
+        type Id<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
+
+        type SpreadTwo<L, R> = Id<
+            Pick<L, Exclude<keyof L, keyof R>> &
+                Pick<R, Exclude<keyof R, OptionalPropertyNames<R>>> &
+                Pick<R, Exclude<OptionalPropertyNames<R>, keyof L>> &
+                SpreadProperties<L, R, OptionalPropertyNames<R> & keyof L>
+        >
+
+        type Spread<A extends readonly [...any]> = A extends [infer L, ...infer R]
+            ? SpreadTwo<L, Spread<R>>
+            : unknown
+
+        // type Foo = Spread<[{ a: string }, { a?: number }]>
+
+        export type ObjectTree<T> = {
+            tree: {
+                [K in keyof T]: Struct<
+                    T[K] extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<T[K]> : 'object',
+                    T[K]
+                >
+            }
+        }
+        export type ObjectStruct<T> = Spread<
+            [
+                {
+                    [K1 in keyof BaseStruct<'object', T>]: BaseStruct<'object', T>[K1]
+                } & {
+                    [K2 in keyof ObjectTree<T>]: ObjectTree<T>[K2]
+                }
+            ]
+        >
+        export type IsObjectStruct<T extends BaseTypes, U> = [T, U] extends ['object', object]
+            ? ObjectStruct<U>
+            : never
+
+        export type UndefinedStruct = BaseStruct<'undefined', undefined>
+        export type IsUndefinedStruct<T extends BaseTypes, U> = [T, U] extends [
+            'undefined',
+            undefined
+        ]
+            ? UndefinedStruct
+            : never
+
+        export type NullStruct = BaseStruct<'null', null>
+        export type IsNullStruct<T extends BaseTypes, U> = [T, U] extends ['null', null]
+            ? NullStruct
+            : never
+
+        export type BooleanStruct = BaseStruct<'boolean', boolean>
+        export type IsBooleanStruct<T extends BaseTypes, U> = [T, U] extends ['boolean', boolean]
+            ? BooleanStruct
+            : never
+
+        export type NumberStruct = BaseStruct<'number', number>
+        export type IsNumberStruct<T extends BaseTypes, U> = [T, U] extends ['number', number]
+            ? NumberStruct
+            : never
+
+        export type StringStruct = BaseStruct<'string', string>
+        export type IsStringStruct<T extends BaseTypes, U> = [T, U] extends ['string', string]
+            ? StringStruct
+            : never
+
+        export type SymbolStruct = BaseStruct<'symbol', symbol>
+        export type IsSymbolStruct<T extends BaseTypes, U> = [T, U] extends ['symbol', symbol]
+            ? SymbolStruct
+            : never
+
+        export type FunctionStruct<F extends (...args: any[]) => any = () => any> = BaseStruct<
+            'function',
+            F
+        >
+        export type IsFunctionStruct<T extends BaseTypes, U> = T extends 'function'
+            ? U extends (...args: any[]) => any | any[]
+                ? FunctionStruct<U>
+                : never
+            : never
+
+        export type PrimitiveStruct = BaseStruct<'primitive', Generics.PrimitiveType>
+        export type IsPrimitiveStruct<T extends BaseTypes, U> = [T, U] extends [
+            'primitive',
+            Generics.PrimitiveType
+        ]
+            ? PrimitiveStruct
+            : never
+
+        export type AnyStruct = BaseStruct<'any', any>
+        export type IsAnyStruct<T extends BaseTypes, U> = [T, U] extends ['any', any]
+            ? AnyStruct
+            : never
+
+        export type EnumStruct<T> = T extends Generics.PrimitiveType ? BaseStruct<'enum', T> : never
+        export type StrictEnumStruct<T extends Generics.PrimitiveType> = BaseStruct<'enum', T>
+        export type IsEnumStruct<T extends BaseTypes, U> = [T, U] extends [
+            'enum',
+            Generics.PrimitiveType
+        ]
+            ? EnumStruct<U>
+            : never
+
+        export type UnionStruct<T> = Spread<[BaseStruct<'union', T>, UnionTree<T>]>
+        export type UnionTree<T> = {
+            tree: Struct<
+                T extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<T> : 'object',
+                T
+            >[]
+        }
+        export type IsUnionStruct<T extends BaseTypes, U> = T extends 'union'
+            ? UnionStruct<U>
+            : never
+
+        type aa = IsUnionStruct<'union', string>
+
+        export type IntersectionStruct<T> = Spread<
+            [BaseStruct<'intersection', T>, IntersectionTree<T>]
+        >
+
+        export type IntersectionTree<T> = {
+            tree: Struct<
+                T extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<T> : 'object',
+                T
+            >[]
+        }
+
+        export type IsIntersectionStruct<T extends BaseTypes, U> = T extends 'intersection'
+            ? IntersectionStruct<U>
+            : never
+
+        export type ArrayStruct<T> = Spread<[BaseStruct<'array', T[]>, ArrayEntries<T>]>
+
+        export type ArrayEntries<T> = {
+            entries: Struct<
+                T extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<T> : 'object',
+                T
+            >
+        }
+
+        export type IsArrayStruct<T extends BaseTypes, U> = [T, U] extends ['array', (infer V)[]]
+            ? ArrayStruct<V>
+            : never
+
+        export type Struct<T extends BaseTypes, U> = IsArrayStruct<T, U> extends never
+            ? IsObjectStruct<T, U> extends never
+                ? IsFunctionStruct<T, U> extends never
+                    ? never
+                    : FunctionStruct<U>
+                : ObjectStruct<U>
+            : ArrayStruct<U>
+
+        export type GuessStruct<T> = T extends Generics.PrimitiveType
+            ? Struct<Generics.GetPrimitiveTag<T>, T>
+            : T extends any[]
+            ? Struct<'array', T[number]>
+            : T extends object
+            ? Struct<'object', T>
+            : T extends (...args: any[]) => any | any[]
+            ? Struct<'function', T>
+            : never
+
+        type a = Struct<'intersection', string | boolean>
+
+        /* export type Struct<T extends BaseTypes, U> = T extends 'enum'
+            ? EnumStruct<U>
+            : T extends 'union'
+            ? UnionStruct<U>
+            : T extends 'intersection'
+            ? IntersectionStruct<U>
+            : T extends 'array'
+            ? ArrayStruct<U>
+            : T extends 'object'
+            ? ObjectStruct<U>
+            : T extends 'any'
+            ? AnyStruct
+            : T extends 'undefined'
+            ? UndefinedStruct
+            : T extends 'null'
+            ? NullStruct
+            : T extends 'boolean'
+            ? BooleanStruct
+            : T extends 'number'
+            ? NumberStruct
+            : T extends 'string'
+            ? StringStruct
+            : T extends 'symbol'
+            ? SymbolStruct
+            : T extends 'function'
+            ? FunctionStruct
+            : T extends Generics.PrimitiveType
+            ? PrimitiveStruct
+            : never */
+
+        /* export type Struct<T extends BaseTypes, U> = U extends Generics.PrimitiveType
             ? T extends 'enum'
                 ? BaseStruct<'enum', U>
                 : T extends 'primitive'
                 ? BaseStruct<'primitive', Generics.PrimitiveType>
                 : T extends 'union'
-                ? BaseStruct<'union', U> & {
-                      tree: Struct<
-                          U extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<U> : 'object',
-                          U
-                      >[]
-                  }
+                ? Spread<
+                      [
+                          BaseStruct<'union', U>,
+                          {
+                              tree: Struct<
+                                  U extends Generics.PrimitiveType
+                                      ? Generics.GetPrimitiveTag<U>
+                                      : 'object',
+                                  U
+                              >[]
+                          }
+                      ]
+                  >
                 : T extends 'intersection'
-                ? BaseStruct<'intersection', U> & {
-                      tree: Struct<
-                          U extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<U> : 'object',
-                          U
-                      >[]
-                  }
+                ? Spread<
+                      [
+                          BaseStruct<'intersection', U>,
+                          {
+                              tree: Struct<
+                                  U extends Generics.PrimitiveType
+                                      ? Generics.GetPrimitiveTag<U>
+                                      : 'object',
+                                  U
+                              >[]
+                          }
+                      ]
+                  >
                 : T extends 'any'
                 ? BaseStruct<'any', any>
                 : T extends 'undefined'
@@ -330,28 +671,26 @@ export namespace Validators {
                 ? BaseStruct<'null', null>
                 : U extends boolean
                 ? BaseStruct<'boolean', boolean>
-                : BaseStruct<T, U> & {
-                      tree?: undefined
-                  }
+                : BaseStruct<T, U>
             : U extends Array<infer V>
-            ? BaseStruct<'object', U> & {
-                  entries: Struct<
-                      V extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<V> : 'object',
-                      V
-                  >
-              }
+            ? Spread<
+                  [
+                      BaseStruct<'object', U>,
+                      {
+                          entries: Struct<
+                              V extends Generics.PrimitiveType
+                                  ? Generics.GetPrimitiveTag<V>
+                                  : 'object',
+                              V
+                          >
+                      }
+                  ]
+              >
             : U extends Function
             ? BaseStruct<'function', U>
-            : BaseStruct<'object', U> & {
-                  tree: {
-                      [K in keyof U]: Struct<
-                          U[K] extends Generics.PrimitiveType
-                              ? Generics.GetPrimitiveTag<U[K]>
-                              : 'object',
-                          U[K]
-                      >
-                  }
-              }
+            : U extends object
+            ? ObjectStruct<U>
+            : never */
 
         const isOptional = (rule: Rules.All): rule is Rules.optional =>
             rule[0] in Rules.keys && rule[0] === Rules.keys.optional
@@ -493,7 +832,10 @@ export namespace Validators {
             ) //TODO: Checkpoint
         }
 
-        export function optional(): optionalCircular {
+        export function optional(): optionalCircular
+        export function optional<T>(schema: TypeGuard<T>): TypeGuard<T | undefined>
+
+        export function optional(schema?: TypeGuard): optionalCircular | TypeGuard {
             const wrapOptional =
                 <T extends TypeGuardClosure>(fn: T): OptionalizeTypeGuardClosure<T> =>
                 (...args: Parameters<T>) => {
@@ -507,6 +849,8 @@ export namespace Validators {
                         imprintMessage(retrieveMessage(fn(...args)), closure)
                     )
                 }
+
+            if (schema) return wrapOptional(() => schema)()
 
             return Array.from(Object.entries(Schema))
                 .filter(
@@ -531,7 +875,12 @@ export namespace Validators {
             return schema
         }
 
-        export function object<T>(schema: Validators.ValidatorMap<T>): TypeGuard<Sanitize<T>> {
+        export function object(): TypeGuard<object>
+        export function object<T>(schema: Validators.ValidatorMap<T>): TypeGuard<Sanitize<T>>
+
+        export function object<T extends object = {}>(
+            schema: Validators.ValidatorMap<T> = {} as ValidatorMap<T>
+        ): TypeGuard<Sanitize<T>> {
             const keys = Object.keys(schema) as (keyof T)[]
 
             const optional = keys.filter(key =>
@@ -592,7 +941,15 @@ export namespace Validators {
                 const guard = (arg: unknown): arg is T[] =>
                     Array.isArray(arg) && arg.every(item => _schema(item))
 
-                return enpipeRuleMessageIntoGuard(`Array<${retrieveMessage(_schema)}>`, guard)
+                return enpipeSchemaStructIntoGuard(
+                    {
+                        type: 'array',
+                        guard,
+                        optional: false,
+                        entries: getStructMetadata(_schema),
+                    },
+                    enpipeRuleMessageIntoGuard(`Array<${retrieveMessage(_schema)}>`, guard)
+                )
             }
 
             const guard = (arg: unknown): arg is T[] =>
@@ -602,7 +959,7 @@ export namespace Validators {
                     arg.every(item => _schema(item)))
 
             return enpipeSchemaStructIntoGuard(
-                { type: 'object', guard, optional: false, entries: getStructMetadata(_schema) },
+                { type: 'array', guard, optional: false, entries: getStructMetadata(_schema) },
                 enpipeRuleMessageIntoGuard(`Array<${retrieveMessage(_schema)}>`, guard, rules)
             )
         }
