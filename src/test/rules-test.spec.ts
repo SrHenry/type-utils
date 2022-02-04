@@ -170,3 +170,6 @@ console.log(parsed)
 const aa = Schema.string('aaa')
 
 console.log(retrieveMessage(aa))
+
+console.log('generic object', Schema.object()({ a: 1, b: 2 }))
+console.log('blank object', Schema.object({})({ a: 1, b: 2 }), Schema.object({})({ a: 1, b: 2 }))

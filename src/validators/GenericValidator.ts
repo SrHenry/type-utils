@@ -297,7 +297,7 @@ export namespace Validators {
 
         type BaseStruct<T extends BaseTypes, U> = {
             type: T
-            guard: TypeGuard<U>
+            schema: TypeGuard<U>
             optional: boolean
             // tree?: {
             //     [K in keyof U]: BaseStruct<U[K] extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<U[K]> : "object", U[K]>
@@ -478,7 +478,7 @@ export namespace Validators {
                 (typeof arg === 'number' && isFollowingRules(arg, rules))
 
             return enpipeSchemaStructIntoGuard(
-                { type: 'number', guard, optional: false },
+                { type: 'number', schema: guard, optional: false },
                 enpipeRuleMessageIntoGuard('number', guard, rules)
             )
         }
@@ -502,7 +502,7 @@ export namespace Validators {
                     typeof arg === 'string' && isFollowingRules(arg, [exact(rules)])
 
                 return enpipeSchemaStructIntoGuard(
-                    { type: 'string', guard, optional: false },
+                    { type: 'string', schema: guard, optional: false },
                     imprintMessage(`string & ${exactFormator(rules)}`, guard)
                 )
             }
@@ -513,7 +513,7 @@ export namespace Validators {
                     typeof arg === 'string' && isFollowingRules(arg, rules_arr)
 
                 return enpipeSchemaStructIntoGuard(
-                    { type: 'string', guard, optional: false },
+                    { type: 'string', schema: guard, optional: false },
                     enpipeRuleMessageIntoGuard('string', guard, rules_arr)
                 )
             }
@@ -523,7 +523,7 @@ export namespace Validators {
                 (typeof arg === 'string' && isFollowingRules(arg, rules))
 
             return enpipeSchemaStructIntoGuard(
-                { type: 'string', guard, optional: false },
+                { type: 'string', schema: guard, optional: false },
                 enpipeRuleMessageIntoGuard('string', guard, rules)
             ) //TODO: Checkpoint
         }
@@ -566,17 +566,30 @@ export namespace Validators {
             return schema
         }
 
-        export function object<T>(schema: Validators.ValidatorMap<T>): TypeGuard<Sanitize<T>> {
-            const keys = Object.keys(schema) as (keyof T)[]
+        export function object(): TypeGuard<Record<any, any>>
+        export function object(tree: {}): TypeGuard<{}>
+        export function object<T>(tree: Validators.ValidatorMap<T>): TypeGuard<Sanitize<T>>
+        export function object<T>(
+            tree?: Validators.ValidatorMap<T> | {}
+        ): TypeGuard<Sanitize<T> | Record<any, any> | {}> {
+            const isBlankObject = (arg: unknown): arg is {} =>
+                typeof arg === 'object' && !!arg && Object.keys(arg).length === 0
+            if (!tree || isBlankObject(tree)) {
+                const guard = (arg: unknown): arg is Record<any, any> | {} =>
+                    typeof arg === 'object'
 
-            const optional = keys.filter(key =>
-                _hasOptionalProp(schema[key as keyof typeof schema])
-            )
-            const required = keys.filter(
-                key => !_hasOptionalProp(schema[key as keyof typeof schema])
-            )
+                return enpipeSchemaStructIntoGuard(
+                    { type: 'object', schema: guard, optional: false, tree: {} },
+                    enpipeRuleMessageIntoGuard('object', guard)
+                )
+            }
 
-            const config: ValidatorArgs<T> = { validators: schema, required, optional }
+            const keys = Object.keys(tree) as (keyof T)[]
+
+            const optional = keys.filter(key => _hasOptionalProp(tree[key as keyof typeof tree]))
+            const required = keys.filter(key => !_hasOptionalProp(tree[key as keyof typeof tree]))
+
+            const config: ValidatorArgs<T> = { validators: tree, required, optional }
 
             const guard = (arg: unknown): arg is Sanitize<T> =>
                 branchIfOptional(arg, []) ||
@@ -584,7 +597,7 @@ export namespace Validators {
 
             const message =
                 '{ ' +
-                Object.entries(schema)
+                Object.entries(tree)
                     .map(
                         ([k, v]) =>
                             `${k}${optional.some(key => key === k) ? '?' : ''}: ${retrieveMessage(
@@ -596,11 +609,11 @@ export namespace Validators {
 
             const metadata = {
                 type: 'object' as const,
-                guard,
+                schema: guard,
                 optional: false,
                 // ObjectConstructor interface is weird, it requires a length property if you annotate entries method overload
                 tree: Object.entries<TypeGuard<Sanitize<T>[keyof Sanitize<T>]>>(
-                    schema as unknown as Validators.ValidatorMap<Sanitize<T>> & { length: number }
+                    tree as unknown as Validators.ValidatorMap<Sanitize<T>> & { length: number }
                 )
                     .map(([k, v]) => ({ [k]: getStructMetadata(v) }))
                     .reduce((acc, item) => Object.assign(acc, item), {}),
@@ -630,7 +643,7 @@ export namespace Validators {
                 return enpipeSchemaStructIntoGuard(
                     {
                         type: 'object',
-                        guard,
+                        schema: guard,
                         optional: false,
                         entries: getStructMetadata(_schema),
                     },
@@ -645,7 +658,12 @@ export namespace Validators {
                     arg.every(item => _schema(item)))
 
             return enpipeSchemaStructIntoGuard(
-                { type: 'object', guard, optional: false, entries: getStructMetadata(_schema) },
+                {
+                    type: 'object',
+                    schema: guard,
+                    optional: false,
+                    entries: getStructMetadata(_schema),
+                },
                 enpipeRuleMessageIntoGuard(`Array<${retrieveMessage(_schema)}>`, guard, rules)
             )
         }
@@ -655,7 +673,7 @@ export namespace Validators {
                 branchIfOptional(arg, []) || typeof arg === 'boolean'
 
             return enpipeSchemaStructIntoGuard(
-                { type: 'boolean', guard, optional: false },
+                { type: 'boolean', schema: guard, optional: false },
                 enpipeRuleMessageIntoGuard('boolean', guard)
             )
         }
@@ -665,7 +683,7 @@ export namespace Validators {
                 branchIfOptional(arg, []) || typeof arg === 'symbol'
 
             return enpipeSchemaStructIntoGuard(
-                { type: 'symbol', guard, optional: false },
+                { type: 'symbol', schema: guard, optional: false },
                 enpipeRuleMessageIntoGuard('symbol', guard)
             )
         }
@@ -675,7 +693,7 @@ export namespace Validators {
                 branchIfOptional(arg, []) || arg === undefined
 
             return enpipeSchemaStructIntoGuard(
-                { type: 'undefined', guard, optional: false },
+                { type: 'undefined', schema: guard, optional: false },
                 enpipeRuleMessageIntoGuard('undefined', guard)
             )
         }
@@ -684,7 +702,7 @@ export namespace Validators {
             const guard = (arg: unknown): arg is null => branchIfOptional(arg, []) || arg === null
 
             return enpipeSchemaStructIntoGuard(
-                { type: 'null', guard, optional: false },
+                { type: 'null', schema: guard, optional: false },
                 enpipeRuleMessageIntoGuard('null', guard)
             )
         }
@@ -705,7 +723,7 @@ export namespace Validators {
                 (primitive()(arg) && values.some(value => value === arg))
 
             return enpipeSchemaStructIntoGuard(
-                { type: 'enum', guard, optional: false } as Struct<'enum', T>,
+                { type: 'enum', schema: guard, optional: false } as Struct<'enum', T>,
                 enpipeRuleMessageIntoGuard(`enum [ ${values.map(String).join(' | ')} ]`, guard)
             )
         }
@@ -716,7 +734,7 @@ export namespace Validators {
                 (Generics.Primitives as readonly string[]).includes(typeof arg)
 
             return enpipeSchemaStructIntoGuard(
-                { type: 'primitive', guard, optional: false },
+                { type: 'primitive', schema: guard, optional: false },
                 enpipeRuleMessageIntoGuard(
                     'primitive (string | number | boolean | symbol | null | undefined)',
                     guard
@@ -752,7 +770,7 @@ export namespace Validators {
             return enpipeSchemaStructIntoGuard(
                 {
                     type: 'union',
-                    guard,
+                    schema: guard,
                     optional: false,
                     tree: args.map(getStructMetadata),
                 } as Struct<'union', GetTypeGuard<T>>,
@@ -793,7 +811,7 @@ export namespace Validators {
             return enpipeSchemaStructIntoGuard(
                 {
                     type: 'intersection',
-                    guard,
+                    schema: guard,
                     optional: false,
                     tree: args.map(getStructMetadata),
                 } as Struct<'intersection', GetTypeGuard<T>>,
@@ -805,7 +823,7 @@ export namespace Validators {
             const guard = (_: unknown): _ is any => true
 
             return enpipeSchemaStructIntoGuard(
-                { type: 'any', guard, optional: false },
+                { type: 'any', schema: guard, optional: false },
                 enpipeRuleMessageIntoGuard('any', guard)
             )
         }
