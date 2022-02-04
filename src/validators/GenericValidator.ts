@@ -205,10 +205,10 @@ export namespace Validators {
                 | 'getStructMetadata'
             >
         > & {
-            string(): TypeGuard<string>
-            string(rules: Rules.String[]): TypeGuard<string>
-            string<T extends string>(matches: T): TypeGuard<T>
-            string(regex: RegExp): TypeGuard<string>
+            string(): OptionalizeTypeGuard<TypeGuard<string>>
+            string(rules: Rules.String[]): OptionalizeTypeGuard<TypeGuard<string>>
+            string<T extends string>(matches: T): OptionalizeTypeGuard<TypeGuard<T>>
+            string(regex: RegExp): OptionalizeTypeGuard<TypeGuard<string>>
 
             array(): OptionalizeTypeGuard<TypeGuard<any[]>>
             array(rules: Rules.Array[]): OptionalizeTypeGuard<TypeGuard<any[]>>
@@ -218,9 +218,11 @@ export namespace Validators {
             ): OptionalizeTypeGuard<TypeGuard<T[]>>
             array<T>(schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
 
-            object(): TypeGuard<Record<any, any>>
-            object(tree: {}): TypeGuard<{}>
-            object<T>(tree: Validators.ValidatorMap<T>): TypeGuard<Sanitize<T>>
+            object(): OptionalizeTypeGuard<TypeGuard<Record<any, any>>>
+            object(tree: {}): OptionalizeTypeGuard<TypeGuard<{}>>
+            object<T>(
+                tree: Validators.ValidatorMap<T>
+            ): OptionalizeTypeGuard<TypeGuard<Sanitize<T>>>
 
             and<T1, T2>(
                 guard1: TypeGuard<T1>,
