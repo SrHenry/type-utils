@@ -192,9 +192,10 @@ export namespace Validators {
         type optionalCircular = Optionalize<
             Omit<
                 typeof Schema,
-                | 'string'
                 | 'optional'
+                | 'string'
                 | 'array'
+                | 'object'
                 | 'and'
                 | 'or'
                 | 'asEnum'
@@ -216,6 +217,10 @@ export namespace Validators {
                 schema: TypeGuard<T>
             ): OptionalizeTypeGuard<TypeGuard<T[]>>
             array<T>(schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
+
+            object(): TypeGuard<Record<any, any>>
+            object(tree: {}): TypeGuard<{}>
+            object<T>(tree: Validators.ValidatorMap<T>): TypeGuard<Sanitize<T>>
 
             and<T1, T2>(
                 guard1: TypeGuard<T1>,
