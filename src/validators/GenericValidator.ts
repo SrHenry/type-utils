@@ -218,11 +218,11 @@ export namespace Validators {
             ): OptionalizeTypeGuard<TypeGuard<T[]>>
             array<T>(schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
 
-            object(): OptionalizeTypeGuard<TypeGuard<Record<any, any>>>
-            object(tree: {}): OptionalizeTypeGuard<TypeGuard<{}>>
             object<T>(
                 tree: Validators.ValidatorMap<T>
             ): OptionalizeTypeGuard<TypeGuard<Sanitize<T>>>
+            object(): OptionalizeTypeGuard<TypeGuard<Record<any, any>>>
+            object(tree: {}): OptionalizeTypeGuard<TypeGuard<{}>>
 
             and<T1, T2>(
                 guard1: TypeGuard<T1>,
@@ -573,9 +573,9 @@ export namespace Validators {
             return schema
         }
 
+        export function object<T>(tree: Validators.ValidatorMap<T>): TypeGuard<Sanitize<T>>
         export function object(): TypeGuard<Record<any, any>>
         export function object(tree: {}): TypeGuard<{}>
-        export function object<T>(tree: Validators.ValidatorMap<T>): TypeGuard<Sanitize<T>>
         export function object<T>(
             tree?: Validators.ValidatorMap<T> | {}
         ): TypeGuard<Sanitize<T> | Record<any, any> | {}> {
