@@ -1,3 +1,4 @@
+import { isFunction } from '../helpers'
 import { GetOptional } from '../types/GetOptional'
 import { GetRequired } from '../types/GetRequired'
 import { TypeGuardError } from './TypeErrors'
@@ -19,11 +20,22 @@ export type StaticValidators<T> = {
     [P in keyof T]-?: TypeGuard<T[P]>
 }
 
+export function isInstanceOf<Constructor extends ConstructorSignature>(
+    type: Constructor
+): <Instance>(value: Instance) => value is InstanceType<Constructor>
 export function isInstanceOf<Instance, Constructor extends ConstructorSignature>(
     value: Instance,
     type: Constructor
-): value is InstanceType<Constructor> {
-    return value instanceof type
+): value is InstanceType<Constructor>
+
+export function isInstanceOf<Instance, Constructor extends ConstructorSignature>(
+    value_or_type: Instance | Constructor,
+    type?: Constructor
+): (<Instance>(value: Instance) => value is InstanceType<Constructor>) | boolean {
+    if (type) return value_or_type instanceof type
+
+    return (value: unknown): value is InstanceType<Constructor> =>
+        value instanceof (value_or_type as Constructor)
 }
 
 export function ensureInterface<Interface, Instance = unknown>(
@@ -108,20 +120,35 @@ namespace Promisify {
 export const ensureInterfaceAsync = Promisify.ensureInterface
 export const ensureInstanceOfAsync = Promisify.ensureInstanceOf
 
+export const hasMetadata = <K extends string | symbol, T = unknown>(
+    key: K,
+    from: T
+): from is T & Record<K, unknown> => {
+    //@ts-ignore
+    return key in from && from[key] !== void 0 && from[key] !== null
+}
+
 export const imprintMetadata = <T, U>(key: string | symbol, metadata: T, into: U): U => {
     return Object.assign(into, { [key]: metadata })
 }
 
-export const retrieveMetadata = <T, U extends string | symbol, V extends TypeGuard>(
+export function retrieveMetadata<T extends string | symbol, U>(key: T, from: U): any | undefined
+export function retrieveMetadata<T extends string | symbol, U, V extends TypeGuard>(
+    key: T,
+    from: U,
+    metadataSchema: V
+): GetTypeGuard<V> | undefined
+
+export function retrieveMetadata<T, U extends string | symbol, V extends TypeGuard>(
     key: U,
     from: T,
     metadataSchema?: V
-): GetTypeGuard<V> | undefined => {
-    const hasMetadata = (arg: any): arg is { [K in U]: GetTypeGuard<V> } =>
-        arg && key in arg && (metadataSchema?.(arg[key]) ?? true)
+): GetTypeGuard<V> | (T & Record<U, unknown>) | undefined {
+    const guard = (arg: any): arg is { [K in U]: GetTypeGuard<V> } =>
+        hasMetadata(key, arg) && (metadataSchema?.(arg[key]) ?? true)
 
     try {
-        const { [key]: __metadata__ } = ensureInterface(from, hasMetadata)
+        const { [key]: __metadata__ } = ensureInterface(from, guard)
         return __metadata__
     } catch {
         return void 0
@@ -171,3 +198,6 @@ export const retrieveMessageFormator = <T>(arg: T) => {
 // Aliases
 export const getMessageFormator = retrieveMessageFormator
 export const setMessageFormator = imprintMessageFormator
+
+export const isTypeGuard = <T = any>(value: unknown): value is TypeGuard<T> =>
+    isFunction(value) && typeof value(void 0) === 'boolean'

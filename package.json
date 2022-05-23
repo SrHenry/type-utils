@@ -8,7 +8,17 @@
         "test": "test",
         "build": "npx tsc -p ./tsconfig.json",
         "docs": "npx typedoc",
-        "publish-pipeline": "npm run build && npm run docs && npm publish"
+        "publish-pipeline": "npm run build && npm run docs && npm publish",
+        "prebuild:esm": "rm -rf ./dist/es6 || exit 0",
+        "autoload-es6": "",
+        "build:esm": "npx tsc -p ./es6.tsconfig.jsonc",
+        "prewebpack:dev": "npm run build:esm",
+        "webpack:dev": "npx webpack --entry=./dist/es6/umd.js --output-path=./dist/webpack-es6/ --output-filename=index.js --mode=development --target=es2022 --output-chunk-format=module",
+        "build:tsc:umd": "npx tsc -p ./umd.tsconfig.jsonc",
+        "prebuild:umd": "npm run build",
+        "build:umd": "npx webpack --entry=./dist/umd.js --output-path=./umd --output-filename=index.min.js --mode=production --target=web",
+        "prebuild:umd:dev": "npm run build",
+        "build:umd:dev": "npx webpack --entry=./dist/umd.js --output-path=./umd --output-filename=index.js --mode=development --target=web --library=TypeUtils --library-type=umd --library-target=web"
     },
     "repository": "github:SrHenry/type-utils.git",
     "keywords": [
@@ -27,6 +37,16 @@
     "homepage": "https://github.com/SrHenry/type-utils#readme",
     "dependencies": {
         "@types/node": "^16.11.12",
-        "typescript": "^4.5.2"
+        "typescript": "^4.6.4"
+    },
+    "devDependencies": {
+        "webpack": "^5.68.0",
+        "webpack-cli": "^4.9.2"
+    },
+    "exports": {
+        ".": {
+            "default": "./dist/index.js"
+        },
+        "./*": "./dist/*"
     }
 }

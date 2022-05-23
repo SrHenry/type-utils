@@ -1,8 +1,10 @@
 .vscode
 .history
 node_modules
-/dist
-/types
+dist
+types
+umd
 .env
 **/*.draft.*
 **/*.draft
+yarn-error.log

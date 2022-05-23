@@ -1,20 +1,31 @@
-import { TypeOfTag } from "typescript"
-
-export namespace Generics
-{
-    export const Primitives = ["string", "number", "boolean", "symbol", "null", "undefined"] as const;
-    export const TypeOfTag = [...Primitives, "bigint", "object", "function"] as const;
-    export declare interface GenericObject<T = any> { [key: string]: T }
+export namespace Generics {
+    export const Primitives = [
+        'string',
+        'number',
+        'boolean',
+        'symbol',
+        'null',
+        'undefined',
+    ] as const
+    export const TypeOfTag = [...Primitives, 'bigint', 'object', 'function'] as const
+    export declare interface GenericObject<T = any> {
+        [key: string]: T
+    }
     export declare type PrimitiveType = string | number | boolean | symbol | null | undefined
-    export declare type Primitives = Extract<TypeOfTag, typeof Primitives[number]>
-    export declare type GetPrimitiveTag<T extends PrimitiveType> =
-        T extends string ? "string" :
-        T extends number ? "number" :
-        T extends boolean ? "boolean" :
-        T extends symbol ? "symbol" :
-        T extends null ? "null" :
-        T extends undefined ? "undefined" :
-        never
+    export declare type Primitives = Extract<typeof TypeOfTag[number], typeof Primitives[number]>
+    export declare type GetPrimitiveTag<T extends PrimitiveType> = T extends string
+        ? 'string'
+        : T extends number
+        ? 'number'
+        : T extends boolean
+        ? 'boolean'
+        : T extends symbol
+        ? 'symbol'
+        : T extends null
+        ? 'null'
+        : T extends undefined
+        ? 'undefined'
+        : never
     export declare type FinalType = FinalType[] | PrimitiveType
     export declare type IsFunction<T> = T extends Function ? T : never
     export declare type IsNotFunction<T> = T extends Function ? never : T
@@ -29,7 +40,11 @@ export namespace Generics
     export type FunctionProperties<T> = Pick<T, FunctionPropertyNames<T>>
     export type PropertyType<T, K extends keyof T> = T[K]
     export declare type Functionless<T> = Omit<T, FunctionPropertyNames<T>>
-    export declare type SafeProperty<T> = T extends FinalType ? T : T extends IsNotFunction<T> ? SafeJSON<T> : never
+    export declare type SafeProperty<T> = T extends FinalType
+        ? T
+        : T extends IsNotFunction<T>
+        ? SafeJSON<T>
+        : never
 
     declare type _NestedObjects<T> = {
         [P in keyof T]: T[P] extends object ? P : never
@@ -53,22 +68,20 @@ export namespace Generics
     export declare type SafeJSON<T> = OmitNever<NeveredType<T>>
     export type ExtractFunctions<T> = FunctionProperties<T>
 
-    export type UnionToIntersection<T> =
-        (T extends any ? (x: T) => any : never) extends
-        (x: infer R) => any ? R : never
+    export type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (
+        x: infer R
+    ) => any
+        ? R
+        : never
 
-    export function safeJSON<T = GenericObject>(obj: T): SafeJSON<T>
-    {
+    export function safeJSON<T = GenericObject>(obj: T): SafeJSON<T> {
         return JSON.parse(JSON.stringify(obj))
     }
 
-    export namespace V2
-    {
-        export function safeJSON<T = GenericObject>(obj: T): T & SafeJSON<T>
-        {
+    export namespace V2 {
+        export function safeJSON<T = GenericObject>(obj: T): T & SafeJSON<T> {
             return JSON.parse(JSON.stringify(obj))
         }
-
     }
 }
 

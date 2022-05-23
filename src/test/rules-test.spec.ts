@@ -8,14 +8,17 @@ import {
     TypeGuard,
     TypeGuardError,
 } from '../TypeGuards'
-import { Schema, Rules, Validators } from '../validators'
+import { Validators } from '../validators'
+import { regex } from '../rules/string'
+import { ArrayRules } from '../rules'
+import { object, string, array, number, optional, getStructMetadata } from '../schema'
 
-console.log(Schema.optional())
+console.log(optional())
 
-const schema = Schema.object({
-    ean: Schema.string([Rules.String.regex(/^[0-9]+$/)]),
-    sku: Schema.string([Rules.String.regex(/^LV[0-9]+EAN[0-9]+$/)]),
-    opc: Schema.optional().number(),
+const schema = object({
+    ean: string([regex(/^[0-9]+$/)]),
+    sku: string([regex(/^LV[0-9]+EAN[0-9]+$/)]),
+    opc: optional().number(),
 })
 
 const a = {
@@ -37,15 +40,15 @@ console.log(
     )
 )
 
-console.log('===', is(undefined, Schema.optional().object({})))
+console.log('===', is(undefined, optional().object({})))
 
 console.log('a', is(a, schema))
 console.log('b', is(b, schema))
 
-console.log('__optional__' in Schema.optional().number())
+console.log('__optional__' in optional().number())
 
 const isTypeError = (_: unknown): _ is TypeGuardError<typeof c, typeof _schema> =>
-    _ instanceof TypeGuardError && is(_, Schema.object({ checked: Schema.string() }))
+    _ instanceof TypeGuardError && is(_, object({ checked: string() }))
 
 try {
     ensureInterface(b, schema)
@@ -59,7 +62,7 @@ try {
 }
 
 const c = '2897 '
-const _schema = Schema.string([Rules.String.regex(/^[0-9]+$/)])
+const _schema = string([regex(/^[0-9]+$/)])
 
 console.log(c, is(c, _schema))
 
@@ -76,15 +79,15 @@ try {
 
 console.log(
     'test unique array',
-    is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], Schema.array([Rules.Array.unique()], Schema.number()))
+    is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], array([ArrayRules.unique()], number()))
 )
 console.log(
     'test unique array',
-    is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10], Schema.array([Rules.Array.unique()], Schema.number()))
+    is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10], array([ArrayRules.unique()], number()))
 )
 console.log(
     'test unique array',
-    is([{ a: 1 }, { b: { c: 0 } }, { a: 1, b: 0 }, { a: 2 }], Schema.array([Rules.Array.unique()]))
+    is([{ a: 1 }, { b: { c: 0 } }, { a: 1, b: 0 }, { a: 2 }], array([ArrayRules.unique()]))
 )
 
 const __metadata__ = Symbol('__metadata__')
@@ -93,33 +96,37 @@ const f1 = imprintMetadata(__metadata__, { a: 1 }, function () {
 })
 
 const _b = retrieveMetadata(__metadata__, f1)
-const _b2 = retrieveMetadata(__metadata__, f1, Schema.object({ a: Schema.number() }))
+const _b2 = retrieveMetadata(__metadata__, f1, object({ a: number() }))
 
 console.log('metadata', _b, _b2)
 
 const getMetadataOf = <T>(schema: TypeGuard<T>) =>
-    console.log('metadata of schema', Schema.getStructMetadata(schema))
+    console.log('metadata of schema', getStructMetadata(schema))
 
 getMetadataOf(_schema)
 getMetadataOf(schema)
 
-const EnvSchema = Schema.object({
-    AUTENTICADOR_URL: Schema.string(),
-    APP_PORT: Schema.number(),
+const EnvSchema = object({
+    AUTENTICADOR_URL: string(),
+    APP_PORT: number(),
 
-    JWT_SECRET: Schema.string(),
-    JWT_EXPIRES_IN: Schema.optional().number(),
+    JWT_SECRET: string(),
+    JWT_EXPIRES_IN: optional().number(),
 
-    JWT_REFRESH_SECRET: Schema.string(),
-    JWT_REFRESH_EXPIRES_IN: Schema.optional().number(),
+    JWT_REFRESH_SECRET: string(),
+    JWT_REFRESH_EXPIRES_IN: optional().number(),
 })
 
-const envSchemaTree = Schema.getStructMetadata(EnvSchema).tree
+const envSchemaMetadata = getStructMetadata(EnvSchema)
+
+if (!('tree' in envSchemaMetadata)) throw new Error('tree not found')
+
+const envSchemaTree = envSchemaMetadata.tree
 const envSchemaKeys = Object.keys(envSchemaTree) as (keyof typeof envSchemaTree)[]
 
-const preEnvSchema = Schema.object({
+const preEnvSchema = object({
     ...envSchemaKeys
-        .map(key => ({ [key]: Schema.optional().any() }))
+        .map(key => ({ [key]: optional().any() }))
         .reduce((acc, item) => Object.assign(acc, item), {}),
 }) as TypeGuard<
     Validators.Sanitize<{
@@ -157,19 +164,16 @@ const parsed = Object.entries(aaa)
     .map(([key, value]) => ({
         [key]: tryParse(
             value,
-            Schema.getStructMetadata(EnvSchema).tree[key as keyof typeof aaa]?.type as
-                | 'number'
-                | 'boolean'
-                | 'string'
+            envSchemaMetadata.tree[key as keyof typeof aaa]?.type as 'number' | 'boolean' | 'string'
         ),
     }))
     .reduce((acc, item) => Object.assign(acc, item), {})
 
 console.log(parsed)
 
-const aa = Schema.string('aaa')
+const aa = string('aaa')
 
 console.log(retrieveMessage(aa))
 
-console.log('generic object', Schema.object()({ a: 1, b: 2 }))
-console.log('blank object', Schema.object({})({ a: 1, b: 2 }), Schema.object({})({ a: 1, b: 2 }))
+console.log('generic object', object()({ a: 1, b: 2 }))
+console.log('blank object', object({})({ a: 1, b: 2 }), object({})({ a: 1, b: 2 }))

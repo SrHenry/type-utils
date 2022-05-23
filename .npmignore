@@ -6,3 +6,5 @@ docs/**
 .env
 **/*.draft.*
 **/*.draft
+./src/test/rules-test.*.spec.ts
+./src/test/rules-test.spec.ts
