@@ -1,4 +1,4 @@
-import { ArrayRules } from '../../validators/Rules'
+import { ArrayRules } from '../../validators/rules'
 
 export { ArrayRules }
 

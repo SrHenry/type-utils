@@ -1,1 +1,1 @@
-export * from '../validators/Schema'
+export * from '../validators/schema'

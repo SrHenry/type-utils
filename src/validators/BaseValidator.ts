@@ -26,11 +26,11 @@ export abstract class BaseValidator {
 
         for (const key of required) {
             if (!(key in o))
-                throw new TypeGuardError(`Missing required key ${key}`, o, validators[key])
+                throw new TypeGuardError(`Missing required key ${String(key)}`, o, validators[key])
 
             if (!validators[key](o[key as keyof typeof o]))
                 throw new TypeGuardError(
-                    `Invalid value for key ${key}`,
+                    `Invalid value for key ${String(key)}`,
                     o[key as keyof typeof o],
                     validators[key]
                 )
@@ -39,7 +39,7 @@ export abstract class BaseValidator {
             if (key in o) {
                 if (!validators[key](o[key as keyof typeof o]))
                     throw new TypeGuardError(
-                        `Invalid value for key ${key}`,
+                        `Invalid value for key ${String(key)}`,
                         o[key as keyof typeof o],
                         validators[key]
                     )

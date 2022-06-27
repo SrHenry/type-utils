@@ -1,4 +1,4 @@
-import { StringRules } from '../../validators/Rules'
+import { StringRules } from '../../validators/rules'
 
 export { StringRules }
 

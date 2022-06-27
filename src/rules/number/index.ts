@@ -1,4 +1,4 @@
-import { NumberRules } from '../../validators/Rules'
+import { NumberRules } from '../../validators/rules'
 
 export { NumberRules }
 

@@ -9,5 +9,5 @@ export namespace Experimental {
     // export { SchemaValidator }
 }
 
-export * from './Rules'
-export * from './Schema'
+export * from './rules'
+export * from './schema'
