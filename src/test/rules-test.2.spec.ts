@@ -227,8 +227,8 @@ console.log(object({ schema, array: array({ schema }) }))
 const sku = new SchemaValidator(
     object({ schema, object: object({ array: array({ schema }) }) })
 ).validate({
-    schema: a,
-    object: { array: [{ schema: a }, { schema: a }, { schema: a }] },
+    schema: b,
+    object: { array: [{ schema: a }, { schema: b }, { schema: a }] },
 })
 // const sku = new SchemaValidator(object({ a: object({ b: object({ schema }) }) })).validate({
 //     a: { b: { schema: b } },
