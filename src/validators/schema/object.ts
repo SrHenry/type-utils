@@ -1,3 +1,5 @@
+import { getMessage } from '../../TypeGuards/GenericTypeGuards'
+import { BaseValidator } from '../BaseValidator'
 import {
     branchIfOptional,
     enpipeRuleMessageIntoGuard,
@@ -5,12 +7,10 @@ import {
     getStructMetadata,
     _hasOptionalProp,
 } from './helpers'
-import { BaseValidator } from '../BaseValidator'
-import { getMessage } from '../../TypeGuards/GenericTypeGuards'
 
 import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
-import type { ObjectStruct } from './types'
 import type { Sanitize, ValidatorArgs, ValidatorMap } from '../Validators'
+import type { ObjectStruct } from './types'
 
 export function object<T>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
 export function object(): TypeGuard<Record<any, any>>
@@ -43,7 +43,10 @@ export function object<T>(
     const message =
         '{ ' +
         Object.entries(tree)
-            .map(([k, v]) => `${k}${optional.some(key => key === k) ? '?' : ''}: ${getMessage(v)}`)
+            .map(
+                ([k, v]) =>
+                    `${String(k)}${optional.some(key => key === k) ? '?' : ''}: ${getMessage(v)}`
+            )
             .join(', ') +
         ' }'
 

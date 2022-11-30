@@ -1,13 +1,13 @@
-import { enpipeSchemaStructIntoGuard, getStructMetadata, setOptionalFlag } from './helpers'
 import { getMessage, setMessage } from '../../TypeGuards/GenericTypeGuards'
 import { getRule } from '../rules/helpers'
+import { enpipeSchemaStructIntoGuard, getStructMetadata, setOptionalFlag } from './helpers'
 
-import type { OptionalizeTypeGuardClosure, TypeGuardClosure } from './types'
-import type { GetTypeGuard, TypeGuard } from '../../TypeGuards/GenericTypeGuards'
 import type { Generics } from '../../Generics'
-import type { StringRules as StringRules } from '../rules/String'
-import type { ArrayRules as ArrayRules } from '../rules/Array'
+import type { GetTypeGuard, TypeGuard } from '../../TypeGuards/GenericTypeGuards'
+import type { ArrayRules } from '../rules/Array'
+import type { StringRules } from '../rules/String'
 import type { Sanitize, ValidatorMap } from '../Validators'
+import type { OptionalizeTypeGuardClosure, TypeGuardClosure } from './types'
 
 export * from './and'
 export * from './any'
@@ -16,6 +16,7 @@ export * from './asEnum'
 export * from './asNull'
 export * from './asUndefined'
 export * from './boolean'
+export { hasOptionalFlag } from './helpers'
 export * from './number'
 export * from './object'
 export * from './or'
@@ -24,8 +25,7 @@ export * from './string'
 export * from './symbol'
 export * from './types'
 export * from './useSchema'
-
-export { hasOptionalFlag } from './helpers'
+export { getStructMetadata }
 
 import { and } from './and'
 import { any } from './any'
@@ -60,8 +60,6 @@ export const Schema = {
     optional,
     getStructMetadata,
 }
-
-export { getStructMetadata }
 
 type Optionalize<T> = {
     [K in keyof T]: T[K] extends () => TypeGuard<any | any[]>
@@ -171,18 +169,15 @@ export function optional(): optionalCircular {
             )
         }
 
+    type SchemaEntry = [
+        Exclude<keyof typeof Schema, 'optional' | 'getStructMetadata'>,
+        Exclude<typeof Schema[keyof typeof Schema], typeof optional | typeof getStructMetadata>
+    ]
     return Array.from(Object.entries(Schema))
-        .filter(
-            (
-                entry
-            ): entry is [
-                string,
-                Exclude<typeof entry[1], typeof optional | typeof getStructMetadata>
-            ] => {
-                const [, exported] = entry
-                return exported !== optional && exported !== getStructMetadata
-            }
-        )
+        .filter<SchemaEntry>((entry): entry is SchemaEntry => {
+            const [, exported] = entry
+            return exported !== optional && exported !== getStructMetadata
+        })
         .reduce<optionalCircular>(
             (obj, [key, exp]) =>
                 Object.assign(obj, { [key]: wrapOptional(exp) }) as optionalCircular,

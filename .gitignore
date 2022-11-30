@@ -3,6 +3,7 @@
 node_modules
 dist
 types
+!src/types
 umd
 .env
 **/*.draft.*
