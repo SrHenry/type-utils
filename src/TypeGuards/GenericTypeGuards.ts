@@ -1,6 +1,8 @@
+import 'reflect-metadata'
 import { isFunction } from '../helpers'
 import { GetOptional } from '../types/GetOptional'
 import { GetRequired } from '../types/GetRequired'
+import { MessageFormator } from '../validators/rules/types'
 import { TypeGuardError } from './TypeErrors'
 
 export type ConstructorSignature<T = any> = new (...args: any[]) => T
@@ -44,16 +46,17 @@ export function ensureInterface<Interface, Instance = unknown>(
 ): Interface
 export function ensureInterface<Interface, Instance = unknown>(
     value: Instance,
-    validator: ((value: unknown) => boolean) & { __message__?: string }
+    validator: (value: unknown) => boolean
 ): Interface {
     if (!(validator as TypeGuard<Interface>)(value)) {
         let message = `Failed while ensuring interface type constraint of ${JSON.stringify(
             value
         )} against ${JSON.stringify(validator)}`
-        if ('__message__' in validator)
+
+        if (hasMessage(validator))
             message = `Failed while ensuring interface type constraint of ${JSON.stringify(
                 value
-            )} against ${JSON.stringify(validator['__message__'])}`
+            )} against ${getMessage(validator)}`
 
         throw new TypeGuardError(message, value, validator)
     }
@@ -120,16 +123,22 @@ namespace Promisify {
 export const ensureInterfaceAsync = Promisify.ensureInterface
 export const ensureInstanceOfAsync = Promisify.ensureInstanceOf
 
-export const hasMetadata = <K extends string | symbol, T = unknown>(
-    key: K,
-    from: T
-): from is T & Record<K, unknown> => {
-    //@ts-ignore
-    return key in from && from[key] !== void 0 && from[key] !== null
+export function hasMetadata<K extends string | symbol, T>(key: K, from: T): boolean
+export function hasMetadata<K extends string | symbol>(key: K, from: Object): boolean {
+    try {
+        return Reflect.hasMetadata(key, from)
+    } catch {
+        return false
+    }
 }
 
-export const imprintMetadata = <T, U>(key: string | symbol, metadata: T, into: U): U => {
-    return Object.assign(into, { [key]: metadata })
+export function imprintMetadata<U>(key: string | symbol, metadata: unknown, into: U): U
+export function imprintMetadata(key: string | symbol, metadata: unknown, into: Object): Object {
+    try {
+        Reflect.defineMetadata(key, metadata, into)
+    } finally {
+        return into
+    }
 }
 
 export function retrieveMetadata<T extends string | symbol, U>(key: T, from: U): any | undefined
@@ -139,17 +148,17 @@ export function retrieveMetadata<T extends string | symbol, U, V extends TypeGua
     metadataSchema: V
 ): GetTypeGuard<V> | undefined
 
-export function retrieveMetadata<T, U extends string | symbol, V extends TypeGuard>(
-    key: U,
-    from: T,
-    metadataSchema?: V
-): GetTypeGuard<V> | (T & Record<U, unknown>) | undefined {
-    const guard = (arg: any): arg is { [K in U]: GetTypeGuard<V> } =>
-        hasMetadata(key, arg) && (metadataSchema?.(arg[key]) ?? true)
-
+export function retrieveMetadata(
+    key: string | symbol,
+    from: Object,
+    metadataSchema?: TypeGuard
+): unknown | undefined {
     try {
-        const { [key]: __metadata__ } = ensureInterface(from, guard)
-        return __metadata__
+        const metadata = Reflect.getMetadata(key, from)
+
+        if (isTypeGuard(metadataSchema) && !metadataSchema(metadata)) return void 0
+
+        return metadata
     } catch {
         return void 0
     }
@@ -159,45 +168,86 @@ export function retrieveMetadata<T, U extends string | symbol, V extends TypeGua
 export const getMetadata = retrieveMetadata
 export const setMetadata = imprintMetadata
 
-export const imprintMessage = <T>(message: string, arg: T): T => {
-    return Object.assign(arg, { __message__: message })
-}
-export const retrieveMessage = <T>(arg: T): string => {
-    const hasMessage = (arg: any): arg is { __message__?: string } =>
-        arg && '__message__' in arg && typeof arg['__message__'] === 'string'
+const __message__ = Symbol('__message__')
 
-    try {
-        const { __message__ } = ensureInterface(arg, hasMessage)
-        return String(__message__)
-    } catch {
-        return ''
-    }
-}
+export const hasMessage = (value: unknown) => hasMetadata(__message__, value)
+export const imprintMessage = <T extends Object>(message: string, arg: T): T =>
+    setMetadata(__message__, String(message), arg)
+
+export const retrieveMessage = <T>(arg: T): string => getMetadata(__message__, arg) ?? ''
 
 //Aliases
 export const getMessage = retrieveMessage
 export const setMessage = imprintMessage
 
-export const imprintMessageFormator = <T>(formator: (...args: any[]) => string, arg: T): T => {
-    return Object.assign(arg, { __message_formator__: formator })
-}
-export const retrieveMessageFormator = <T>(arg: T) => {
-    const hasMessageFormator = (
-        arg: any
-    ): arg is { __message_formator__?(...args: any[]): string } =>
-        arg && '__message_formator__' in arg && typeof arg['__message_formator__'] === 'function'
+const __message_formator__ = Symbol('__message_formator__')
+const defaultMessageFormator = () => '' as const
 
-    try {
-        const { __message_formator__ } = ensureInterface(arg, hasMessageFormator)
-        return __message_formator__ ?? (() => '')
-    } catch {
-        return () => ''
-    }
-}
+export const imprintMessageFormator = <T>(formator: (...args: any[]) => string, arg: T): T =>
+    setMetadata(__message_formator__, formator, arg)
+
+export const retrieveMessageFormator = <T>(arg: T) =>
+    getMetadata(__message_formator__, arg) ?? defaultMessageFormator
 
 // Aliases
 export const getMessageFormator = retrieveMessageFormator
 export const setMessageFormator = imprintMessageFormator
+
+const __validator_message__ = Symbol('__validator_message__')
+const __validator_message_formator__ = Symbol('__validator_message_formator__')
+
+export function hasValidatorMessage(value: unknown): boolean {
+    return hasMetadata(__validator_message__, value)
+}
+
+export function getValidatorMessage(from: unknown): string | undefined
+export function getValidatorMessage<T>(from: unknown, defaultValue: T): string | T
+
+export function getValidatorMessage<T>(from: unknown, defaultValue?: T): string | T | undefined {
+    return (
+        getMetadata(
+            __validator_message__,
+            from,
+            (arg => typeof arg === 'string') as TypeGuard<string>
+        ) ?? defaultValue
+    )
+}
+export const setValidatorMessage = <T>(message: string, arg: T): T =>
+    setMetadata(__validator_message__, message, arg)
+
+export function hasValidatorMessageFormator(value: unknown): boolean {
+    return hasMetadata(__validator_message_formator__, value)
+}
+
+export function getValidatorMessageFormator(from: unknown): MessageFormator | undefined
+export function getValidatorMessageFormator<T>(
+    from: unknown,
+    defaultFormator: T
+): MessageFormator | T
+export function getValidatorMessageFormator<T>(
+    from: unknown,
+    defaultFormator?: T
+): MessageFormator | T | undefined {
+    return (
+        getMetadata(
+            __validator_message_formator__,
+            from,
+            (arg => typeof arg === 'function' && arg()) as TypeGuard<MessageFormator>
+        ) ?? defaultFormator
+    )
+}
+
+export function setValidatorMessageFormator<T, MF extends MessageFormator>(
+    messageFormator: MF,
+    arg: T
+): T
+export function setValidatorMessageFormator<T, MF extends MessageFormator>(
+    messageFormator: MF,
+    arg: T
+): T
+export function setValidatorMessageFormator<T>(messageFormator: MessageFormator, arg: T): T {
+    return setMetadata(__validator_message_formator__, messageFormator, arg)
+}
 
 export const isTypeGuard = <T = any>(value: unknown): value is TypeGuard<T> =>
     isFunction(value) && typeof value(void 0) === 'boolean'
