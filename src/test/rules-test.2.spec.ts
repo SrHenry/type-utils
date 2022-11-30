@@ -237,7 +237,7 @@ const sku = new SchemaValidator(
 
 if (sku instanceof ValidationError) {
     console.error('An error has been found')
-    console.error(`[${sku.propName}] - ${sku.message}`)
+    console.error(`[${sku.path}] - ${sku.message}`)
 } else if (
     is(
         sku,
@@ -248,7 +248,7 @@ if (sku instanceof ValidationError) {
 ) {
     const [...errors] = sku
     console.error('Many errors has been found!')
-    errors.forEach(err => console.error('\n', `[${err.propName}] - ${err.message}`, '\n'))
+    errors.forEach(err => console.error('\n', `[${err.path}] - ${err.message}`, '\n'))
 } else {
     console.log('SKU validated!', sku)
 }
