@@ -1,5 +1,5 @@
 import { TypeOfTag } from 'typescript'
-import { TypeGuard, TypeGuardError } from '../TypeGuards'
+import { setValidatorMessageFormator, TypeGuard, TypeGuardError } from '../TypeGuards'
 
 export type ValidationArgs<Value, Schema, Name extends string = string, Parent = any> = {
     value: Value
@@ -12,10 +12,10 @@ export type ValidationArgs<Value, Schema, Name extends string = string, Parent =
 export class ValidationError<
     Value,
     Schema,
-    Name extends string = string,
+    Path extends string = string,
     Parent = any
 > extends TypeGuardError<Value, TypeGuard<Schema>> {
-    private Name?: Name
+    private Path?: Path
     private Parent?: Parent
 
     constructor({
@@ -24,15 +24,20 @@ export class ValidationError<
         value,
         name,
         parent,
-    }: ValidationArgs<Value, Schema, Name, Parent>) {
+    }: ValidationArgs<Value, Schema, Path, Parent>) {
         super(message, value, schema)
 
-        this.Name = name
+        this.Path = name
         this.Parent = parent
+
+        setValidatorMessageFormator(
+            (path: string, message: string) => `[${path}] - ${message}`,
+            this
+        )
     }
 
-    public get propName(): Name | undefined {
-        return this.Name
+    public get path(): Path | undefined {
+        return this.Path
     }
 
     public get parent(): Parent | undefined {
@@ -40,7 +45,9 @@ export class ValidationError<
     }
 }
 
-export class ValidationErrors<T extends ValidationError<any, any>[]> {
+export class ValidationErrors<
+    T extends ValidationError<any, any>[] = ValidationError<unknown, unknown>[]
+> {
     public constructor(public readonly errors: T) {}
 
     [Symbol.iterator]() {
