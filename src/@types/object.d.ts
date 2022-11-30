@@ -1,4 +1,4 @@
-declare type ObjectKeys<T> = T extends object
+type ObjectKeys<T> = T extends object
     ? (keyof T)[]
     : T extends number
     ? []
@@ -6,6 +6,13 @@ declare type ObjectKeys<T> = T extends object
     ? string[]
     : never
 
-declare interface ObjectConstructor {
-    keys<T>(o: T): ObjectKeys<T>
+type Fallback<T, TO, Includes = never> = T extends never | Includes ? TO : T
+
+interface ObjectConstructor {
+    keys<T>(o: T): Fallback<ObjectKeys<T>, string[], never[]>
+    entries<T extends object>(o: T): [keyof T, T[keyof T]][]
+    entries<T>(o: ArrayLike<T>): [string, T][]
+    values<T>(o: T): T[keyof T][]
 }
+
+declare const Object: ObjectConstructor
