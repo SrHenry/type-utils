@@ -22,32 +22,49 @@ export type StaticValidators<T> = {
     [P in keyof T]-?: TypeGuard<T[P]>
 }
 
-export function isInstanceOf<Constructor extends ConstructorSignature>(
-    type: Constructor
-): <Instance>(value: Instance) => value is InstanceType<Constructor>
+const __curry_param__ = Symbol('design:curry_param')
+
 export function isInstanceOf<Instance, Constructor extends ConstructorSignature>(
     value: Instance,
     type: Constructor
 ): value is InstanceType<Constructor>
+export function isInstanceOf<Constructor extends ConstructorSignature>(
+    type: Constructor
+): <Instance>(value: Instance) => value is InstanceType<Constructor>
 
 export function isInstanceOf<Instance, Constructor extends ConstructorSignature>(
     value_or_type: Instance | Constructor,
-    type?: Constructor
+    type: Constructor | symbol = __curry_param__
 ): (<Instance>(value: Instance) => value is InstanceType<Constructor>) | boolean {
-    if (type) return value_or_type instanceof type
+    if (type === __curry_param__)
+        return (value: unknown): value is InstanceType<Constructor> =>
+            isInstanceOf(value, <Constructor>value_or_type)
 
-    return (value: unknown): value is InstanceType<Constructor> =>
-        value instanceof (value_or_type as Constructor)
+    return value_or_type instanceof <Constructor>type
 }
 
 export function ensureInterface<Interface, Instance = unknown>(
     value: Instance,
     validator: TypeGuard<Interface>
 ): Interface
+export function ensureInterface<Interface>(
+    validator: TypeGuard<Interface>
+): <Instance = unknown>(value: Instance) => Interface
+
 export function ensureInterface<Interface, Instance = unknown>(
-    value: Instance,
-    validator: (value: unknown) => boolean
-): Interface {
+    value: Instance | ((value: unknown) => boolean),
+    validator: ((value: unknown) => boolean) | symbol = __curry_param__
+): Interface | ((value: Instance) => Interface) {
+    if (validator === __curry_param__)
+        return (_: Instance): Interface => ensureInterface(_, value as TypeGuard)
+
+    if (!isTypeGuard(validator))
+        throw new TypeGuardError(
+            'Invalid validator. must be a TypeGuard (function as predicate).',
+            validator,
+            isTypeGuard
+        )
+
     if (!(validator as TypeGuard<Interface>)(value)) {
         let message = `Failed while ensuring interface type constraint of ${JSON.stringify(
             value
@@ -80,51 +97,36 @@ export function is<Interface>(
 export function ensureInstanceOf<Instance, Constructor extends ConstructorSignature>(
     value: Instance,
     type: Constructor
-): InstanceType<Constructor> {
-    if (!isInstanceOf(value, type))
-        throw new TypeGuardError(`Value is not an instance of ${type.name}`, value, type)
+): InstanceType<Constructor>
+export function ensureInstanceOf<Constructor extends ConstructorSignature>(
+    type: Constructor
+): <Instance>(value: Instance) => InstanceType<Constructor>
+
+export function ensureInstanceOf<Instance, Constructor extends ConstructorSignature>(
+    value: Instance | Constructor,
+    type: Constructor | symbol = __curry_param__
+): InstanceType<Constructor> | ((value: Instance) => InstanceType<Constructor>) {
+    if (type === __curry_param__)
+        return (_: Instance): InstanceType<Constructor> => ensureInstanceOf(_, <Constructor>value)
+
+    if (!isInstanceOf(value, <Constructor>type))
+        throw new TypeGuardError(
+            `Value is not an instance of ${(<Constructor>type).name}`,
+            value,
+            type
+        )
+
     return value
 }
 
-namespace Promisify {
-    export async function ensureInterface<Interface, Instance = unknown>(
-        value: Instance,
-        validator: TypeGuard<Interface>
-    ): Promise<Interface>
-    export async function ensureInterface<Interface, Instance = unknown>(
-        value: Instance,
-        validator: (value: unknown) => boolean
-    ): Promise<Interface>
-
-    export async function ensureInterface<Interface, Instance = unknown>(
-        value: Instance,
-        validator: (value: unknown) => boolean | Promise<boolean>
-    ): Promise<Interface> {
-        if (!(validator as TypeGuard<Interface>)(value))
-            throw new TypeGuardError(
-                'Failed while ensuring interface type constraint',
-                value,
-                validator
-            )
-
-        return value
-    }
-
-    export async function ensureInstanceOf<Instance, Constructor extends ConstructorSignature>(
-        value: Instance,
-        type: Constructor
-    ): Promise<InstanceType<Constructor>> {
-        if (!isInstanceOf(value, type))
-            throw new TypeGuardError(`Value is not an instance of ${type.name}`, value, type)
-        return value
-    }
-}
-
-export const ensureInterfaceAsync = Promisify.ensureInterface
-export const ensureInstanceOfAsync = Promisify.ensureInstanceOf
-
 export function hasMetadata<K extends string | symbol, T>(key: K, from: T): boolean
-export function hasMetadata<K extends string | symbol>(key: K, from: Object): boolean {
+export function hasMetadata<K extends string | symbol>(key: K): <T>(from: T) => boolean
+export function hasMetadata<K extends string | symbol, T>(
+    key: K,
+    from: Object | symbol = __curry_param__
+): boolean | ((from: T) => boolean) {
+    if (from === __curry_param__) return (from: T): boolean => hasMetadata(key, from)
+
     try {
         return Reflect.hasMetadata(key, from)
     } catch {
@@ -133,7 +135,31 @@ export function hasMetadata<K extends string | symbol>(key: K, from: Object): bo
 }
 
 export function imprintMetadata<U>(key: string | symbol, metadata: unknown, into: U): U
-export function imprintMetadata(key: string | symbol, metadata: unknown, into: Object): Object {
+export function imprintMetadata(key: string | symbol, metadata: unknown): <U>(into: U) => U
+export function imprintMetadata(key: string | symbol): {
+    <U>(metadata: unknown, into: U): U
+    <U>(metadata: unknown): (into: U) => U
+}
+// export function imprintMetadata(key: string | symbol): <U>(metadata: unknown, into: U) => U
+// export function imprintMetadata(key: string | symbol): (metadata: unknown) => <U>(into: U) => U
+
+export function imprintMetadata(
+    key: string | symbol,
+    metadata: unknown | symbol = __curry_param__,
+    into: Object | Symbol = __curry_param__
+): Object {
+    if (into === __curry_param__) {
+        if (metadata === __curry_param__)
+            return (metadata: unknown, into: Object | symbol = __curry_param__) => {
+                if (into === __curry_param__)
+                    return (into: Object) => imprintMetadata(key, metadata, into)
+
+                return imprintMetadata(key, metadata, into)
+            }
+
+        return (into: Object): Object => imprintMetadata(key, metadata, into)
+    }
+
     try {
         Reflect.defineMetadata(key, metadata, into)
     } finally {
@@ -145,18 +171,33 @@ export function retrieveMetadata<T extends string | symbol, U>(key: T, from: U):
 export function retrieveMetadata<T extends string | symbol, U, V extends TypeGuard>(
     key: T,
     from: U,
-    metadataSchema: V
+    schema: V
+): GetTypeGuard<V> | undefined
+export function retrieveMetadata<T extends string | symbol>(
+    key: T
+): {
+    <U>(from: U): any | undefined
+    <U, V extends TypeGuard>(from: U, schema: V): any | undefined
+}
+
+export function retrieveMetadata<T extends string | symbol, U, V extends TypeGuard>(
+    key: T,
+    from?: U,
+    schema?: V
 ): GetTypeGuard<V> | undefined
 
 export function retrieveMetadata(
     key: string | symbol,
-    from: Object,
-    metadataSchema?: TypeGuard
+    from: Object | symbol = __curry_param__,
+    schema?: TypeGuard
 ): unknown | undefined {
+    if (from === __curry_param__)
+        return (from: Object, schema?: TypeGuard): unknown => retrieveMetadata(key, from, schema)
+
     try {
         const metadata = Reflect.getMetadata(key, from)
 
-        if (isTypeGuard(metadataSchema) && !metadataSchema(metadata)) return void 0
+        if (isTypeGuard(schema) && !schema(metadata)) return void 0
 
         return metadata
     } catch {
@@ -171,8 +212,17 @@ export const setMetadata = imprintMetadata
 const __message__ = Symbol('__message__')
 
 export const hasMessage = (value: unknown) => hasMetadata(__message__, value)
-export const imprintMessage = <T extends Object>(message: string, arg: T): T =>
-    setMetadata(__message__, String(message), arg)
+
+export function imprintMessage(message: string): <T extends Object>(into: T) => T
+export function imprintMessage<T extends Object>(message: string, into: T): T
+export function imprintMessage<T extends Object>(
+    message: string,
+    arg: T | symbol = __curry_param__
+) {
+    if (arg === __curry_param__) return (arg: T): T => imprintMessage(message, arg)
+
+    return setMetadata(__message__, String(message), arg)
+}
 
 export const retrieveMessage = <T>(arg: T): string => getMetadata(__message__, arg) ?? ''
 
