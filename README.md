@@ -19,11 +19,12 @@
 
 -   [Installing](#installing)
 -   [Docs](#docs)
+-   [Experimental Features](#experimental)
 
 <br/>
 <br/>
 
-## <span id="installing"> **Installing** </span>
+# <span id="installing"> **Installing** </span>
 
 ```bash
 npm install @srhenry/type-utils --save
@@ -39,11 +40,11 @@ npm run build
 
 <br/>
 
-## <span id="docs"> **Docs** </span>
+# <span id="docs"> **Docs** </span>
 
 > -   [API - Github Pages](https://srhenry.github.io/type-utils)
 
-### Schema types
+### **Schema types**
 
 > `Schema.string`
 >
@@ -434,4 +435,36 @@ npm run build
 > } else {
 >   // obj don't have a `foo` property of type string
 > }
+> ```
+
+# <span id="experimental"> **Experimental Features** </span>
+
+## **Deep validation**
+
+<span hidden="hidden">TODO: finish explain Experimental new stuff </span>
+
+This is intended for partial assertions in schemas, fetching all violations against the schema, like other specialized tools does (yup, joi, etc). Common use cases are in form validations and payload validations, in order to give feedback of where the data is wrong by schema.
+
+> Ex.:
+>
+> ```ts
+> import {
+>     Experimental,
+>     object,
+>     string,
+>     StringRules,
+>     setValidatorMessage,
+> } from '@srhenry/type-utils'
+>
+> const { Validator, ValidationErrors } = Experimental
+>
+> /** RFC 2822: Standard email validation, in your code you can use third party libs who already can check it, and you can link with this lib using useSchema or just writing a type guard and passing the guard to schema */
+> const emailRegex =
+>     /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
+>
+> const schema = object({
+>     name: setValidatorMessage('name is required', string()),
+>     email: setValidatorMessage('email is required', string(emailRegex)),
+>     password: string([StringRules.min(6)]),
+> })
 > ```

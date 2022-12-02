@@ -9,3 +9,4 @@ umd
 **/*.draft.*
 **/*.draft
 yarn-error.log
+coverage
