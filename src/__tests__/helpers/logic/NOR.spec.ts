@@ -1,5 +1,6 @@
-import { LARGE_ARRAY_SIZE } from '..'
 import { NOR } from '../../../helpers'
+
+const LARGE_ARRAY_SIZE = 10000
 
 describe('NOR', () => {
     it('should return false if any value is true', () => {

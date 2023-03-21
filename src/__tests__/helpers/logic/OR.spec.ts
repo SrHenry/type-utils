@@ -1,5 +1,6 @@
-import { LARGE_ARRAY_SIZE } from '..'
 import { OR } from '../../../helpers'
+
+const LARGE_ARRAY_SIZE = 10000
 
 describe('OR', () => {
     it('should return true if any value is true', () => {

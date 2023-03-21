@@ -1,5 +1,6 @@
-import { LARGE_ARRAY_SIZE } from '..'
 import { XNOR } from '../../../helpers'
+
+const LARGE_ARRAY_SIZE = 10000
 
 describe('XNOR', () => {
     it('should return true if two or more values are true or all values are false', () => {

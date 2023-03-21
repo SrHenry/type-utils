@@ -1,5 +1,6 @@
-import { LARGE_ARRAY_SIZE } from '..'
 import { NAND } from '../../../helpers'
+
+const LARGE_ARRAY_SIZE = 10000
 
 describe('NAND', () => {
     it('should return false if all values are true', () => {

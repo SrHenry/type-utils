@@ -1,5 +1,6 @@
-import { LARGE_ARRAY_SIZE } from '..'
 import { XOR } from '../../../helpers'
+
+const LARGE_ARRAY_SIZE = 10000
 
 describe('XOR', () => {
     it('should return true if exactly one value is true', () => {
