@@ -1,3 +1,5 @@
+import { GetTypeGuard } from '../TypeGuards'
+
 export * from './GetOptional'
 export * from './GetRequired'
 
@@ -27,3 +29,5 @@ export type Merge<L, R> = [L, R] extends [any, Function]
 export type Spread<A extends readonly [...any]> = A extends [infer L, ...infer R]
     ? MergeObjects<L, Spread<R>>
     : unknown
+
+export type Infer<T> = GetTypeGuard<T>
