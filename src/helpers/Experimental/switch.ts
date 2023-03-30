@@ -17,7 +17,7 @@ interface ICase<TSwitchArg, TSwitchResultAggregate = never> extends CallableFunc
         ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
     <TMatch extends TSwitchArg, TResult>(
         predicate: TypeGuard<TMatch>,
-        result: Func0<TResult>
+        result: Func1<TMatch, TResult>
     ): Lambda0<TSwitchResultAggregate | TResult> &
         ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
     <TMatch extends TSwitchArg, TResult>(predicate: Predicate<TMatch>, result: TResult): Lambda0<
@@ -47,7 +47,7 @@ interface IStaticCase<TSwitchArg, TSwitchResultAggregate = never> extends Callab
         IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
     <TMatch extends TSwitchArg, TResult>(
         predicate: TypeGuard<TMatch>,
-        result: Func0<TResult>
+        result: Func1<TMatch, TResult>
     ): Lambda<[arg: TSwitchArg], TSwitchResultAggregate | TResult> &
         IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
     <TMatch extends TSwitchArg, TResult>(predicate: Predicate<TMatch>, result: TResult): Lambda<
@@ -126,7 +126,7 @@ function __switch__(
 
             const result = results[i]
 
-            return typeof result === 'function' ? result() : result
+            return typeof result === 'function' ? result(arg) : result
         }
 
         return lambda(arg === $$switch_no_initial_arg$$ ? defaultFn : () => defaultFn(arg))
@@ -141,7 +141,7 @@ function __switch__(
 
         const result = results[i]
 
-        return typeof result === 'function' ? result() : result
+        return typeof result === 'function' ? result(arg) : result
     }
 
     const λ = arg === $$switch_no_initial_arg$$ ? lambda(caseFn) : lambda(() => caseFn(arg))
