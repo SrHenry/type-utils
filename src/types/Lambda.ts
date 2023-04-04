@@ -1,4 +1,6 @@
+import { TypeGuard } from '../TypeGuards'
 import type { Func } from './Func'
+import { MergeObjects } from './index'
 
 export type NoParamsLambda<ReturnType = void> = Lambda<[], ReturnType>
 export type Lambda0<ReturnType = void> = NoParamsLambda<ReturnType>
@@ -59,19 +61,136 @@ export type Lambda5<
     ReturnType = void
 > = FiveParamsLambda<Param1, Param2, Param3, Param4, Param5, ReturnType>
 
-interface ILambda<Params extends any[] = [], ReturnType = void> {
-    invoke: (...args: Params) => ReturnType
+type CurriedLambdaLoop<
+    TParams extends any[],
+    TReturnType,
+    spread extends boolean = false
+> = TParams extends [infer TParam0, ...infer TRestParams]
+    ? TRestParams extends []
+        ? AsUncurryableLambda<CurryStepFunc<[TParam0], TReturnType>>
+        : AsUncurryableLambda<
+              spread extends true
+                  ? _SpreadTParams<TParams, TReturnType>
+                  : CurryStepFunc<[TParam0], CurriedLambdaLoop<TRestParams, TReturnType>>
+          >
+    : never
+
+type CurriedFuncLoop<
+    TParams extends any[],
+    TReturnType,
+    spread extends boolean = false
+> = TParams extends [infer TParam0, ...infer TRestParams]
+    ? TRestParams extends []
+        ? CurryStepFunc<[TParam0], TReturnType>
+        : spread extends true
+        ? _SpreadTParams<TParams, TReturnType, [], false>
+        : CurryStepFunc<[TParam0], CurriedFuncLoop<TRestParams, TReturnType>>
+    : never
+
+type _SpreadTParams<
+    TParams extends any[],
+    TReturn,
+    TConsumedParams extends any[] = [],
+    TIsLambda extends boolean = true
+> = TParams extends [infer TParam0, ...infer TRestParams]
+    ? TRestParams extends []
+        ? CurryStepFunc<[...TConsumedParams, TParam0], TReturn>
+        : CurryStepFunc<
+              [...TConsumedParams, TParam0],
+              TIsLambda extends true
+                  ? CurriedLambdaLoop<TRestParams, TReturn, true>
+                  : CurriedFuncLoop<TRestParams, TReturn, true>
+          > &
+              _SpreadTParams<TRestParams, TReturn, [...TConsumedParams, TParam0]>
+    : { (): TReturn }
+
+type CurryStepFunc<TParams extends any[], TReturn> = TParams extends []
+    ? { (): TReturn }
+    : {
+          (...args: TParams): TReturn
+          (): CurryStepFunc<TParams, TReturn>
+      }
+
+export type CurriedLambda<
+    TLambda extends Func<any[], any>,
+    partialApply extends boolean = false
+> = TLambda extends Func<infer TParams, infer TReturn>
+    ? TParams extends [infer TParam0, ...infer TRestParams]
+        ? TRestParams extends []
+            ? TParam0 extends never
+                ? AsUncurryableLambda<CurryStepFunc<[], TReturn>>
+                : AsUncurryableLambda<CurryStepFunc<[TParam0], TReturn>>
+            : AsUncurryableLambda<
+                  partialApply extends true
+                      ? _SpreadTParams<TParams, TReturn>
+                      : CurryStepFunc<[TParam0], CurriedLambdaLoop<TRestParams, TReturn>>
+              >
+        : TParams extends []
+        ? AsUncurryableLambda<CurryStepFunc<[], TReturn>>
+        : never
+    : never
+
+export type CurriedFunc<
+    TFunction extends Func<any[], any>,
+    partialApply extends boolean = false
+> = TFunction extends Func<infer TParams, infer TReturn>
+    ? TParams extends [infer TParam0, ...infer TRestParams]
+        ? TRestParams extends []
+            ? TParam0 extends never
+                ? CurryStepFunc<[], TReturn>
+                : CurryStepFunc<[TParam0], TReturn>
+            : partialApply extends true
+            ? _SpreadTParams<TParams, TReturn, [], false>
+            : CurryStepFunc<[TParam0], CurriedFuncLoop<TRestParams, TReturn, partialApply>>
+        : TParams extends []
+        ? CurryStepFunc<[], TReturn>
+        : never
+    : never
+
+export type Curried<
+    TOperand extends Func<any[], any>,
+    partialApply extends boolean = false
+> = TOperand extends AsLambda<infer TFunc>
+    ? CurriedLambda<TFunc, partialApply>
+    : CurriedFunc<TOperand, partialApply>
+
+export type CurriedLambdaFn<TLambda extends Func<any[], any>> = {
+    (): CurriedLambda<TLambda, false>
+    <spread extends boolean>(partialApply: spread): CurriedLambda<TLambda, spread>
 }
+
+interface IUncurryableLambdaProps<TOrigFunc extends Func<any[], any>> {
+    invoke: TOrigFunc
+}
+
+type ILambdaProps<TOrigFunc extends Func<any[], any>> = TOrigFunc extends Func<infer TParams, any>
+    ? TParams extends [unknown, unknown, ...unknown[]]
+        ? MergeObjects<
+              IUncurryableLambdaProps<TOrigFunc>,
+              {
+                  curry: CurriedLambdaFn<TOrigFunc>
+              }
+          >
+        : IUncurryableLambdaProps<TOrigFunc>
+    : never
+
+type ILambda<Params extends any[] = [], ReturnType = void> = ILambdaProps<Func<Params, ReturnType>>
+
 interface ILambdaTypeGuard<Type = any> {
     invoke: (arg: unknown) => arg is Type
 }
 
 export type Lambda<Params extends any[] = [], ReturnType = void> = Func<Params, ReturnType> &
     ILambda<Params, ReturnType>
+export type UncurryableLambda<Params extends any[] = [], ReturnType = void> = Func<
+    Params,
+    ReturnType
+> &
+    IUncurryableLambdaProps<Func<Params, ReturnType>>
 
-export type AsLambda<TFunc extends Func<any[], any>> = TFunc & {
-    invoke: TFunc
-}
+export type AsLambda<TFunc extends Func<any[], any>> = TFunc & ILambdaProps<TFunc>
+export type AsUncurryableLambda<TFunc extends Func<any[], any>> = TFunc &
+    IUncurryableLambdaProps<TFunc>
 
 export type LambdaTypeGuard<T> = ((value: unknown) => value is T) & ILambdaTypeGuard<T>
 
@@ -79,3 +198,45 @@ export type AsyncLambda<Params extends any[] = [], ReturnType = void> = Lambda<
     Params,
     Promise<ReturnType>
 >
+
+declare const a: ILambdaProps<(a: number, b: string, c: boolean, d: object) => symbol>
+declare const b: ILambdaProps<(a: number) => symbol>
+declare const x: ILambdaProps<() => symbol>
+
+const cc = a.curry()
+const c = a.curry(true)
+
+c.invoke(1, '2', true, {})
+c.invoke(1, '2', false).invoke({})
+c.invoke(1, '2').invoke(true, {})
+c.invoke(1, '2').invoke(true).invoke({})
+c.invoke(1).invoke('2', true, {})
+c.invoke(1).invoke('2', true).invoke({})
+c.invoke(1).invoke('2').invoke(true, {})
+
+c.invoke(1).invoke('2').invoke(true).invoke({})
+cc.invoke(1).invoke('2').invoke(true).invoke({})
+
+b.invoke(1)
+
+x.invoke()
+
+declare function lambda<T>(guard: TypeGuard<T>): LambdaTypeGuard<T>
+declare function lambda<TFunc extends (...args: any) => any>(lambda: TFunc): AsLambda<TFunc>
+declare function lambda(lambda: Function): Lambda<any[], any>
+
+const f = lambda((a: number, b: string, c: boolean, d: object) => Symbol(`${a}${b}${c}${d}`))
+const curried = f.curry()
+
+curried(1)('2')(true).invoke({})
+
+const ff = f.curry(true)
+
+ff(1, '2', true, {})
+ff(1, '2', true)({})
+ff(1, '2')(true, {})
+ff(1, '2')(true)({})
+ff(1)('2', true, {})
+ff(1)('2', true)({})
+ff(1)('2')(true, {})
+ff(1)('2')(true)({})
