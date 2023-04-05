@@ -1,4 +1,4 @@
-import { Func } from '../../types/Func'
+import type { Func } from '../../types/Func'
 import type { Curried, CurriedFunc, CurriedLambda, Lambda } from '../../types/Lambda'
 import { isLambda } from './lambda'
 
