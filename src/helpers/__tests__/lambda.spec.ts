@@ -39,7 +39,8 @@ describe('lambda', () => {
         expect(λ.curry()()()).toHaveProperty('invoke')
         expect(λ.curry()('foo')(0)).toEqual([0, 'foo'])
         expect(λ.curry()()()('foo')()()()()(0)).toEqual([0, 'foo'])
-        // TODO: fix this (invoke should be a function)
-        // expect(λ.curry()()().invoke).toBeInstanceOf(Function)
+
+        expect(λ.curry()()().invoke).toBeInstanceOf(Function)
+        expect(λ.curry()()().invoke('bar')()()()()()()()()()(100)).toEqual([100, 'bar'])
     })
 })
