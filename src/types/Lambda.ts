@@ -67,11 +67,11 @@ type CurriedLambdaLoop<
     spread extends boolean = false
 > = TParams extends [infer TParam0, ...infer TRestParams]
     ? TRestParams extends []
-        ? AsUncurryableLambda<CurryStepFunc<[TParam0], TReturnType>>
+        ? AsUncurryableLambda<CurryStepFunc<[TParam0], TReturnType, true>>
         : AsUncurryableLambda<
               spread extends true
-                  ? _SpreadTParams<TParams, TReturnType>
-                  : CurryStepFunc<[TParam0], CurriedLambdaLoop<TRestParams, TReturnType>>
+                  ? _SpreadTParams<TParams, TReturnType, [], true>
+                  : CurryStepFunc<[TParam0], CurriedLambdaLoop<TRestParams, TReturnType>, true>
           >
     : never
 
@@ -81,10 +81,10 @@ type CurriedFuncLoop<
     spread extends boolean = false
 > = TParams extends [infer TParam0, ...infer TRestParams]
     ? TRestParams extends []
-        ? CurryStepFunc<[TParam0], TReturnType>
+        ? CurryStepFunc<[TParam0], TReturnType, false>
         : spread extends true
         ? _SpreadTParams<TParams, TReturnType, [], false>
-        : CurryStepFunc<[TParam0], CurriedFuncLoop<TRestParams, TReturnType>>
+        : CurryStepFunc<[TParam0], CurriedFuncLoop<TRestParams, TReturnType>, false>
     : never
 
 type _SpreadTParams<
@@ -94,21 +94,28 @@ type _SpreadTParams<
     TIsLambda extends boolean = true
 > = TParams extends [infer TParam0, ...infer TRestParams]
     ? TRestParams extends []
-        ? CurryStepFunc<[...TConsumedParams, TParam0], TReturn>
+        ? CurryStepFunc<[...TConsumedParams, TParam0], TReturn, TIsLambda>
         : CurryStepFunc<
               [...TConsumedParams, TParam0],
               TIsLambda extends true
                   ? CurriedLambdaLoop<TRestParams, TReturn, true>
-                  : CurriedFuncLoop<TRestParams, TReturn, true>
+                  : CurriedFuncLoop<TRestParams, TReturn, true>,
+              TIsLambda
           > &
-              _SpreadTParams<TRestParams, TReturn, [...TConsumedParams, TParam0]>
+              _SpreadTParams<TRestParams, TReturn, [...TConsumedParams, TParam0], TIsLambda>
     : { (): TReturn }
 
-type CurryStepFunc<TParams extends any[], TReturn> = TParams extends []
+type CurryStepFunc<
+    TParams extends any[],
+    TReturn,
+    TIsLambda extends boolean = false
+> = TParams extends []
     ? { (): TReturn }
     : {
           (...args: TParams): TReturn
-          (): CurryStepFunc<TParams, TReturn>
+          (): TIsLambda extends true
+              ? AsUncurryableLambda<CurryStepFunc<TParams, TReturn, true>>
+              : CurryStepFunc<TParams, TReturn, false>
       }
 
 export type CurriedLambda<
@@ -118,15 +125,15 @@ export type CurriedLambda<
     ? TParams extends [infer TParam0, ...infer TRestParams]
         ? TRestParams extends []
             ? TParam0 extends never
-                ? AsUncurryableLambda<CurryStepFunc<[], TReturn>>
-                : AsUncurryableLambda<CurryStepFunc<[TParam0], TReturn>>
+                ? AsUncurryableLambda<CurryStepFunc<[], TReturn, true>>
+                : AsUncurryableLambda<CurryStepFunc<[TParam0], TReturn, true>>
             : AsUncurryableLambda<
                   partialApply extends true
-                      ? _SpreadTParams<TParams, TReturn>
-                      : CurryStepFunc<[TParam0], CurriedLambdaLoop<TRestParams, TReturn>>
+                      ? _SpreadTParams<TParams, TReturn, [], true>
+                      : CurryStepFunc<[TParam0], CurriedLambdaLoop<TRestParams, TReturn>, true>
               >
         : TParams extends []
-        ? AsUncurryableLambda<CurryStepFunc<[], TReturn>>
+        ? AsUncurryableLambda<CurryStepFunc<[], TReturn, true>>
         : never
     : never
 
@@ -137,13 +144,13 @@ export type CurriedFunc<
     ? TParams extends [infer TParam0, ...infer TRestParams]
         ? TRestParams extends []
             ? TParam0 extends never
-                ? CurryStepFunc<[], TReturn>
-                : CurryStepFunc<[TParam0], TReturn>
+                ? CurryStepFunc<[], TReturn, false>
+                : CurryStepFunc<[TParam0], TReturn, false>
             : partialApply extends true
             ? _SpreadTParams<TParams, TReturn, [], false>
-            : CurryStepFunc<[TParam0], CurriedFuncLoop<TRestParams, TReturn, partialApply>>
+            : CurryStepFunc<[TParam0], CurriedFuncLoop<TRestParams, TReturn, partialApply>, false>
         : TParams extends []
-        ? CurryStepFunc<[], TReturn>
+        ? CurryStepFunc<[], TReturn, false>
         : never
     : never
 
