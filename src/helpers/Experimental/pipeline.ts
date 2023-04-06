@@ -55,7 +55,7 @@ function addPipe<RValue>(rvalue: RValue | Promise<RValue>) {
     return Object.defineProperty(Object(rvalue), 'pipe', {
         configurable: true,
         enumerable: false,
-        get: () => getPipeFn(rvalue).bind(<caller>'pipe'),
+        get: () => getPipeFn(rvalue),
     })
 }
 
@@ -63,7 +63,7 @@ function addPipeAsync<RValue>(rvalue: RValue | Promise<RValue>) {
     return Object.defineProperty(Object(rvalue), 'pipeAsync', {
         configurable: true,
         enumerable: false,
-        get: () => getPipeFn(rvalue).bind(<caller>'pipeAsync'),
+        get: () => getPipeFn(rvalue),
     })
 }
 function addDepipe<RValue>(rvalue: RValue | Promise<RValue>) {
@@ -81,7 +81,7 @@ function pipeline<RValue, Arg = never>(
 ): Func1<Arg, GetAsyncPipeline<RValue>>
 
 function pipeline<RValue extends {}, Arg>(this: caller, cb?: Func1<Arg, RValue | Promise<RValue>>) {
-    if (!cb) return { pipe: getPipeFn().bind(<caller>'pipe') }
+    if (!cb) return { pipe: getPipeFn() }
 
     return function (this: any, arg0: Arg) {
         let rvalue: RValue | Promise<RValue>

@@ -1,3 +1,4 @@
+import { AutoBind } from '../helpers'
 import { TypeGuardError } from '../TypeGuards'
 import {
     ensureInterface,
@@ -248,6 +249,7 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
     public validate<V>(value: V, shouldThrow: false): T | ValidationErrors
     public validate<V>(value: V, shouldThrow: boolean): T | ValidationErrors
 
+    @AutoBind
     public validate<V>(value: V, shouldThrow: boolean = this.throws): T | ValidationErrors {
         return validate.bind(setThrows(shouldThrow))(value, this.schema)
     }
