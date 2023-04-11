@@ -27,6 +27,7 @@ export * from './types'
 export * from './useSchema'
 export { getStructMetadata }
 
+import { Merge } from '../../types'
 import { and } from './and'
 import { any } from './any'
 import { array } from './array'
@@ -60,6 +61,7 @@ export const Schema = {
     optional,
     getStructMetadata,
 }
+type Schema = typeof Schema
 
 type Optionalize<T> = {
     [K in keyof T]: T[K] extends () => TypeGuard<any | any[]>
@@ -69,91 +71,92 @@ type Optionalize<T> = {
 
 type OptionalizeTypeGuard<T extends TypeGuard<any | any[]>> = TypeGuard<GetTypeGuard<T> | undefined>
 
-export type optionalCircular = Optionalize<
-    Omit<
-        typeof Schema,
-        | 'optional'
-        | 'string'
-        | 'array'
-        | 'object'
-        | 'and'
-        | 'or'
-        | 'asEnum'
-        | 'useSchema'
-        | 'SchemaStruct'
-        | 'Struct'
-        | 'getStructMetadata'
-    >
-> & {
-    string(): OptionalizeTypeGuard<TypeGuard<string>>
-    string(rules: StringRules[]): OptionalizeTypeGuard<TypeGuard<string>>
-    string<T extends string>(matches: T): OptionalizeTypeGuard<TypeGuard<T>>
-    string(regex: RegExp): OptionalizeTypeGuard<TypeGuard<string>>
+export type OptionalSchema = Merge<
+    Optionalize<
+        Omit<
+            typeof Schema,
+            | 'optional'
+            | 'getStructMetadata'
+            | 'string'
+            | 'array'
+            | 'object'
+            | 'and'
+            | 'or'
+            | 'asEnum'
+            | 'useSchema'
+        >
+    >,
+    {
+        string(): OptionalizeTypeGuard<TypeGuard<string>>
+        string(rules: StringRules[]): OptionalizeTypeGuard<TypeGuard<string>>
+        string<T extends string>(matches: T): OptionalizeTypeGuard<TypeGuard<T>>
+        string(regex: RegExp): OptionalizeTypeGuard<TypeGuard<string>>
 
-    array(): OptionalizeTypeGuard<TypeGuard<any[]>>
-    array(rules: ArrayRules[]): OptionalizeTypeGuard<TypeGuard<any[]>>
-    array<T>(rules: ArrayRules[], schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
-    array<T>(schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
+        array(): OptionalizeTypeGuard<TypeGuard<any[]>>
+        array(rules: ArrayRules[]): OptionalizeTypeGuard<TypeGuard<any[]>>
+        array<T>(rules: ArrayRules[], schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
+        array<T>(schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
 
-    object<T>(tree: ValidatorMap<T>): OptionalizeTypeGuard<TypeGuard<Sanitize<T>>>
-    object(): OptionalizeTypeGuard<TypeGuard<Record<any, any>>>
-    object(tree: {}): OptionalizeTypeGuard<TypeGuard<{}>>
+        object<T>(tree: ValidatorMap<T>): OptionalizeTypeGuard<TypeGuard<Sanitize<T>>>
+        object(): OptionalizeTypeGuard<TypeGuard<Record<any, any>>>
+        object(tree: {}): OptionalizeTypeGuard<TypeGuard<{}>>
 
-    and<T1, T2>(
-        guard1: TypeGuard<T1>,
-        guard2: TypeGuard<T2>
-    ): OptionalizeTypeGuard<TypeGuard<T1 & T2>>
-    and<T1, T2, T3>(
-        guard1: TypeGuard<T1>,
-        guard2: TypeGuard<T2>,
-        guard3: TypeGuard<T3>
-    ): OptionalizeTypeGuard<TypeGuard<T1 & T2 & T3>>
-    and<T1, T2, T3, T4>(
-        guard1: TypeGuard<T1>,
-        guard2: TypeGuard<T2>,
-        guard3: TypeGuard<T3>,
-        guard4: TypeGuard<T4>
-    ): OptionalizeTypeGuard<TypeGuard<T1 & T2 & T3 & T4>>
-    and<T1, T2, T3, T4, T5>(
-        guard1: TypeGuard<T1>,
-        guard2: TypeGuard<T2>,
-        guard3: TypeGuard<T3>,
-        guard4: TypeGuard<T4>,
-        guard5: TypeGuard<T5>
-    ): OptionalizeTypeGuard<TypeGuard<T1 & T2 & T3 & T4 & T5>>
-    and<T extends TypeGuard<any>>(
-        ...args: T[]
-    ): OptionalizeTypeGuard<TypeGuard<GetTypeGuard<Generics.UnionToIntersection<T>>>>
+        and<T1, T2>(
+            guard1: TypeGuard<T1>,
+            guard2: TypeGuard<T2>
+        ): OptionalizeTypeGuard<TypeGuard<T1 & T2>>
+        // and<T1, T2, T3>(
+        //     guard1: TypeGuard<T1>,
+        //     guard2: TypeGuard<T2>,
+        //     guard3: TypeGuard<T3>
+        // ): OptionalizeTypeGuard<TypeGuard<T1 & T2 & T3>>
+        // and<T1, T2, T3, T4>(
+        //     guard1: TypeGuard<T1>,
+        //     guard2: TypeGuard<T2>,
+        //     guard3: TypeGuard<T3>,
+        //     guard4: TypeGuard<T4>
+        // ): OptionalizeTypeGuard<TypeGuard<T1 & T2 & T3 & T4>>
+        // and<T1, T2, T3, T4, T5>(
+        //     guard1: TypeGuard<T1>,
+        //     guard2: TypeGuard<T2>,
+        //     guard3: TypeGuard<T3>,
+        //     guard4: TypeGuard<T4>,
+        //     guard5: TypeGuard<T5>
+        // ): OptionalizeTypeGuard<TypeGuard<T1 & T2 & T3 & T4 & T5>>
+        // and<T extends TypeGuard<any>>(
+        //     ...args: T[]
+        // ): OptionalizeTypeGuard<TypeGuard<GetTypeGuard<Generics.UnionToIntersection<T>>>>
 
-    or<T1, T2>(
-        guard1: TypeGuard<T1>,
-        guard2: TypeGuard<T2>
-    ): OptionalizeTypeGuard<TypeGuard<T1 | T2>>
-    or<T1, T2, T3>(
-        guard1: TypeGuard<T1>,
-        guard2: TypeGuard<T2>,
-        guard3: TypeGuard<T3>
-    ): OptionalizeTypeGuard<TypeGuard<T1 | T2 | T3>>
-    or<T1, T2, T3, T4>(
-        guard1: TypeGuard<T1>,
-        guard2: TypeGuard<T2>,
-        guard3: TypeGuard<T3>,
-        guard4: TypeGuard<T4>
-    ): OptionalizeTypeGuard<TypeGuard<T1 | T2 | T3 | T4>>
-    or<T1, T2, T3, T4, T5>(
-        guard1: TypeGuard<T1>,
-        guard2: TypeGuard<T2>,
-        guard3: TypeGuard<T3>,
-        guard4: TypeGuard<T4>,
-        guard5: TypeGuard<T5>
-    ): OptionalizeTypeGuard<TypeGuard<T1 | T2 | T3 | T4 | T5>>
-    or<T extends TypeGuard<any>>(...args: T[]): OptionalizeTypeGuard<TypeGuard<GetTypeGuard<T>>>
+        or<T1, T2>(
+            guard1: TypeGuard<T1>,
+            guard2: TypeGuard<T2>
+        ): OptionalizeTypeGuard<TypeGuard<T1 | T2>>
+        // or<T1, T2, T3>(
+        //     guard1: TypeGuard<T1>,
+        //     guard2: TypeGuard<T2>,
+        //     guard3: TypeGuard<T3>
+        // ): OptionalizeTypeGuard<TypeGuard<T1 | T2 | T3>>
+        // or<T1, T2, T3, T4>(
+        //     guard1: TypeGuard<T1>,
+        //     guard2: TypeGuard<T2>,
+        //     guard3: TypeGuard<T3>,
+        //     guard4: TypeGuard<T4>
+        // ): OptionalizeTypeGuard<TypeGuard<T1 | T2 | T3 | T4>>
+        // or<T1, T2, T3, T4, T5>(
+        //     guard1: TypeGuard<T1>,
+        //     guard2: TypeGuard<T2>,
+        //     guard3: TypeGuard<T3>,
+        //     guard4: TypeGuard<T4>,
+        //     guard5: TypeGuard<T5>
+        // ): OptionalizeTypeGuard<TypeGuard<T1 | T2 | T3 | T4 | T5>>
+        // or<T extends TypeGuard<any>>(...args: T[]): OptionalizeTypeGuard<TypeGuard<GetTypeGuard<T>>>
 
-    asEnum<T extends Generics.PrimitiveType>(values: T[]): OptionalizeTypeGuard<TypeGuard<T>>
-    useSchema<T>(schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T>>
-}
+        asEnum<T extends Generics.PrimitiveType>(values: T[]): OptionalizeTypeGuard<TypeGuard<T>>
+        useSchema<T>(schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T>>
+    }
+>
 
-export function optional(): optionalCircular {
+export function optional(): OptionalSchema {
     const wrapOptional =
         <T extends TypeGuardClosure>(fn: T): OptionalizeTypeGuardClosure<T> =>
         (...args: Parameters<T>) => {
@@ -169,18 +172,16 @@ export function optional(): optionalCircular {
             )
         }
 
-    type SchemaEntry = [
-        Exclude<keyof typeof Schema, 'optional' | 'getStructMetadata'>,
-        Exclude<typeof Schema[keyof typeof Schema], typeof optional | typeof getStructMetadata>
-    ]
-    return Array.from(Object.entries(Schema))
-        .filter<SchemaEntry>((entry): entry is SchemaEntry => {
-            const [, exported] = entry
-            return exported !== optional && exported !== getStructMetadata
-        })
-        .reduce<optionalCircular>(
-            (obj, [key, exp]) =>
-                Object.assign(obj, { [key]: wrapOptional(exp) }) as optionalCircular,
-            {} as optionalCircular
+    type Guards = Omit<Schema, 'optional' | 'getStructMetadata'>
+    type SchemaEntry = Entry<Guards>
+
+    const filterGuards = ([, exported]: ObjectEntry<Schema>) =>
+        exported !== optional && exported !== getStructMetadata
+
+    return Object.entries(Schema)
+        .filter(filterGuards as TypeGuard<SchemaEntry>)
+        .reduce<OptionalSchema>(
+            (obj, [key, exp]) => Object.assign(obj, { [key]: wrapOptional(exp) }),
+            {} as OptionalSchema
         )
 }

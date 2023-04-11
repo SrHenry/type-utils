@@ -211,13 +211,11 @@ export function arrayToObject<O, T extends Array<readonly [string | symbol, any]
         | Record<T[number][0], T[number][1]>
 }
 
-export function omit<T, K extends (keyof T)[]>(from: T, keys: K): Omit<T, K[number]> {
+export function omit<T extends {}, K extends (keyof T)[]>(from: T, keys: K): Omit<T, K[number]> {
     if (keys.length === 0 || keys.every(key => !(key in <object>from)))
         return from as Omit<T, K[number]>
 
-    return arrayToObject(
-        Object.entries(from as {}).filter(([key]) => !keys.includes(key as keyof T))
-    )
+    return arrayToObject(Object.entries(from).filter(([key]) => !keys.includes(key)))
 }
 
 /**

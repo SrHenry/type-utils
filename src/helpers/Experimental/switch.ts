@@ -1,8 +1,7 @@
-import { Predicate } from 'src/types/Predicate'
 import type { TypeGuard } from '../../TypeGuards'
-import { isTypeGuard } from '../../TypeGuards'
 import type { Func0, Func1 } from '../../types/Func'
 import type { Lambda, Lambda0 } from '../../types/Lambda'
+import type { Predicate } from '../../types/Predicate'
 import { lambda } from './lambda'
 
 interface ICase<TSwitchArg, TSwitchResultAggregate = never> extends CallableFunction {
@@ -120,7 +119,7 @@ function __switch__(
         const defaultFn = (arg: unknown = $$switch_no_arg$$) => {
             if (arg === $$switch_no_arg$$) throw new Error('missing switch argument to evaluate')
 
-            const i = matches.findIndex(m => (isTypeGuard(m) ? m(arg) : m === arg))
+            const i = matches.findIndex(m => (typeof m === 'function' ? m(arg) : m === arg))
 
             if (i === -1) return defaultResult(arg)
 
@@ -136,7 +135,7 @@ function __switch__(
         if (arg === $$switch_no_arg$$) throw new Error('missing switch argument to evaluate')
 
         // eslint-disable-next-line no-debugger
-        const i = matches.findIndex(m => (isTypeGuard(m) ? m(arg) : m === arg))
+        const i = matches.findIndex(m => (typeof m === 'function' ? m(arg) : m === arg))
         if (i === -1) throw new Error(`No match for ${arg}`)
 
         const result = results[i]

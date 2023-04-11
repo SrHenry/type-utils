@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { TypeGuard } from '../../TypeGuards'
-import { Func } from '../../types/Func'
+import type { Func } from '../../types/Func'
 import type { AsLambda, Lambda, LambdaTypeGuard } from '../../types/Lambda'
 import { curry } from './curry'
 

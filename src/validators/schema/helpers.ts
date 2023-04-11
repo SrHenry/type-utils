@@ -3,26 +3,26 @@ import { keys as RuleKeys } from '../rules/constants'
 import { getRule, isCustomHandler, isRule } from '../rules/helpers'
 
 import {
-    imprintMessage,
     getMessageFormator,
     getMetadata,
-    setMetadata,
-    setMessageFormator,
-    isTypeGuard,
     hasMetadata,
+    imprintMessage,
+    isTypeGuard,
+    setMessageFormator,
+    setMetadata,
 } from '../../TypeGuards/GenericTypeGuards'
 
 import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
+import { template as ruleTemplate } from '../rules/common'
 import type { Optional as OptionalRule } from '../rules/optional'
-import type { AnyStruct, Exact, GenericStruct, ObjectStruct, Struct, StructType } from './types'
 import type {
     All as AllRules,
     Custom as CustomRule,
     Default as DefaultRules,
     Rule,
 } from '../rules/types'
-import { template as ruleTemplate } from '../rules/common'
 import { baseTypes } from './constants'
+import type { AnyStruct, Exact, GenericStruct, ObjectStruct, Struct, StructType } from './types'
 
 const __metadata__ = Symbol('__metadata__')
 const __optional__ = Symbol('__optional__')
@@ -137,6 +137,10 @@ export function getStructMetadata<U>(guard: TypeGuard<U>): GenericStruct<U> | An
             schema: guard,
         }
     )
+}
+
+export function hasStructMetadata(guard: TypeGuard): boolean {
+    return hasMetadata(__metadata__, guard)
 }
 
 export const exactFormator = (to: unknown) => ruleTemplate(`exact '${to}'`)

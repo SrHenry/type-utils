@@ -1,9 +1,9 @@
+import { getMessage } from '../../TypeGuards/GenericTypeGuards'
 import {
     enpipeRuleMessageIntoGuard,
     enpipeSchemaStructIntoGuard,
     getStructMetadata,
 } from './helpers'
-import { getMessage } from '../../TypeGuards/GenericTypeGuards'
 
 import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
 
@@ -18,6 +18,6 @@ export function or<T1, T2>(guard1: TypeGuard<T1>, guard2: TypeGuard<T2>): TypeGu
             optional: false,
             types: [getStructMetadata(guard1), getStructMetadata(guard2)],
         },
-        enpipeRuleMessageIntoGuard(`${guards.map(getMessage).join(' | ')}`, guard)
+        enpipeRuleMessageIntoGuard(guards.map(getMessage).join(' | '), guard)
     )
 }
