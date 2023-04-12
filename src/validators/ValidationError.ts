@@ -1,5 +1,10 @@
 import { TypeOfTag } from 'typescript'
-import { setValidatorMessageFormator, TypeGuard, TypeGuardError } from '../TypeGuards'
+import {
+    getValidatorMessageFormator,
+    setValidatorMessageFormator,
+    TypeGuard,
+    TypeGuardError,
+} from '../TypeGuards'
 
 export type ValidationArgs<Value, Schema, Name extends string = string, Parent = any> = {
     value: Value
@@ -8,6 +13,8 @@ export type ValidationArgs<Value, Schema, Name extends string = string, Parent =
     name?: Name
     parent?: Parent
 }
+
+const defaultMessageFormator = (path: string, message: string) => `[${path}] - ${message}`
 
 export class ValidationError<
     Value,
@@ -30,10 +37,7 @@ export class ValidationError<
         this.Path = name
         this.Parent = parent
 
-        setValidatorMessageFormator(
-            (path: string, message: string) => `[${path}] - ${message}`,
-            this
-        )
+        setValidatorMessageFormator(defaultMessageFormator, this)
     }
 
     public get path(): Path | undefined {
@@ -42,6 +46,27 @@ export class ValidationError<
 
     public get parent(): Parent | undefined {
         return this.Parent
+    }
+
+    public override toJSON() {
+        return {
+            ...this,
+            ...super.toJSON(),
+            path: this.path,
+            parent: this.parent,
+        }
+    }
+
+    public override toString() {
+        const format = getValidatorMessageFormator(this) ?? defaultMessageFormator
+
+        return format(this.path ?? '$', this.message)
+    }
+
+    public toPrimitive(hint: TypeOfTag) {
+        if (hint === 'string') return this.toString()
+
+        return
     }
 }
 
@@ -59,16 +84,13 @@ export class ValidationErrors<
     }
 
     toString() {
-        return this.errors.map(e => e?.toString() ?? e).join(',')
+        return this.errors.map(e => e?.toString() ?? e).join('\n')
     }
 
     toPrimitive(hint: TypeOfTag) {
-        switch (hint) {
-            case 'string':
-                return this.toString()
-            default:
-                return void 0
-        }
+        if (hint === 'string') return this.toString()
+
+        return
     }
 }
 

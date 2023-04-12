@@ -456,15 +456,256 @@ This is intended for partial assertions in schemas, fetching all violations agai
 >     setValidatorMessage,
 > } from '@srhenry/type-utils'
 >
-> const { Validator, ValidationErrors } = Experimental
+> const { validate, ValidationErrors } = Experimental
 >
-> /** RFC 2822: Standard email validation, in your code you can use third party libs who already can check it, and you can link with this lib using useSchema or just writing a type guard and passing the guard to schema */
+> /** RFC 2822: Standard email validation. in your code you can use third party libs who already can check it, and you can link with this lib using useSchema or just writing a type guard and passing the guard to schema */
 > const emailRegex =
 >     /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
 >
+> /** A sample schema */
 > const schema = object({
 >     name: setValidatorMessage('name is required', string()),
 >     email: setValidatorMessage('email is required', string(emailRegex)),
 >     password: string([StringRules.min(6)]),
 > })
+>
+> /** An API request payload or else */
+> const payload = {
+>     name: 'Foo',
+>     email: '',
+>     password: '1234',
+> }
+>
+> // throwable flow
+> try {
+>     const data = validate(payload, schema)
+>     //...
+> } catch (e) {
+>     if (e instanceof ValidationErrors) {
+>         // generic function representing some error handling for presenting to requester:
+>         respondWith({
+>             errors: e.errors.map(({ path, message }) => ({
+>                 // something like '$', '$.name', '$.email' or '$.password':
+>                 path: path.replace('$', 'payload'),
+>                 message,
+>             })),
+>         })
+>         // procedural handling (ValidationErrors is iterable):
+>         for (const { parent, path, message, checked, against } of e) {
+>             //...
+>         }
+>     }
+> }
+>
+> // not throwable flow
+> const data = validate(payload, schema)
+> if (data instanceof ValidationErrors) {
+>     // handle error(s)...
+> } else {
+>     //use schema shaped data...
+> }
+> ```
+
+---
+
+<br/>
+
+## **Lambda**
+
+This was inspired in C# Lambdas, equivalent to arrow functions in Javascript/Typescript, but this helper adds `invoke()` method to a function instance. useful to improve readability when you have a function that returns another and you wanna call 'em all in a row, using fluent pattern.
+
+> Ex.:
+>
+> ```ts
+> import { Experimental } from '@srhenry/type-utils'
+>
+> const { lambda } = Experimental
+>
+> function builder(locales: string | string[] = 'en-US') {
+>     function formatter(
+>         options: Intl.DateTimeFormatOptions = {
+>             dateStyle: 'short',
+>             timeStyle: 'short',
+>         }
+>     ) {
+>         function format(date: Date | string) {
+>             return new Intl.DateTimeFormat(locales, options).format(new Date(date))
+>         }
+>
+>         return lambda(format)
+>     }
+>
+>     return lambda(formatter)
+> }
+>
+> console.log(
+>     '1970-01-01T00:00 =',
+>     builder('en-UK').invoke({ dateStyle: 'long' }).invoke('1970-01-01')
+> ) // 01 January 1970
+> ```
+
+---
+
+<br/>
+
+## **Function/Lambda Currying**
+
+This does type-wisely curries a function or lambda, in two flavors: allowing or not partial param applying (default is not allowed). The process of currying a function is traditionally a techique that allows you to call the refered function passing one parameter at a time, returning another function to further apply remaining parameters, then returning whatever the original function returns after all parameters were given to curried function. In Javascript this techinque usually allows partial apply, and in that way you can pass more than one parameter at a time, and everything else remains equal to the traditional currying.
+
+> Ex.:
+>
+> ```ts
+> import { Experimental } from '@srhenry/type-utils'
+>
+> const { lambda, curry } = Experimental
+>
+> // lets reuse earlier example:
+> function builder(
+>     locales: string | string[],
+>     options: Intl.DateTimeFormatOptions,
+>     date: Date | string
+> ) {
+>     return new Intl.DateTimeFormat(locales, options).format(new Date(date))
+> }
+>
+> const curried = curry(builder)
+> const curriedLambda = curry(lambda(builder))
+>
+> console.log(
+>     curried('en-GB')({ timeStyle: 'short', timeZone: 'Etc/Greenwich' })(
+>         new Date('2020-05-10T22:35:08Z')
+>     )
+> ) // 22:35
+>
+> console.log(
+>     curriedLambda('en-US')
+>         .invoke({ dateStyle: 'short', timeStyle: 'short', timeZone: 'America/New_York' })
+>         .invoke(new Date('2020-05-10T22:35:08Z'))
+> ) // (EDT) 5/10/20, 6:35 PM
+> ```
+
+---
+
+<br/>
+
+## **Pipelines/Pipes**
+
+This is a fluent API to create sync/async function pipelines. Inspired in FP pipe operator while it does not comes to Javascript/Typescript yet. It allows only single param functions, piping the return as the parameter to the next function in pipeline.
+
+> Ex.:
+>
+> ```ts
+> import { Experimental } from '@srhenry/type-utils'
+>
+> const { pipe, enpipe, lambda } = Experimental
+>
+> const addUserFactory =
+>     (db: Record<string, Record<string, any>[]>) => (user: Record<string, any>) =>
+>         new Promise<string>(resolve => {
+>             setTimeout(() => {
+>                 const id = uuid()
+>
+>                 db['users'] ??= []
+>                 db['users']?.push({ id, ...user })
+>                 resolve(id)
+>             }, 200)
+>         })
+> const addPostFactory =
+>     (db: Record<string, Record<string, any>[]>) => (user_id: string, post: Record<string, any>) =>
+>         new Promise<boolean>(resolve => {
+>             setTimeout(() => {
+>                 db['posts'] ??= []
+>                 db['posts']?.push({ user_id, ...post })
+>                 resolve(true)
+>             }, 300)
+>         })
+>
+> const db = {
+>     users: [] as Record<string, any>[],
+>     posts: [] as Record<string, any>[],
+> } as Record<string, Record<string, any>[]>
+>
+> const len = <T = any>(s: string | ArrayLike<T>) => s.length
+> const addPostCurried = (post: Record<string, any>) => (id: string) =>
+>     pipe(addPostFactory).pipe(enpipe(db)).pipe(lambda).invoke(id, post)
+>
+> const result = await pipe(addUserFactory)
+>     .pipe(enpipe(db))
+>     .pipe(
+>         enpipe({
+>             name: 'Marcus',
+>             email: 'example@email.com',
+>         })
+>     )
+>     .pipeAsync(
+>         addPostCurried({
+>             title: 'Hello World',
+>             content: 'Lorem ipsum dolor sit amet',
+>         })
+>     )
+>     .pipeAsync(() => {
+>         if (len(db['users']!) === 0 || len(db['posts']!) === 0) return false
+>
+>         db['replies'] = []
+>         return true
+>     })
+>     .depipe() // true | false
+> ```
+
+---
+
+<br/>
+
+## **Switch Expression**
+
+This helper enables you to build switch expressions as it is not available in Javascript vanilla. Each branch allows you to define the matchers or values ahead of time with literal values or inline expressions, or define with callbacks to customize handling of each branch, making it a powerfull way to describe a complex switch without _if-else-if_ language syntax. It defines a lambda as the switch runner, so you can define and run it in the row with more readability.
+
+> Ex. (reusable switcher):
+>
+> ```ts
+> const switcher = $switch()
+>     .case(4, 'four')
+>     .case(3, 'three')
+>     .case(2, 'two')
+>     .case(1, 'one')
+>     .default('none of the above') // it does not run yet
+>
+> console.log(switcher.invoke(1)) // one
+> console.log(switcher.invoke(3)) // three
+> console.log(switcher.invoke(10)) // none of the above
+> ```
+>
+> Ex. (stored switcher):
+>
+> ```ts
+> const switcher = $switch(5)
+>     .case(4, 'four')
+>     .case(3, 'three')
+>     .case(2, 'two')
+>     .case(1, 'one')
+>     .default('none of the above') // it does not run yet
+>
+> console.log(switcher()) // none of the above
+> console.log(switcher.invoke()) // none of the above
+> console.log(switcher.invoke(1)) // none of the above
+> console.log(switcher(3)) // none of the above
+> ```
+>
+> Ex. (more complex matching logic / runtime branch evaluation):
+>
+> ```ts
+> const switcher = $switch<number>()
+>     .case(
+>         n => n % 2 === 0,
+>         () => Math.floor(Math.random() * 10_000) + 1
+>     )
+>     .default(n => n ** n)
+>
+> console.log(switcher(1)) // 1 (1^1)
+> console.log(switcher(2)) // random number between 1-10000
+> console.log(switcher(3)) // 27 (3^3)
+> console.log(switcher(4)) // random number between 1-10000
+> console.log(switcher(5)) // 3125 (5^5)
+> console.log(switcher(6)) // random number between 1-10000
+> console.log(switcher(7)) // 823543 (7^7)
 > ```

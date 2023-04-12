@@ -43,7 +43,7 @@ export function isLambda(fn: unknown): fn is Lambda<any[], any> {
     return typeof fn === 'function' && __lambda__ in fn && !!fn[__lambda__]
 }
 
-export const __lambda__ = Symbol(`[[${lambda.name}]]`)
+const __lambda__ = Symbol(`[[${lambda.name}]]`)
 
 export function lambda<T>(guard: TypeGuard<T>): LambdaTypeGuard<T>
 export function lambda<TFunc extends (...args: any) => any>(lambda: TFunc): AsLambda<TFunc>
