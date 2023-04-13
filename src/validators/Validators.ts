@@ -1,6 +1,7 @@
 import { Generics } from '../Generics'
 import { TypeGuard } from '../TypeGuards/GenericTypeGuards'
 import { BaseValidator } from './BaseValidator'
+import { MessageFormator } from './rules/types'
 
 export type OptionalKeys<T> = keyof Generics.OmitNever<{
     [K in keyof T]-?: T[K] extends NonNullable<T[K]> ? never : K
@@ -24,6 +25,14 @@ export type ValidatorArgs<T> = {
     required?: Array<keyof T>
     optional?: Array<keyof T>
 }
+
+export type ValidatorMessageMap<T> = T extends (infer U)[]
+    ? ValidatorMessageMap<U>
+    : T extends Generics.PrimitiveType
+    ? string | MessageFormator
+    : Partial<{
+          [K in keyof T]: ValidatorMessageMap<T[K]>
+      }>
 
 export type UnpackSchema<T extends ValidatorMap<any>> = T extends ValidatorMap<infer U>
     ? Sanitize<U>

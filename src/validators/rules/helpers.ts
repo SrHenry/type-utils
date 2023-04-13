@@ -1,6 +1,4 @@
 import { isFunction } from '../../helpers'
-import { array, string } from '../schema'
-import { keys, bindings } from './constants'
 import {
     getMessage,
     getMessageFormator,
@@ -9,24 +7,26 @@ import {
     setMessageFormator,
     TypeGuard,
 } from '../../TypeGuards/GenericTypeGuards'
+import { array, string } from '../schema'
+import { bindings, keys } from './constants'
 
-import type {
-    Rule,
-    RuleTuple,
-    All,
-    CustomHandler,
-    Custom,
-    Default,
-    CreateRuleArgs,
-    MessageFormator,
-    CustomFactory,
-} from './types'
 import {
     getStructMetadata,
     isFollowingRules,
     setRuleMessage,
     setStructMetadata,
 } from '../schema/helpers'
+import type {
+    All,
+    CreateRuleArgs,
+    Custom,
+    CustomFactory,
+    CustomHandler,
+    Default,
+    MessageFormator,
+    Rule,
+    RuleTuple,
+} from './types'
 
 export function getRule<T extends keyof keys>(name: T): bindings[keys[T]]
 export function getRule<T extends keyof keys, R extends Rule>(name: T): R

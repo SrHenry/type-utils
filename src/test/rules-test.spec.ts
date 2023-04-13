@@ -1,4 +1,7 @@
 import { Generics } from '../Generics'
+import { ArrayRules } from '../rules'
+import { regex } from '../rules/string'
+import { array, getStructMetadata, number, object, optional, string } from '../schema'
 import {
     ensureInterface,
     imprintMetadata,
@@ -9,9 +12,6 @@ import {
     TypeGuardError,
 } from '../TypeGuards'
 import { Validators } from '../validators'
-import { regex } from '../rules/string'
-import { ArrayRules } from '../rules'
-import { object, string, array, number, optional, getStructMetadata } from '../schema'
 
 console.log(optional())
 

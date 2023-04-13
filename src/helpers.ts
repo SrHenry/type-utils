@@ -21,24 +21,23 @@ export const removeLastElement = <T extends Array<U>, U>(list: T): T => {
 /**
  * Number rounder string formatter
  * @param n the number to format
- * @param casas_decimais the decimal part output size
+ * @param precision the decimal part output size
  */
-export const round = (n: number, casas_decimais: number = 0): string => {
-    let r = n - Math.floor(n)
-    for (let c = 0; c < casas_decimais; c++) r *= 10
+export const round = (n: number, precision: number = 0): string => {
+    let integer = Math.floor(n)
+    let r = n - integer
+    for (let c = 0; c < precision; c++) r *= 10
 
     r = Math.floor(r)
 
-    // for (let c = 0 c < casas_decimais c++)
-    //     r /= 10
-
-    // console.log(r)
-
     let r_s = String(r)
-    for (let c = 0; c < casas_decimais - r_s.length; c++) r_s = '0'.concat(r_s)
+    for (let c = 0; c < precision - r_s.length; c++) r_s = '0'.concat(r_s)
 
-    console.log(r_s.length, r_s)
-    return String(Math.floor(n)).concat('.').concat(r_s)
+    for (let c = precision; c < 0; c++) integer = Math.floor(integer / 10)
+
+    if (/^0+$/.test(r_s)) return String(integer)
+
+    return String(integer).concat('.').concat(r_s)
 }
 
 /**
@@ -59,7 +58,11 @@ export const getDateTimeStringAsDB = function (date: Date = new Date(Date.now())
  *
  * @returns result of nested 'AND' Logic gate.
  */
-export const AND = (...values: any[]) => values.reduce<boolean>((p, v) => p && !!v, true)
+export const AND = (...values: any[]) => {
+    for (const v of values) if (!v) return false
+
+    return true
+}
 
 /**
  * Logic gate 'OR' to many inputs.
@@ -80,7 +83,19 @@ export const OR = (...values: any[]) => {
  *
  * @returns result of 'NOT' Logic gate.
  */
-export const NOT = (value: any) => !value
+export function NOT(value: any): boolean
+/**
+ * Logic gate 'NOT'.
+ *
+ * @param values input list of argument values.
+ *
+ * @returns result of 'NOT' Logic gate.
+ */
+export function NOT(...values: any[]): boolean[]
+
+export function NOT(...values: any[]) {
+    return values.length > 1 ? values.map(v => !v) : !(values[0] ?? true)
+}
 
 /**
  * Logic gate 'NAND' (Not AND) to many inputs.
@@ -110,7 +125,7 @@ export const NOR = (...values: any[]) => NOT(OR(...values))
  *
  * @returns result of 'XOR' Logic gate.
  */
-export const XOR = (...values: any[]) => OR(...values) && OR(...values.map(NOT))
+export const XOR = (...values: any[]) => values.filter(v => !!v).length === 1
 
 /**
  * Logic gate 'XNOR' (eXclusive Not OR) to many inputs.
@@ -142,6 +157,8 @@ export function isFunction(input: any): input is Function {
     return typeof input === 'function'
 }
 
+const AsyncFunction = (async () => {}).constructor
+
 /**
  * @author marcuspoehls <marcus@futurestud.io>
  * Determine whether the given `input` is an async function.
@@ -151,7 +168,11 @@ export function isFunction(input: any): input is Function {
  * @returns {Boolean}
  */
 function __isAsyncFunction(input: any): boolean {
-    return isFunction(input) && input.constructor.name === 'AsyncFunction'
+    return (
+        isFunction(input) &&
+        AsyncFunction.name === 'AsyncFunction' &&
+        input instanceof AsyncFunction
+    )
 }
 
 /**
@@ -168,7 +189,7 @@ function __isAsyncFunction(input: any): boolean {
  * isPromise(new Promise(() => {})) // true
  */
 export function isPromise<T = any>(promise: any): promise is Promise<T> {
-    return !!promise && isFunction(promise.then)
+    return promise instanceof Promise
 }
 
 export function isAsyncFunction(input: any): input is (...args: any[]) => Promise<any> {
@@ -190,8 +211,31 @@ export function arrayToObject<O, T extends Array<readonly [string | symbol, any]
         | Record<T[number][0], T[number][1]>
 }
 
-export function omit<T, K extends (keyof T)[]>(from: T, keys: K): Omit<T, K[number]> {
-    return arrayToObject(
-        Object.entries(from as {}).filter(([key]) => !keys.includes(key as keyof T))
-    )
+export function omit<T extends {}, K extends (keyof T)[]>(from: T, keys: K): Omit<T, K[number]> {
+    if (keys.length === 0 || keys.every(key => !(key in <object>from)))
+        return from as Omit<T, K[number]>
+
+    return arrayToObject(Object.entries(from).filter(([key]) => !keys.includes(key)))
+}
+
+/**
+ * Decorator
+ * @param _
+ * @param _2
+ * @param descriptor
+ * @returns
+ */
+export function AutoBind(
+    _: any,
+    _2: string | symbol,
+    descriptor: PropertyDescriptor
+): PropertyDescriptor {
+    const originalMethod: Function = descriptor.value
+    return {
+        configurable: true,
+        enumerable: false,
+        get() {
+            return originalMethod.bind(this)
+        },
+    }
 }

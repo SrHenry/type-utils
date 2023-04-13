@@ -1,24 +1,35 @@
+import { ValidationError, ValidationErrors, Validator } from '../Experimental'
 import { Generics } from '../Generics'
+import { createRule, getRule, useCustomRules } from '../rules'
+import { unique } from '../rules/array'
+import { min, nonEmpty } from '../rules/string'
+import { array, getStructMetadata, number, object, optional, string } from '../schema'
 import {
     ensureInterface,
     getMessage,
+    getValidatorMessageFormator,
     imprintMetadata,
     is,
+    isInstanceOf,
     retrieveMessage,
     retrieveMetadata,
+    setValidatorMessage,
     TypeGuard,
     TypeGuardError,
 } from '../TypeGuards'
-import { Validators } from '../validators'
-// import { regex } from '../rules/string'
-import { createRule, getRule, useCustomRules } from '../rules'
-import { object, string, array, number, optional, getStructMetadata } from '../schema'
-import { min, nonEmpty } from '../rules/string'
-import { unique } from '../rules/array'
+import { asEnum, asNull, or, StringRules, Validators } from '../validators'
 import { hasOptionalFlag } from '../validators/schema/helpers'
 
-import { SchemaValidator } from '../validators/SchemaValidator'
-import ValidationError from '../validators/ValidationError'
+function prettier(e: unknown): string {
+    if (e instanceof ValidationError) return getValidatorMessageFormator(e)!(e.path, e.message)
+    if (
+        e instanceof ValidationErrors ||
+        (Array.isArray(e) && e.every(isInstanceOf(ValidationError)))
+    )
+        return Array.from(e).map(prettier).join('\n')
+
+    return String(e)
+}
 
 const patterns = Object.freeze({
     SKU: /^LV[0-9]+EAN[0-9]+$/i,
@@ -26,8 +37,8 @@ const patterns = Object.freeze({
 } as const)
 
 const schema = object({
-    ean: string(/^[0-9]+$/),
-    sku: string(patterns.SKU),
+    ean: setValidatorMessage('EAN deve conter apenas números!', string(/^[0-9]+$/)),
+    sku: setValidatorMessage('SKU inválido!', string(patterns.SKU)),
     opc: optional().number(),
 })
 
@@ -224,8 +235,10 @@ console.log(object({ schema, array: array({ schema }) }))
 //     schema: a,
 //     array: [{ schema: a }, { schema: a }, { schema: b }],
 // })
-const sku = new SchemaValidator(
-    object({ schema, object: object({ array: array({ schema }) }) })
+
+const sku = new Validator(
+    object({ schema, object: object({ array: array({ schema }) }) }),
+    false
 ).validate({
     schema: b,
     object: { array: [{ schema: a }, { schema: b }, { schema: a }] },
@@ -235,20 +248,409 @@ const sku = new SchemaValidator(
 // })
 // const sku = new SchemaValidator(array(object({ schema }))).validate([{ schema: b }])
 
+// SchemaValidator.validate({}, schema, true)
+
 if (sku instanceof ValidationError) {
     console.error('An error has been found')
-    console.error(`[${sku.path}] - ${sku.message}`)
+    console.error(prettier(sku))
 } else if (
     is(
         sku,
-        array(
-            (e): e is ValidationError<typeof e, typeof isValidSKU> => e instanceof ValidationError
+        or(
+            isInstanceOf(ValidationErrors),
+            array(
+                (e): e is ValidationError<typeof e, typeof isValidSKU> =>
+                    e instanceof ValidationError
+            )
         )
     )
 ) {
     const [...errors] = sku
     console.error('Many errors has been found!')
-    errors.forEach(err => console.error('\n', `[${err.path}] - ${err.message}`, '\n'))
+    // errors.forEach(({ path, message }) => console.error('\n', `[${path}] - ${message}`, '\n'))
+    console.error(prettier(errors))
 } else {
     console.log('SKU validated!', sku)
+}
+
+const ___a = {
+    id: '1042e2e9-4522-4de0-9e87-b7de10b65156',
+    nome: 'Luis Henrique da Silva Santos',
+    matricula: null,
+    cpf: '03968410238',
+    email: 'lucapvh949@gmail.com',
+    telefone: '69993064162',
+    secretaria: 'DER',
+    lotacao: 'GTI',
+    roles: ['admin', 'user'],
+    ldap: {
+        sid: 'S-1-5-21-3065843220-3900571328-1001744874-136362',
+        cpf: '03968410238',
+        nome: 'Luis Henrique da Silva Santos',
+        authorizationGroups: [
+            { nome: 'Everyone', sid: 'S-1-1-0', descricao: null },
+            { nome: 'Authenticated Users', sid: 'S-1-5-11', descricao: null },
+            {
+                nome: 'DER_GERAL',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-3801',
+                descricao: null,
+            },
+            {
+                nome: 'DER_NTI',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1137',
+                descricao: null,
+            },
+            {
+                nome: 'Domain Users',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-513',
+                descricao: 'All domain users',
+            },
+            {
+                nome: 'DER_SEOSP',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-124327',
+                descricao: null,
+            },
+            {
+                nome: 'Group Policy Creator Owners',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-520',
+                descricao: 'Members in this group can modify group policy for the domain',
+            },
+            {
+                nome: 'Denied RODC Password Replication Group',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-572',
+                descricao:
+                    'Members in this group cannot have their passwords replicated to any read-only domain controllers in the domain',
+            },
+            {
+                nome: 'Administrators',
+                sid: 'S-1-5-32-544',
+                descricao:
+                    'Administrators have complete and unrestricted access to the computer/domain',
+            },
+            {
+                nome: 'Users',
+                sid: 'S-1-5-32-545',
+                descricao:
+                    'Users are prevented from making accidental or intentional system-wide changes and can run most applications',
+            },
+        ],
+        groups: [
+            {
+                nome: 'Domain Users',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-513',
+                descricao: 'All domain users',
+            },
+            {
+                nome: 'DER_NTI',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1137',
+                descricao: null,
+            },
+        ],
+    },
+    token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwNDJlMmU5LTQ1MjItNGRlMC05ZTg3LWI3ZGUxMGI2NTE1NiIsImNvbGxpc2lvbl9yYW5kb21pemVyIjoiazlFTUdHa2siLCJyb2xlcyI6WyJhZG1pbiIsInVzZXIiXSwibmJmIjoxNjU2MzU1ODM3LCJleHAiOjE2NTYzNTYxMzcsImlhdCI6MTY1NjM1NTgzN30.HpWVvEDZ-lAReV7QW8Kp4bCecvnwIefcJpENcYk-MAg',
+    refreshToken:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwNDJlMmU5LTQ1MjItNGRlMC05ZTg3LWI3ZGUxMGI2NTE1NiIsImNvbGxpc2lvbl9yYW5kb21pemVyIjoiWlJqUmRPMmUiLCJyb2xlcyI6WyJhZG1pbiIsInVzZXIiXSwibmJmIjoxNjU2MzU1ODM3LCJleHAiOjE2NTYzNjMwMzcsImlhdCI6MTY1NjM1NTgzN30.Nk-SHza005w7gYsoUaxi_BDuKLFdxk6rTXD_UxoqkUQ',
+}
+
+const ____b = {
+    id: 'caa657ae-4793-487f-a30c-4239eb1ce9c8',
+    nome: 'Alexandre Oliveira',
+    matricula: null,
+    cpf: '03090195240',
+    email: '',
+    telefone: '',
+    secretaria: '',
+    lotacao: '',
+    roles: [],
+    ldap: {
+        sid: 'S-1-5-21-3065843220-3900571328-1001744874-51866',
+        cpf: '03090195240',
+        nome: 'Alexandre Oliveira',
+        authorizationGroups: [
+            { nome: 'Everyone', sid: 'S-1-1-0', descricao: null },
+            { nome: 'Authenticated Users', sid: 'S-1-5-11', descricao: null },
+            {
+                nome: 'SEDUC_GERAL',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-31128',
+                descricao: null,
+            },
+            {
+                nome: 'DER_COR',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1329',
+                descricao: null,
+            },
+            {
+                nome: 'DER_COUSA',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-112645',
+                descricao: null,
+            },
+            {
+                nome: 'DER_GERAL',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-3801',
+                descricao: null,
+            },
+            {
+                nome: 'DER_NTI',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1137',
+                descricao: null,
+            },
+            {
+                nome: 'Domain Users',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-513',
+                descricao: 'All domain users',
+            },
+            {
+                nome: 'SEDUC Remote Server',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1805',
+                descricao: null,
+            },
+            {
+                nome: 'SEDUC_CTIC',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-50222',
+                descricao: null,
+            },
+            {
+                nome: 'SEDUC_GTI',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1585',
+                descricao: null,
+            },
+            {
+                nome: 'DER_SEOSP',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-124327',
+                descricao: null,
+            },
+            {
+                nome: 'SEDUC_OPEN_GTI',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-129642',
+                descricao: null,
+            },
+            {
+                nome: 'SEDUC_ADM',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1762',
+                descricao: null,
+            },
+            {
+                nome: 'DER_CORE',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1315',
+                descricao: null,
+            },
+            {
+                nome: 'Group Policy Creator Owners',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-520',
+                descricao: 'Members in this group can modify group policy for the domain',
+            },
+            {
+                nome: 'Denied RODC Password Replication Group',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-572',
+                descricao:
+                    'Members in this group cannot have their passwords replicated to any read-only domain controllers in the domain',
+            },
+            {
+                nome: 'Users',
+                sid: 'S-1-5-32-545',
+                descricao:
+                    'Users are prevented from making accidental or intentional system-wide changes and can run most applications',
+            },
+        ],
+        groups: [
+            {
+                nome: 'Domain Users',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-513',
+                descricao: 'All domain users',
+            },
+            {
+                nome: 'SEDUC_ADM',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1762',
+                descricao: null,
+            },
+            {
+                nome: 'DER_NTI',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1137',
+                descricao: null,
+            },
+            {
+                nome: 'DER_COR',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1329',
+                descricao: null,
+            },
+            {
+                nome: 'DER_CORE',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1315',
+                descricao: null,
+            },
+            {
+                nome: 'SEDUC_GTI',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-1585',
+                descricao: null,
+            },
+            {
+                nome: 'SEDUC_CTIC',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-50222',
+                descricao: null,
+            },
+            {
+                nome: 'DER_COUSA',
+                sid: 'S-1-5-21-3065843220-3900571328-1001744874-112645',
+                descricao: null,
+            },
+        ],
+    },
+    token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNhYTY1N2FlLTQ3OTMtNDg3Zi1hMzBjLTQyMzllYjFjZTljOCIsImNvbGxpc2lvbl9yYW5kb21pemVyIjoiam9iaGFCeHgiLCJuYmYiOjE2NTY0MzcxMDUsImV4cCI6MTY1NjQzNzQwNSwiaWF0IjoxNjU2NDM3MTA1fQ.AjFsUm2K1tEauy85xF70cgep4nEBC3Z9Lj1O5S6ArAg',
+    refreshToken:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNhYTY1N2FlLTQ3OTMtNDg3Zi1hMzBjLTQyMzllYjFjZTljOCIsImNvbGxpc2lvbl9yYW5kb21pemVyIjoiZkdrWnVpbnciLCJuYmYiOjE2NTY0MzcxMDUsImV4cCI6MTY1NjQ0NDMwNSwiaWF0IjoxNjU2NDM3MTA1fQ.TUm4erbAHwxT69eCgbJOvDJBeID34rWmvazSRfSMTjc',
+}
+
+const GuidSchema = string(/[{(]?[0-9A-F]{8}[-]?(?:[0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?$/i)
+function isCPF(cpf: string = '') {
+    cpf = cpf.replace(/[^\d]+/g, '')
+    if (cpf == '') return false
+    // Elimina CPFs invalidos conhecidos
+    if (
+        cpf.length != 11 ||
+        cpf == '00000000000' ||
+        cpf == '11111111111' ||
+        cpf == '22222222222' ||
+        cpf == '33333333333' ||
+        cpf == '44444444444' ||
+        cpf == '55555555555' ||
+        cpf == '66666666666' ||
+        cpf == '77777777777' ||
+        cpf == '88888888888' ||
+        cpf == '99999999999'
+    )
+        return false
+    // Valida 1o digito
+    let add = 0
+
+    for (let i = 0; i < 9; i++) add += parseInt(cpf.charAt(i)) * (10 - i)
+
+    let rev = 11 - (add % 11)
+
+    if (rev == 10 || rev == 11) rev = 0
+
+    if (rev != parseInt(cpf.charAt(9))) return false
+
+    // Valida 2o digito
+    add = 0
+
+    for (let i = 0; i < 10; i++) add += parseInt(cpf.charAt(i)) * (11 - i)
+
+    rev = 11 - (add % 11)
+
+    if (rev == 10 || rev == 11) rev = 0
+
+    if (rev != parseInt(cpf.charAt(10))) return false
+
+    return true
+}
+const CPFFormat = /^(\d{11}|\d{3}\.\d{3}\.\d{3}\-\d{2})$/
+const createCPFRule = createRule({
+    name: 'custom.CPF',
+    message: '[rule: must pass CPF algorithm]',
+    handler: (subject: string) => () => isCPF(subject),
+})
+const CPFRule = createCPFRule()
+const CPFSchema = useCustomRules(
+    string([
+        StringRules.nonEmpty(),
+        StringRules.min(11),
+        StringRules.max(14),
+        StringRules.regex(CPFFormat),
+    ]),
+    CPFRule
+)
+const Roles = ['admin', 'user'] as const
+const ___schema = object({
+    id: GuidSchema,
+    nome: string(),
+    matricula: optional().or(string(), asNull()),
+    cpf: CPFSchema,
+    email: string(),
+    telefone: optional().or(string(), asNull()),
+    secretaria: string(),
+    lotacao: string(),
+    roles: array(asEnum([...Roles])),
+})
+
+const GroupSchemaObject = {
+    sid: string(),
+    nome: string(),
+    descricao: optional().or(string(), asNull()),
+}
+const GroupSchema = object(GroupSchemaObject)
+
+const LDAPSchema = object({
+    sid: string(),
+    cpf: string(),
+    nome: string(),
+    groups: array(GroupSchema),
+    authorizationGroups: array(GroupSchema),
+})
+
+const ___full_schema = object({
+    id: GuidSchema,
+    nome: string(),
+    matricula: optional().or(string(), asNull()),
+    cpf: CPFSchema,
+    email: string(),
+    telefone: optional().or(string(), asNull()),
+    secretaria: string(),
+    lotacao: string(),
+    roles: array(asEnum([...Roles])),
+    ldap: or(LDAPSchema, asNull()),
+    token: string(),
+    refreshToken: string(),
+})
+
+const JwtSchema = object({
+    id: GuidSchema,
+    roles: array(asEnum([...Roles])),
+})
+
+console.log(is(___a, ___schema))
+
+console.log(is('039.684.102-38', isCPF as any))
+console.log(
+    is(
+        '03968410238',
+        string([
+            StringRules.nonEmpty(),
+            StringRules.min(11),
+            StringRules.max(14),
+            StringRules.regex(CPFFormat),
+        ])
+    )
+)
+console.log(is('03968410238', (a: any) => CPFRule[2](a)()))
+console.log(CPFSchema('03968410238'))
+console.log(CPFSchema('039.684.102-38'))
+
+console.log('_____b', is(____b, ___full_schema))
+
+const jwt = JSON.parse(
+    Buffer.from(
+        'eyJpZCI6ImNhYTY1N2FlLTQ3OTMtNDg3Zi1hMzBjLTQyMzllYjFjZTljOCIsImNvbGxpc2lvbl9yYW5kb21pemVyIjoiNzcwUjRwSnYiLCJyb2xlcyI6InVzZXIiLCJuYmYiOjE2NTY0Mzg4OTEsImV4cCI6MTY1NjQzOTE5MSwiaWF0IjoxNjU2NDM4ODkxfQ',
+        'base64'
+    ).toString('utf8')
+)
+console.log(jwt, is(jwt, JwtSchema))
+
+try {
+    const foo = {
+        schema: b,
+        object: { array: [{ schema: a }, { schema: b }, { schema: a }] },
+    }
+    const goo = {
+        schema: a,
+        object: { array: [{ schema: a }, { schema: a }, { schema: a }] },
+    }
+    const bar = object({ schema, object: object({ array: array({ schema }) }) })
+
+    console.log('[foo] Payload:', Validator.validate(foo, bar, false))
+    console.log('[goo] Payload:', Validator.validate(goo, bar))
+} catch (e) {
+    console.log('Erros durante validação profunda:', '\n')
+    if (e instanceof ValidationErrors) {
+        console.log(prettier(e.errors))
+    }
 }
