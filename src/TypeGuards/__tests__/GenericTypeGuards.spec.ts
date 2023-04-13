@@ -8,6 +8,7 @@ import {
     hasMetadata,
     is,
     isInstanceOf,
+    isTypeGuard,
     setMessage,
     setMetadata,
 } from '../GenericTypeGuards'
@@ -277,5 +278,56 @@ describe('internal manipulation functions for building error messages as metadat
         expect(() => expect(hasMessage({})).toBe(false)).not.toThrow()
         expect(() => expect(getMessage(foo)).toBe(message)).not.toThrow()
         expect(() => expect(getMessage({})).toBe('')).not.toThrow()
+    })
+})
+
+describe('isTypeGuard', () => {
+    class A {}
+    class B extends A {}
+    class C extends B {}
+
+    class Foo {}
+
+    class Bar extends Foo {}
+
+    const isA = (value: any): value is A => value instanceof A
+    const isB = (value: any): value is B => value instanceof B
+    const isC = (value: any): value is C => value instanceof C
+    const isFoo = (value: any): value is Foo => value instanceof Foo
+    const isBar = (value: any): value is Bar => value instanceof Bar
+
+    it('should return true if the given function is a type guard', () => {
+        expect(isTypeGuard(isA)).toBe(true)
+        expect(isTypeGuard(isB)).toBe(true)
+        expect(isTypeGuard(isC)).toBe(true)
+        expect(isTypeGuard(isFoo)).toBe(true)
+        expect(isTypeGuard(isBar)).toBe(true)
+    })
+    it('should return false if the given function is not a type guard', () => {
+        expect(isTypeGuard(() => {})).toBe(false)
+        expect(isTypeGuard(() => null)).toBe(false)
+        expect(isTypeGuard(() => undefined)).toBe(false)
+        expect(isTypeGuard(() => 1)).toBe(false)
+        expect(isTypeGuard(() => 'foo')).toBe(false)
+        expect(isTypeGuard(() => Symbol('foo'))).toBe(false)
+        expect(isTypeGuard(() => [])).toBe(false)
+        expect(isTypeGuard(() => {})).toBe(false)
+        expect(isTypeGuard(() => new Date())).toBe(false)
+        expect(isTypeGuard(() => new Error())).toBe(false)
+        expect(isTypeGuard(() => new RegExp('foo'))).toBe(false)
+        expect(isTypeGuard(() => new Set())).toBe(false)
+        expect(isTypeGuard(() => new Map())).toBe(false)
+        expect(isTypeGuard(() => new WeakSet())).toBe(false)
+        expect(isTypeGuard(() => new WeakMap())).toBe(false)
+        expect(isTypeGuard(() => new ArrayBuffer(1))).toBe(false)
+        expect(isTypeGuard(() => new SharedArrayBuffer(1))).toBe(false)
+        expect(isTypeGuard(() => new Int8Array(1))).toBe(false)
+        expect(isTypeGuard(() => new Uint8Array(1))).toBe(false)
+        expect(isTypeGuard(() => new Uint8ClampedArray(1))).toBe(false)
+        expect(isTypeGuard(() => new Int16Array(1))).toBe(false)
+        expect(isTypeGuard(() => new Uint16Array(1))).toBe(false)
+        expect(isTypeGuard(() => new Int32Array(1))).toBe(false)
+        expect(isTypeGuard(() => new Uint32Array(1))).toBe(false)
+        expect(isTypeGuard(() => new Float32Array(1))).toBe(false)
     })
 })
