@@ -2,21 +2,32 @@ export namespace Generics {
     export const Primitives = [
         'string',
         'number',
+        'bigint',
         'boolean',
         'symbol',
         'null',
         'undefined',
+        'bigint',
     ] as const
-    export const TypeOfTag = [...Primitives, 'bigint', 'object', 'function'] as const
+    export const TypeOfTag = [...Primitives, 'object', 'function'] as const
     export declare interface GenericObject<T = any> {
         [key: string]: T
     }
-    export declare type PrimitiveType = string | number | boolean | symbol | null | undefined
+    export declare type PrimitiveType =
+        | string
+        | number
+        | bigint
+        | boolean
+        | symbol
+        | null
+        | undefined
     export declare type Primitives = Extract<typeof TypeOfTag[number], typeof Primitives[number]>
     export declare type GetPrimitiveTag<T extends PrimitiveType> = T extends string
         ? 'string'
         : T extends number
         ? 'number'
+        : T extends bigint
+        ? 'bigint'
         : T extends boolean
         ? 'boolean'
         : T extends symbol

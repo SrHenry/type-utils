@@ -1,9 +1,9 @@
+import { Generics } from '../../Generics'
 import {
     branchIfOptional,
     enpipeRuleMessageIntoGuard,
     enpipeSchemaStructIntoGuard,
 } from './helpers'
-import { Generics } from '../../Generics'
 
 import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
 
@@ -14,7 +14,7 @@ export function primitive(): TypeGuard<Generics.PrimitiveType> {
     return enpipeSchemaStructIntoGuard(
         { type: 'primitive', schema: guard, optional: false },
         enpipeRuleMessageIntoGuard(
-            'primitive (string | number | boolean | symbol | null | undefined)',
+            'primitive (string | number | bigint | boolean | symbol | null | undefined)',
             guard
         )
     )

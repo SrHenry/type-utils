@@ -63,6 +63,7 @@ export namespace V2 {
     export type NullStruct<T = null> = T extends null ? BaseStruct<'null', null> : never
     export type BooleanStruct<T = boolean> = T extends boolean ? BaseStruct<'boolean', T> : never
     export type NumberStruct<T = number> = T extends number ? BaseStruct<'number', T> : never
+    export type BigIntStruct<T = bigint> = T extends bigint ? BaseStruct<'bigint', T> : never
     export type StringStruct<T = string> = T extends string ? BaseStruct<'string', T> : never
     export type SymbolStruct<T = symbol> = T extends symbol ? BaseStruct<'symbol', symbol> : never
 
@@ -74,10 +75,14 @@ export namespace V2 {
             | V2.UndefinedStruct<T>
             | V2.NullStruct<T>
             | V2.BooleanStruct<T>
+            | V2.BigIntStruct<T>
             | V2.NumberStruct<T>
             | V2.StringStruct<T>
             | V2.SymbolStruct<T>
-            | BaseStruct<'undefined' | 'null' | 'boolean' | 'number' | 'string' | 'symbol', T>
+            | BaseStruct<
+                  'undefined' | 'null' | 'boolean' | 'number' | 'bigint' | 'string' | 'symbol',
+                  T
+              >
         )[]
         // | V2.PrimitiveStruct<T>
     }
@@ -152,6 +157,8 @@ export namespace V2 {
                   ? V2.NullStruct
                   : T extends boolean
                   ? V2.BooleanStruct<T>
+                  : T extends bigint
+                  ? V2.BigIntStruct<T>
                   : T extends number
                   ? V2.NumberStruct<T>
                   : T extends string
@@ -176,6 +183,7 @@ export namespace V2 {
         | NullStruct
         | BooleanStruct
         | NumberStruct
+        | BigIntStruct
         | StringStruct
         | SymbolStruct
         | UnionOrIntersectionPartialStruct<any, any>
@@ -313,6 +321,7 @@ export type AnyStruct = V2.AnyStruct
 export type UndefinedStruct = V2.UndefinedStruct
 export type NullStruct = V2.NullStruct
 export type BooleanStruct<T extends boolean = boolean> = V2.BooleanStruct<T>
+export type BigIntStruct<T extends bigint = bigint> = V2.BigIntStruct<T>
 export type NumberStruct<T extends number = number> = V2.NumberStruct<T>
 export type StringStruct<T extends string = string> = V2.StringStruct<T>
 export type SymbolStruct = V2.SymbolStruct

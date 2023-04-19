@@ -6,7 +6,7 @@ import type { Generics } from '../../Generics'
 import type { GetTypeGuard, TypeGuard } from '../../TypeGuards/GenericTypeGuards'
 import type { ArrayRules } from '../rules/Array'
 import type { StringRules } from '../rules/String'
-import type { ValidatorMap } from '../Validators'
+import type { Sanitize, ValidatorMap } from '../Validators'
 import type { OptionalizeTypeGuardClosure, TypeGuardClosure } from './types'
 
 export * from './and'
@@ -15,6 +15,7 @@ export * from './array'
 export * from './asEnum'
 export * from './asNull'
 export * from './asUndefined'
+export * from './bigint'
 export * from './boolean'
 export { hasOptionalFlag } from './helpers'
 export * from './number'
@@ -34,6 +35,7 @@ import { array } from './array'
 import { asEnum } from './asEnum'
 import { asNull } from './asNull'
 import { asUndefined } from './asUndefined'
+import { bigint } from './bigint'
 import { boolean } from './boolean'
 import { number } from './number'
 import { object } from './object'
@@ -52,6 +54,7 @@ export const Schema = {
     asUndefined,
     boolean,
     number,
+    bigint,
     object,
     or,
     primitive,
@@ -97,14 +100,17 @@ export type OptionalSchema = Merge<
         array<T>(rules: ArrayRules[], schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
         array<T>(schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
 
-        object<T>(tree: ValidatorMap<T>): OptionalizeTypeGuard<TypeGuard<T>>
+        object<T extends {}>(tree: ValidatorMap<T>): OptionalizeTypeGuard<TypeGuard<Sanitize<T>>>
+        // object<T extends ValidatorMap<any>>(
+        //     tree: T
+        // ): OptionalizeTypeGuard<TypeGuard<GetTypeFromValidatorMap<T>>>
         object(): OptionalizeTypeGuard<TypeGuard<Record<any, any>>>
         object(tree: {}): OptionalizeTypeGuard<TypeGuard<{}>>
 
         and<T1, T2>(
             guard1: TypeGuard<T1>,
             guard2: TypeGuard<T2>
-        ): OptionalizeTypeGuard<TypeGuard<T1 & T2>>
+        ): OptionalizeTypeGuard<TypeGuard<Merge<T1, T2>>>
         // and<T1, T2, T3>(
         //     guard1: TypeGuard<T1>,
         //     guard2: TypeGuard<T2>,

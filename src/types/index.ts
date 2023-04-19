@@ -1,3 +1,4 @@
+import { Generics } from '../Generics'
 import { GetTypeGuard } from '../TypeGuards'
 
 export * from './GetOptional'
@@ -43,6 +44,10 @@ export type MergeObjects<L, R> = Id<
 export type Merge<L, R> = [L, R] extends [any, Function]
     ? R & L
     : [L, R] extends [Function, any] | [Function, Function]
+    ? L & R
+    : L extends Generics.PrimitiveType
+    ? L & R
+    : R extends Generics.PrimitiveType
     ? L & R
     : MergeObjects<L, R>
 

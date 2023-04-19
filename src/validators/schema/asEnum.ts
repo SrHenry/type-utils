@@ -1,9 +1,9 @@
+import { Generics } from '../../Generics'
 import {
     branchIfOptional,
     enpipeRuleMessageIntoGuard,
     enpipeSchemaStructIntoGuard,
 } from './helpers'
-import { Generics } from '../../Generics'
 import { primitive } from './primitive'
 
 import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'

@@ -12,10 +12,12 @@ import { join } from '../../helpers/Experimental/join'
 import { map } from '../../helpers/Experimental/map'
 import { pipe } from '../../helpers/Experimental/pipeline'
 import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
-import type { ValidatorMap } from '../Validators'
+import type { Sanitize, ValidatorMap } from '../Validators'
 import type { ObjectStruct } from './types'
 
-export function object<T>(tree: ValidatorMap<T>): TypeGuard<T>
+export function object<T extends {}>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
+// export function object<T extends ValidatorMap<any>>(tree: T): TypeGuard<GetTypeFromValidatorMap<T>>
+
 export function object(): TypeGuard<Record<any, any>>
 export function object(tree: {}): TypeGuard<{}>
 export function object<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, any> | {}> {

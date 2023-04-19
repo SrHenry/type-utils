@@ -2,12 +2,12 @@ import { getRule } from './helpers'
 
 export const template = (message: string) => `[rule: ${message}]`
 
-export const max = (arg: number, n: number) => arg <= n
+export const max = (arg: number, n: number | bigint) => arg <= n
 export const maxFormator = (n: number) => template(`max(${n})`)
 export const arrayMaxFormator = (n: number) => template(`max ${n} items`)
 export const stringMaxFormator = (n: number) => template(`max ${n} items`)
 
-export const min = (arg: number, n: number) => arg >= n
+export const min = (arg: number, n: number | bigint) => arg >= n
 export const minFormator = (n: number) => template(`min(${n})`)
 export const arrayMinFormator = (n: number) => template(`min ${n} items`)
 export const stringMinFormator = (n: number) => template(`min ${n} items`)

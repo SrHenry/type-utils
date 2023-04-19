@@ -654,3 +654,31 @@ try {
         console.log(prettier(e.errors))
     }
 }
+
+// const ___ = object({
+//     a: string(),
+//     b: optional().or(
+//         asNull(),
+//         object({
+//             c: number(),
+//         })
+//     ),
+// })
+
+// type ___ = GetTypeGuard<typeof ___>
+
+// type aaaaaa = {
+//     a: number
+//     foo?: {
+//         bar: string
+//         baz: symbol | null
+//     }
+// }
+
+// const $$$ = object<aaaaaa>({
+//     a: number(),
+//     foo: optional().object({
+//         bar: string(),
+//         baz: or(asNull(), symbol()),
+//     }),
+// })

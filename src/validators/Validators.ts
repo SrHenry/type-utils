@@ -1,10 +1,11 @@
 import { Generics } from '../Generics'
 import { TypeGuard } from '../TypeGuards/GenericTypeGuards'
+import { Merge } from '../types'
 import { BaseValidator } from './BaseValidator'
 import { MessageFormator } from './rules/types'
 
 export type OptionalKeys<T> = keyof Generics.OmitNever<{
-    [K in keyof T]-?: T[K] extends NonNullable<T[K]> ? never : K
+    [K in keyof T]-?: T[K] extends Exclude<T[K], undefined> ? never : K
 }>
 export type RequiredKeys<T> = keyof Omit<T, OptionalKeys<T>>
 
@@ -17,8 +18,12 @@ export type RequiredProps<T> = Omit<T, OptionalKeys<T>>
 export type OptionalProps<T> = Pick<T, OptionalKeys<T>>
 
 export type ValidatorMap<T> = {
-    [K in keyof T]: TypeGuard<T[K]>
+    [K in keyof T]-?: TypeGuard<T[K]>
 }
+
+export type GetTypeFromValidatorMap<T extends ValidatorMap<any>> = T extends ValidatorMap<infer U>
+    ? Sanitize<U>
+    : never
 
 export type ValidatorArgs<T> = {
     validators: ValidatorMap<T>
@@ -42,10 +47,20 @@ export type Unpack<T extends ValidatorMap<any>> = T extends ValidatorMap<infer U
     ? Sanitize<U>
     : never
 
-export type Sanitize<T> = {
-    [K in RequiredKeys<T>]-?: T[K]
-} & {
-    [P in OptionalKeys<T>]+?: Exclude<T[P], undefined>
+export type Optionalize<T extends {}> = {
+    [P in keyof T]+?: T[P]
 }
+export type Unoptionalize<T extends {}> = {
+    [P in keyof T]-?: T[P]
+}
+
+export type Sanitize<T> = Merge<
+    {
+        [K in RequiredKeys<T>]-?: T[K]
+    },
+    {
+        [P in OptionalKeys<T>]+?: Exclude<T[P], undefined>
+    }
+>
 
 export const validator = BaseValidator
