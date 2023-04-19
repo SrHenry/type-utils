@@ -6,7 +6,7 @@ import type { Generics } from '../../Generics'
 import type { GetTypeGuard, TypeGuard } from '../../TypeGuards/GenericTypeGuards'
 import type { ArrayRules } from '../rules/Array'
 import type { StringRules } from '../rules/String'
-import type { Sanitize, ValidatorMap } from '../Validators'
+import type { ValidatorMap } from '../Validators'
 import type { OptionalizeTypeGuardClosure, TypeGuardClosure } from './types'
 
 export * from './and'
@@ -97,7 +97,7 @@ export type OptionalSchema = Merge<
         array<T>(rules: ArrayRules[], schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
         array<T>(schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
 
-        object<T>(tree: ValidatorMap<T>): OptionalizeTypeGuard<TypeGuard<Sanitize<T>>>
+        object<T>(tree: ValidatorMap<T>): OptionalizeTypeGuard<TypeGuard<T>>
         object(): OptionalizeTypeGuard<TypeGuard<Record<any, any>>>
         object(tree: {}): OptionalizeTypeGuard<TypeGuard<{}>>
 

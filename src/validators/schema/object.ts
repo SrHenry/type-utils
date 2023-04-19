@@ -12,15 +12,13 @@ import { join } from '../../helpers/Experimental/join'
 import { map } from '../../helpers/Experimental/map'
 import { pipe } from '../../helpers/Experimental/pipeline'
 import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
-import type { Sanitize, ValidatorMap } from '../Validators'
+import type { ValidatorMap } from '../Validators'
 import type { ObjectStruct } from './types'
 
-export function object<T>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
+export function object<T>(tree: ValidatorMap<T>): TypeGuard<T>
 export function object(): TypeGuard<Record<any, any>>
 export function object(tree: {}): TypeGuard<{}>
-export function object<T extends {}>(
-    tree?: ValidatorMap<T>
-): TypeGuard<Sanitize<T> | Record<any, any> | {}> {
+export function object<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, any> | {}> {
     const isBlankObject = (arg: unknown) =>
         typeof arg === 'object' && !!arg && Object.keys(arg).length === 0
     if (!tree || isBlankObject(tree)) {
@@ -41,7 +39,7 @@ export function object<T extends {}>(
 
     const config = { validators: tree, required, optional }
 
-    const guard = (arg: unknown): arg is Sanitize<T> =>
+    const guard = (arg: unknown): arg is T =>
         branchIfOptional(arg, []) || BaseValidator.hasValidProperties(arg, config)
 
     const message = pipe(Object.entries(tree))
@@ -78,9 +76,9 @@ export function object<T extends {}>(
         tree: Object.entries(tree)
             .map(([k, v]) => ({ [k]: getStructMetadata(v) }))
             .reduce((acc, item) => Object.assign(acc, item), {}),
-    } as ObjectStruct<Sanitize<T>>
+    } as ObjectStruct<T>
 
-    return enpipeSchemaStructIntoGuard<ObjectStruct<Sanitize<T>>>(
+    return enpipeSchemaStructIntoGuard<ObjectStruct<T>>(
         metadata,
         enpipeRuleMessageIntoGuard(message, guard)
     )
