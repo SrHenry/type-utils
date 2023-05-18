@@ -1,4 +1,9 @@
-import { getMessage, setMessage } from '../../TypeGuards/GenericTypeGuards'
+import {
+    getMessage,
+    GetTypeGuards,
+    setMessage,
+    TypeGuards,
+} from '../../TypeGuards/GenericTypeGuards'
 import { getRule } from '../rules/helpers'
 import { enpipeSchemaStructIntoGuard, getStructMetadata, setOptionalFlag } from './helpers'
 
@@ -7,7 +12,7 @@ import type { GetTypeGuard, TypeGuard } from '../../TypeGuards/GenericTypeGuards
 import type { ArrayRules } from '../rules/Array'
 import type { StringRules } from '../rules/String'
 import type { Sanitize, ValidatorMap } from '../Validators'
-import type { OptionalizeTypeGuardClosure, TypeGuardClosure } from './types'
+import type { OptionalizeTypeGuardClosure, TypeGuardClosure, V3 } from './types'
 
 export * from './and'
 export * from './any'
@@ -29,15 +34,16 @@ export * from './useSchema'
 export { getStructMetadata }
 
 import { Merge } from '../../types'
+import { NumberRules } from '../rules/Number'
 import { and } from './and'
 import { any } from './any'
 import { array } from './array'
 import { asEnum } from './asEnum'
 import { asNull } from './asNull'
 import { asUndefined } from './asUndefined'
-import { bigint } from './bigint'
+import { bigint, BigIntRulesConfig } from './bigint'
 import { boolean } from './boolean'
-import { number } from './number'
+import { number, NumberRulesConfig } from './number'
 import { object } from './object'
 import { or } from './or'
 import { primitive } from './primitive'
@@ -87,9 +93,19 @@ export type OptionalSchema = Merge<
             | 'or'
             | 'asEnum'
             | 'useSchema'
+            | 'number'
+            | 'bigint'
         >
     >,
     {
+        number(): TypeGuard<number>
+        number(rules: Partial<NumberRulesConfig>): TypeGuard<number>
+        number(rules: NumberRules[]): TypeGuard<number>
+
+        bigint(): TypeGuard<bigint>
+        bigint(rules: Partial<BigIntRulesConfig>): TypeGuard<bigint>
+        bigint(rules: NumberRules[]): TypeGuard<bigint>
+
         string(): OptionalizeTypeGuard<TypeGuard<string>>
         string(rules: StringRules[]): OptionalizeTypeGuard<TypeGuard<string>>
         string<T extends string>(matches: T): OptionalizeTypeGuard<TypeGuard<T>>
@@ -111,6 +127,9 @@ export type OptionalSchema = Merge<
             guard1: TypeGuard<T1>,
             guard2: TypeGuard<T2>
         ): OptionalizeTypeGuard<TypeGuard<Merge<T1, T2>>>
+        and<TGuards extends TypeGuards<any>>(
+            ...guards: TGuards
+        ): TypeGuard<V3.TIntersection<GetTypeGuards<TGuards>>>
         // and<T1, T2, T3>(
         //     guard1: TypeGuard<T1>,
         //     guard2: TypeGuard<T2>,
@@ -137,6 +156,9 @@ export type OptionalSchema = Merge<
             guard1: TypeGuard<T1>,
             guard2: TypeGuard<T2>
         ): OptionalizeTypeGuard<TypeGuard<T1 | T2>>
+        or<TGuards extends TypeGuards<any>>(
+            ...guards: TGuards
+        ): TypeGuard<V3.TUnion<GetTypeGuards<TGuards>>>
         // or<T1, T2, T3>(
         //     guard1: TypeGuard<T1>,
         //     guard2: TypeGuard<T2>,
@@ -173,7 +195,9 @@ export function optional(): OptionalSchema {
             // closure[__optional__] = true
 
             return enpipeSchemaStructIntoGuard(
-                { ...getStructMetadata(fn(...args)), optional: true },
+                { ...getStructMetadata(fn(...args)), optional: true } as unknown as
+                    | V3.GenericStruct<T>
+                    | V3.AnyStruct,
                 setMessage(getMessage(fn(...args)), closure)
             )
         }

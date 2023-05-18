@@ -37,3 +37,9 @@ interface ObjectConstructor {
 }
 
 declare const Object: ObjectConstructor
+
+interface ArrayConstructor {
+    isArray<T = any>(arg: any): arg is T[]
+}
+
+declare var Array: ArrayConstructor

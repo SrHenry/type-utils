@@ -8,11 +8,15 @@ import {
     hasMetadata,
     imprintMessage,
     isTypeGuard,
+    isUnaryFunction,
+    setAsTypeGuard,
     setMessageFormator,
     setMetadata,
 } from '../../TypeGuards/GenericTypeGuards'
 
+import Generics from '../../Generics'
 import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
+import { Predicate } from '../../types/Predicate'
 import { template as ruleTemplate } from '../rules/common'
 import type { Optional as OptionalRule } from '../rules/optional'
 import type {
@@ -22,7 +26,7 @@ import type {
     Rule,
 } from '../rules/types'
 import { baseTypes } from './constants'
-import type { AnyStruct, Exact, GenericStruct, ObjectStruct, Struct, StructType } from './types'
+import type { Exact, GenericStruct, ObjectStruct, V3 } from './types'
 
 const __metadata__ = Symbol('__metadata__')
 const __optional__ = Symbol('__optional__')
@@ -96,30 +100,71 @@ export function enpipeRuleMessageIntoGuard<T>(
     return imprintMessage(prepend, guard)
 }
 
-export function enpipeSchemaStructIntoGuard<T>(struct: Struct<T>, guard: TypeGuard<T>): typeof guard
-export function enpipeSchemaStructIntoGuard<T extends Struct>(
-    struct: T,
-    guard: T['schema']
+// export function enpipeSchemaStructIntoGuard<T>(struct: Struct<T>, guard: TypeGuard<T>): typeof guard
+// export function enpipeSchemaStructIntoGuard<T extends Struct>(
+//     struct: T,
+//     guard: T['schema']
+// ): typeof guard
+// export function enpipeSchemaStructIntoGuard<T>(
+//     struct: GenericStruct<T>,
+//     guard: TypeGuard<T>
+// ): typeof guard
+// export function enpipeSchemaStructIntoGuard<T extends StructType, U>(
+//     struct: T,
+//     guard: TypeGuard<U>
+// ): typeof guard
+// export function enpipeSchemaStructIntoGuard<T extends Struct<U>, U>(
+//     struct: T,
+//     guard: TypeGuard<U>
+// ): typeof guard
+// export function enpipeSchemaStructIntoGuard<T extends GenericStruct<U>, U>(
+//     struct: T,
+//     guard: TypeGuard<U>
+// ): typeof guard
+
+// export function enpipeSchemaStructIntoGuard<TStruct extends V3.Struct<any>>(
+//     struct: TStruct,
+//     guard: TypeGuard<V3.FromStruct<TStruct>>
+// ): typeof guard
+// export function enpipeSchemaStructIntoGuard<TStruct extends V3.UnionStruct<any[]>>(
+//     struct: TStruct,
+//     guard: TypeGuard<V3.FromUnionStruct<TStruct>>
+// ): typeof guard
+// export function enpipeSchemaStructIntoGuard<TStruct extends V3.IntersectionStruct<any[]>>(
+//     struct: TStruct,
+//     guard: TypeGuard<V3.FromIntersectionStruct<TStruct>>
+// ): typeof guard
+export function enpipeSchemaStructIntoGuard<TSource>(
+    struct: V3.GenericStruct<TSource, false>,
+    guard: TypeGuard<TSource>
 ): typeof guard
-export function enpipeSchemaStructIntoGuard<T>(
-    struct: GenericStruct<T>,
-    guard: TypeGuard<T>
+export function enpipeSchemaStructIntoGuard<TSource extends Generics.PrimitiveType>(
+    struct: V3.EnumStruct<TSource>,
+    guard: TypeGuard<TSource>
 ): typeof guard
-export function enpipeSchemaStructIntoGuard<T extends StructType, U>(
-    struct: T,
-    guard: TypeGuard<U>
+export function enpipeSchemaStructIntoGuard(
+    struct: V3.PrimitiveStruct,
+    guard: TypeGuard<Generics.PrimitiveType>
 ): typeof guard
-export function enpipeSchemaStructIntoGuard<T extends Struct<U>, U>(
-    struct: T,
-    guard: TypeGuard<U>
+export function enpipeSchemaStructIntoGuard<TSource extends {}>(
+    struct: V3.ObjectStruct<TSource>,
+    guard: TypeGuard<TSource>
 ): typeof guard
-export function enpipeSchemaStructIntoGuard<T extends GenericStruct<U>, U>(
-    struct: T,
-    guard: TypeGuard<U>
+export function enpipeSchemaStructIntoGuard<TStruct extends V3.UnionStruct<any[]>>(
+    struct: TStruct,
+    guard: TypeGuard<V3.FromUnionStruct<TStruct>>
 ): typeof guard
+export function enpipeSchemaStructIntoGuard<TStruct extends V3.IntersectionStruct<any[]>>(
+    struct: TStruct,
+    guard: TypeGuard<V3.FromIntersectionStruct<TStruct>>
+): typeof guard
+// export function enpipeSchemaStructIntoGuard<T>(
+//     struct: BaseStruct<BaseTypes, T>,
+//     guard: TypeGuard<T>
+// ): typeof guard
 
 export function enpipeSchemaStructIntoGuard<T>(
-    struct: GenericStruct<T>,
+    struct: V3.GenericStruct<T>,
     guard: TypeGuard<T>
 ): typeof guard {
     return setMetadata(__metadata__, struct, guard)
@@ -129,7 +174,7 @@ export function enpipeSchemaStructIntoGuard<T>(
 export const setStructMetadata = enpipeSchemaStructIntoGuard
 export const setRuleMessage = enpipeRuleMessageIntoGuard
 
-export function getStructMetadata<U>(guard: TypeGuard<U>): GenericStruct<U> | AnyStruct {
+export function getStructMetadata<U>(guard: TypeGuard<U>): V3.GenericStruct<U> | V3.AnyStruct {
     return (
         getMetadata(__metadata__, guard) ?? {
             type: 'any',
@@ -186,3 +231,11 @@ export function isObjectStruct<T>(
 
     return true
 }
+
+export function createTypeGuard<T>(predicate: Predicate<T>): TypeGuard<T> {
+    if (!isUnaryFunction<TypeGuard>(predicate))
+        throw new Error('predicate must be a unary function')
+
+    return setAsTypeGuard(predicate)
+}
+export { createTypeGuard as asTypeGuard }

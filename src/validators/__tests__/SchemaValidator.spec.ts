@@ -2,6 +2,7 @@ import { isInstanceOf, TypeGuard } from '../../TypeGuards'
 import { nonZero } from '../rules/Number'
 import { nonEmpty } from '../rules/String'
 import { and, array, boolean, number, object, optional, or, string, symbol } from '../schema'
+import { asTypeGuard } from '../schema/helpers'
 import { SchemaValidator } from '../SchemaValidator'
 import { ValidationErrors } from '../ValidationError'
 
@@ -36,7 +37,13 @@ describe('SchemaValidator', () => {
         expect(SchemaValidator.validate(value2, schema)).toBe(value2)
         expect(() => SchemaValidator.validate(value3, schema)).toThrowError(ValidationErrors)
 
-        const schema2 = or(schema, and(string(), <TypeGuard<string>>((s: string) => s.length > 5)))
+        const schema2 = or(
+            schema,
+            and(
+                string(),
+                asTypeGuard((s: string) => s.length > 5)
+            )
+        )
 
         expect(SchemaValidator.validate("I'm a string", schema2)).toBe("I'm a string")
         expect(() => SchemaValidator.validate(value3, schema2)).toThrowError(ValidationErrors)
@@ -86,9 +93,10 @@ describe('SchemaValidator', () => {
                 SchemaValidator.validate(value3, schema1, false),
                 and(
                     isInstanceOf(ValidationErrors),
-                    (({ errors }: ValidationErrors) =>
-                        errors.length === 1 &&
-                        errors[0]!.path === '$.a') as TypeGuard<ValidationErrors>
+                    asTypeGuard(
+                        ({ errors }: ValidationErrors) =>
+                            errors.length === 1 && errors[0]!.path === '$.a'
+                    )
                 )
             )
         ).not.toThrowError(ValidationErrors)

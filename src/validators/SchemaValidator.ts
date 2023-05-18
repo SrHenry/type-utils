@@ -15,9 +15,9 @@ import {
 } from '../TypeGuards/GenericTypeGuards'
 import { Merge } from '../types'
 import { MessageFormator } from './rules/types'
-import type { ArrayStruct } from './schema'
+import type { ArrayStruct, BaseStruct, BaseTypes } from './schema'
 import { getStructMetadata, object, or } from './schema'
-import { hasStructMetadata } from './schema/helpers'
+import { asTypeGuard, hasStructMetadata } from './schema/helpers'
 import { ValidationError, ValidationErrors } from './ValidationError'
 import { ValidatorMessageMap } from './Validators'
 
@@ -35,13 +35,16 @@ const defaults = {
         return true
     },
 } as const
-type DefaultThrowsParam = typeof defaults['throws']
+type DefaultThrowsParam = (typeof defaults)['throws']
 
 const throws = Symbol('[@srhenry/type-utils]:/validators/SchemaValidator/__throws__')
 
 const shouldThrow = (subject: unknown): boolean =>
-    getMetadata(throws, subject, (e => typeof e === 'boolean') as TypeGuard<boolean>) ??
-    defaults.throws
+    getMetadata(
+        throws,
+        subject,
+        asTypeGuard<boolean>(e => typeof e === 'boolean')
+    ) ?? defaults.throws
 
 // const mustThrow = <T>(subject: T = {} as T) => setThrows(true, subject)
 // const setDefaultThrow = <T>(subject: T = {} as T) => setThrows(defaults.throws, subject)
@@ -77,94 +80,20 @@ function validate<T, Name extends string, Parent>(
     if (typeof name_or_options === 'string') name = name_or_options
     else ({ name, parent } = name_or_options ?? {})
 
+    if (!parent) name ??= '$' as Name
+
     switch (metadata.type) {
         case 'object':
-            const isValidObject = (arg: unknown): arg is Record<string, any> =>
-                !!arg && typeof arg === 'object'
+            {
+                const isValidObject = (arg: unknown): arg is Record<string, any> =>
+                    !!arg && typeof arg === 'object'
 
-            if (!isValidObject(arg)) {
-                errors.push(
-                    new ValidationError({
-                        message: getMessage(schema) ?? `Expected object, got ${arg}`,
-                        schema,
-                        value: arg,
-                        name,
-                        parent,
-                    })
-                )
-
-                break
-            }
-
-            if (!parent) name ??= '$' as Name
-
-            if ('tree' in metadata) {
-                const entries = Object.entries(arg)
-                const { tree } = metadata
-
-                const results = Object.entries(tree).map(
-                    ([k, { schema, optional }]): [
-                        typeof tree[Exclude<keyof typeof tree, symbol>]['schema'],
-                        (
-                            | GetTypeGuard<
-                                  typeof tree[Exclude<keyof typeof tree, symbol>]['schema']
-                              >
-                            | ValidationError<
-                                  typeof arg,
-                                  typeof tree[Exclude<keyof typeof tree, symbol>]['schema']
-                              >[]
-                            | undefined
-                        )
-                    ] => {
-                        if (entries.some(([key]) => key === k))
-                            return [
-                                schema,
-                                validate.bind(mustNotThrow())(
-                                    arg[k],
-                                    schema,
-                                    [name, k].filter(Boolean).join('.'),
-                                    arg
-                                ),
-                            ]
-
-                        if (optional) return [schema, void 0]
-
-                        return [
-                            schema,
-                            new ValidationErrors([
-                                new ValidationError({
-                                    schema,
-                                    value: arg[k],
-                                    message: `Missing key '${k}'`,
-                                    name,
-                                    parent,
-                                }),
-                            ]),
-                        ]
-                    }
-                )
-
-                results
-                    .filter((result): result is [TypeGuard<T>, ValidationErrors] => {
-                        const [, item] = result
-                        return (
-                            item instanceof ValidationErrors ||
-                            (Array.isArray(item) &&
-                                item.every(predicate => predicate instanceof ValidationError))
-                        )
-                    })
-                    .forEach(([, e]) => errors.push(...e))
-            } else if ('entries' in metadata) {
-                const { entries, schema, optional } = metadata as ArrayStruct<any>
-
-                if (optional && arg === void 0) break
-
-                if (!Array.isArray(arg)) {
+                if (!isValidObject(arg)) {
                     errors.push(
                         new ValidationError({
-                            schema: schema as unknown as TypeGuard<T>,
+                            message: getMessage(schema) ?? `Expected object, got ${arg}`,
+                            schema,
                             value: arg,
-                            message: `Expected array, got <${arg}>${JSON.stringify(arg)}`,
                             name,
                             parent,
                         })
@@ -173,35 +102,189 @@ function validate<T, Name extends string, Parent>(
                     break
                 }
 
-                const results = arg.map((item, i) =>
-                    validate.bind(mustNotThrow())(item, entries.schema, {
-                        name: [name, `[${i}]`].filter(Boolean).join(''),
-                        parent: arg,
-                    })
-                )
+                // if (!parent) name ??= '$' as Name
 
-                results.filter(isInstanceOf(ValidationErrors)).forEach(item => {
-                    errors.push(...item)
-                })
-            } else {
-                errors.push(
-                    new ValidationError({
-                        message: 'Invalid metadata for object',
-                        value: metadata,
-                        schema: or(
-                            object({
-                                tree: object(),
-                            }),
-                            object({
-                                entries: object(),
+                if ('tree' in metadata) {
+                    const entries = Object.entries(arg)
+                    const { tree } = metadata
+
+                    const results = Object.entries(tree).map(
+                        ([k, { schema, optional }]): [
+                            (typeof tree)[Exclude<keyof typeof tree, symbol>]['schema'],
+                            (
+                                | GetTypeGuard<
+                                      (typeof tree)[Exclude<keyof typeof tree, symbol>]['schema']
+                                  >
+                                | ValidationError<
+                                      typeof arg,
+                                      (typeof tree)[Exclude<keyof typeof tree, symbol>]['schema']
+                                  >[]
+                                | undefined
+                            )
+                        ] => {
+                            if (entries.some(([key]) => key === k))
+                                return [
+                                    schema,
+                                    validate.bind(mustNotThrow())(
+                                        arg[k],
+                                        schema,
+                                        [name, k].filter(Boolean).join('.'),
+                                        arg
+                                    ),
+                                ]
+
+                            if (optional) return [schema, void 0]
+
+                            return [
+                                schema,
+                                new ValidationErrors([
+                                    new ValidationError({
+                                        schema,
+                                        value: arg[k],
+                                        message: `Missing key '${k}'`,
+                                        name,
+                                        parent,
+                                    }),
+                                ]),
+                            ]
+                        }
+                    )
+
+                    results
+                        .filter((result): result is [TypeGuard<T>, ValidationErrors] => {
+                            const [, item] = result
+                            return (
+                                item instanceof ValidationErrors ||
+                                (Array.isArray(item) &&
+                                    item.every(predicate => predicate instanceof ValidationError))
+                            )
+                        })
+                        .forEach(([, e]) => errors.push(...e))
+                } else if ('entries' in metadata) {
+                    const { entries, schema, optional } = metadata as ArrayStruct<any>
+
+                    if (optional && arg === void 0) break
+
+                    if (!Array.isArray(arg)) {
+                        errors.push(
+                            new ValidationError({
+                                schema: schema as unknown as TypeGuard<T>,
+                                value: arg,
+                                message: `Expected array, got <${arg}>${JSON.stringify(arg)}`,
+                                name,
+                                parent,
                             })
-                        ) as unknown as TypeGuard<T>,
+                        )
+
+                        break
+                    }
+
+                    const results = arg.map((item, i) =>
+                        validate.bind(mustNotThrow())(item, entries.schema, {
+                            name: [name, `[${i}]`].filter(Boolean).join(''),
+                            parent: arg,
+                        })
+                    )
+
+                    results.filter(isInstanceOf(ValidationErrors)).forEach(item => {
+                        errors.push(...item)
+                    })
+                } else {
+                    errors.push(
+                        new ValidationError({
+                            message: 'Invalid metadata for object',
+                            value: metadata,
+                            schema: or(
+                                object({
+                                    tree: object(),
+                                }),
+                                object({
+                                    entries: object(),
+                                })
+                            ) as unknown as TypeGuard<T>,
+                            name,
+                            parent,
+                        })
+                    )
+                }
+            }
+            break
+        case 'intersection':
+            {
+                if (metadata.optional && arg === undefined) break
+
+                const results = metadata.types.map(({ schema }) =>
+                    validate.bind(mustNotThrow())(arg, schema, {
                         name,
                         parent,
                     })
                 )
-            }
 
+                const intersectionErrors = results
+                    .filter(isInstanceOf(ValidationErrors))
+                    .filter(e => e !== arg)
+
+                if (intersectionErrors.length === 0) break
+
+                const intersectionErrorList = intersectionErrors.map(item => [...item]).flat()
+
+                errors.push(
+                    new ValidationError({
+                        message: 'Value does not match all intersection types',
+                        schema,
+                        value: arg,
+                        name,
+                        parent,
+                        context: {
+                            types: metadata.types.filter((_, i) =>
+                                results
+                                    .map((r, i) => [i, r])
+                                    .filter(
+                                        ([, r]) => isInstanceOf(r, ValidationError) && r !== arg
+                                    )
+                                    .map(([i]) => i)
+                                    .includes(i)
+                            ),
+                            errors: intersectionErrorList,
+                        },
+                    })
+                )
+
+                intersectionErrorList.forEach(error => errors.push(error))
+            }
+            break
+        case 'union':
+            {
+                if (metadata.optional && arg === undefined) break
+
+                const results = metadata.types.map(({ schema }) =>
+                    validate.bind(mustNotThrow())(arg, schema, {
+                        name,
+                        parent,
+                    })
+                )
+
+                const unionErrors = results
+                    .filter(isInstanceOf(ValidationErrors))
+                    .filter(e => e !== arg)
+
+                if (unionErrors.length === results.length) {
+                    const unionErrorList = unionErrors.map(e => Array.from(e)).flat()
+                    errors.push(
+                        new ValidationError({
+                            message: 'Value does not match any of the union types',
+                            schema,
+                            value: arg,
+                            name,
+                            parent,
+                            context: {
+                                types: metadata.types,
+                                errors: unionErrorList,
+                            },
+                        })
+                    )
+                }
+            }
             break
         default:
             try {
@@ -229,7 +312,9 @@ function validate<T, Name extends string, Parent>(
         if (throws) throw new ValidationErrors(errors)
 
         return new ValidationErrors(errors)
-    } else return arg as T
+    }
+
+    return arg as T
 }
 
 type ISchemaValidator<T, Throws extends boolean = DefaultThrowsParam> = Merge<
@@ -324,13 +409,16 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
 
         if ('tree' in metadata)
             Object.entries(message).forEach(([k, item]) =>
-                __SchemaValidator.setValidatorMessage(
+                __SchemaValidator.setValidatorMessage<Value<T>>(
                     item as ValidatorMessageMap<Value<T>>,
-                    metadata.tree[k as keyof T].schema
+                    metadata.tree[k as keyof T].schema as TypeGuard<Value<T>>
                 )
             )
         else if ('entries' in metadata)
-            __SchemaValidator.setValidatorMessage(message, metadata.entries.schema as TypeGuard<T>)
+            __SchemaValidator.setValidatorMessage(
+                message,
+                (metadata.entries as BaseStruct<BaseTypes, any>).schema
+            )
         else throw new Error('Invalid metadata for object')
 
         return schema

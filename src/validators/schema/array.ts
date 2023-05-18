@@ -1,5 +1,5 @@
 import { getMessage, TypeGuard } from '../../TypeGuards/GenericTypeGuards'
-import type { ArrayRules as ArrayRules } from '../rules/Array'
+import type { ArrayRules } from '../rules/Array'
 import { ValidatorMap } from '../Validators'
 import { any } from './any'
 import {
@@ -10,6 +10,7 @@ import {
     isFollowingRules,
 } from './helpers'
 import { object } from './object'
+import { V3 } from './types'
 
 export function array(): TypeGuard<any[]>
 export function array(rules: ArrayRules[]): TypeGuard<any[]>
@@ -34,13 +35,13 @@ export function array<T>(
         const guard = (arg: unknown): arg is T[] =>
             Array.isArray(arg) && arg.every(item => _schema(item))
 
-        return enpipeSchemaStructIntoGuard<(T | any)[]>(
+        return enpipeSchemaStructIntoGuard<T[]>(
             {
                 type: 'object',
                 schema: guard,
                 optional: false,
-                entries: getStructMetadata(_schema),
-            },
+                entries: getStructMetadata(_schema) as V3.GenericStruct<T>,
+            } as V3.ArrayStruct<T>,
             enpipeRuleMessageIntoGuard(`Array<${getMessage(_schema)}>`, guard)
         )
     }
@@ -49,12 +50,12 @@ export function array<T>(
         branchIfOptional(arg, rules) ||
         (Array.isArray(arg) && isFollowingRules(arg, rules) && arg.every(item => _schema(item)))
 
-    return enpipeSchemaStructIntoGuard<(T | any)[]>(
+    return enpipeSchemaStructIntoGuard(
         {
             type: 'object',
             schema: guard,
             optional: false,
-            entries: getStructMetadata(_schema),
+            entries: getStructMetadata(_schema) as V3.GenericStruct<T>,
         },
         enpipeRuleMessageIntoGuard(`Array<${getMessage(_schema)}>`, guard, rules)
     )

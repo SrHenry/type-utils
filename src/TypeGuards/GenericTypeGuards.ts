@@ -2,12 +2,24 @@ import 'reflect-metadata'
 import { isFunction } from '../helpers'
 import { GetOptional } from '../types/GetOptional'
 import { GetRequired } from '../types/GetRequired'
+import { Predicate } from '../types/Predicate'
 import { MessageFormator } from '../validators/rules/types'
 import { TypeGuardError } from './TypeErrors'
 
 export type ConstructorSignature<T = any> = new (...args: any[]) => T
 export type TypeGuard<T = any> = (value: unknown) => value is T
+export type TypeGuards<T = any> = TypeGuard<T>[]
 export type GetTypeGuard<T> = T extends TypeGuard<infer U> ? U : never
+export type GetTypeGuards<T extends any[]> = T extends []
+    ? []
+    : T extends [infer U, ...infer V]
+    ? [GetTypeGuard<U>, ...GetTypeGuards<V>]
+    : TypeGuard<any>[]
+export type MapToTypeGuards<Types extends any[]> = Types extends []
+    ? []
+    : Types extends [infer T, ...infer U]
+    ? [TypeGuard<T>, ...MapToTypeGuards<U>]
+    : TypeGuard<any>[]
 
 export type ResolveIfTypeGuard<T> = T extends TypeGuard<infer U> ? U : T
 
@@ -66,14 +78,9 @@ export function ensureInterface<Interface, Instance = unknown>(
         )
 
     if (!(validator as TypeGuard<Interface>)(value)) {
-        let message = `Failed while ensuring interface type constraint of ${JSON.stringify(
+        const message = `Failed while ensuring interface type constraint of ${JSON.stringify(
             value
-        )} against ${JSON.stringify(validator)}`
-
-        if (hasMessage(validator))
-            message = `Failed while ensuring interface type constraint of ${JSON.stringify(
-                value
-            )} against ${getMessage(validator)}`
+        )} against ${hasMessage(validator) ? getMessage(validator) : JSON.stringify(validator)}`
 
         throw new TypeGuardError(message, value, validator)
     }
@@ -123,11 +130,13 @@ export function hasMetadata<K extends string | symbol, T>(key: K, from: T): bool
 export function hasMetadata<K extends string | symbol>(key: K): <T>(from: T) => boolean
 export function hasMetadata<K extends string | symbol, T>(
     key: K,
-    from: Object | symbol = __curry_param__
+    from: Object | typeof __curry_param__ = __curry_param__
 ): boolean | ((from: T) => boolean) {
     if (from === __curry_param__) return (from: T): boolean => hasMetadata(key, from)
 
     try {
+        if (from === null || typeof from === 'undefined') throw new Error('Invalid target object')
+
         return Reflect.hasMetadata(key, from)
     } catch {
         return false
@@ -217,7 +226,7 @@ export function imprintMessage(message: string): <T extends Object>(into: T) => 
 export function imprintMessage<T extends Object>(message: string, into: T): T
 export function imprintMessage<T extends Object>(
     message: string,
-    arg: T | symbol = __curry_param__
+    arg: T | typeof __curry_param__ = __curry_param__
 ) {
     if (arg === __curry_param__) return (arg: T): T => imprintMessage(message, arg)
 
@@ -300,4 +309,14 @@ export function setValidatorMessageFormator<T>(messageFormator: MessageFormator,
 }
 
 export const isTypeGuard = <T = any>(value: unknown): value is TypeGuard<T> =>
-    isFunction(value) && typeof value(void 0) === 'boolean'
+    !!value && (hasTypeGuardMetadata(value) || isUnaryFunction(value))
+
+const __type_guard__ = Symbol('__type_guard__')
+
+export const hasTypeGuardMetadata = (value: unknown): boolean => hasMetadata(__type_guard__, value)
+export const setAsTypeGuard = <T>(value: TypeGuard<T> | Predicate<T>) =>
+    setMetadata(__type_guard__, true, value) as TypeGuard<T>
+
+export const isUnaryFunction = <TFuncShape = (arg: unknown) => unknown>(
+    arg: unknown
+): arg is TFuncShape => isFunction(arg) && arg.length === 1

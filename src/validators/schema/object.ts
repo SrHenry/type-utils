@@ -1,11 +1,11 @@
 import { getMessage } from '../../TypeGuards/GenericTypeGuards'
 import { BaseValidator } from '../BaseValidator'
 import {
+    _hasOptionalProp,
     branchIfOptional,
     enpipeRuleMessageIntoGuard,
     enpipeSchemaStructIntoGuard,
     getStructMetadata,
-    _hasOptionalProp,
 } from './helpers'
 
 import { join } from '../../helpers/Experimental/join'
@@ -13,7 +13,7 @@ import { map } from '../../helpers/Experimental/map'
 import { pipe } from '../../helpers/Experimental/pipeline'
 import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
 import type { Sanitize, ValidatorMap } from '../Validators'
-import type { ObjectStruct } from './types'
+import type { V3 } from './types'
 
 export function object<T extends {}>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
 // export function object<T extends ValidatorMap<any>>(tree: T): TypeGuard<GetTypeFromValidatorMap<T>>
@@ -24,7 +24,6 @@ export function object<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Reco
     const isBlankObject = (arg: unknown) =>
         typeof arg === 'object' && !!arg && Object.keys(arg).length === 0
     if (!tree || isBlankObject(tree)) {
-        tree
         const guard = (arg: unknown): arg is Record<any, any> | {} =>
             tree !== null && typeof arg === 'object'
 
@@ -78,10 +77,7 @@ export function object<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Reco
         tree: Object.entries(tree)
             .map(([k, v]) => ({ [k]: getStructMetadata(v) }))
             .reduce((acc, item) => Object.assign(acc, item), {}),
-    } as ObjectStruct<T>
+    } as V3.ObjectStruct<T>
 
-    return enpipeSchemaStructIntoGuard<ObjectStruct<T>>(
-        metadata,
-        enpipeRuleMessageIntoGuard(message, guard)
-    )
+    return enpipeSchemaStructIntoGuard<T>(metadata, enpipeRuleMessageIntoGuard(message, guard))
 }

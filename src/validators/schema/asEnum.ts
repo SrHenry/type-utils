@@ -7,13 +7,13 @@ import {
 import { primitive } from './primitive'
 
 import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
-import type { EnumStruct } from './types'
+import type { V3 } from './types'
 
 export function asEnum<T extends Generics.PrimitiveType>(values: T[]): TypeGuard<T> {
     const guard = (arg: unknown): arg is T =>
         branchIfOptional(arg, []) || (primitive()(arg) && values.some(value => value === arg))
 
-    return enpipeSchemaStructIntoGuard<EnumStruct<T>, T>(
+    return enpipeSchemaStructIntoGuard<T>(
         {
             type: 'enum',
             schema: guard,
@@ -23,7 +23,7 @@ export function asEnum<T extends Generics.PrimitiveType>(values: T[]): TypeGuard
                 schema: (arg): arg is typeof value => value === arg,
                 optional: false,
             })),
-        },
+        } as V3.EnumStruct<T>,
         enpipeRuleMessageIntoGuard(`enum [ ${values.map(String).join(' | ')} ]`, guard)
     )
 }

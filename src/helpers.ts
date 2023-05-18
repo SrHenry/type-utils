@@ -1,3 +1,5 @@
+import { Func } from './types/Func'
+
 export const sleep = (milliseconds: number, onfulfilled?: () => any) => {
     return new Promise<void>(resolve => setTimeout(() => resolve(), milliseconds)).then(onfulfilled)
 }
@@ -238,4 +240,15 @@ export function AutoBind(
             return originalMethod.bind(this)
         },
     }
+}
+
+export function repeat<TFuncShape extends Func<any[], any>>(fn: TFuncShape, times: number): void
+export function repeat<TFuncShape extends Func<any[], any>>(fn: TFuncShape, times: bigint): void
+// export function repeat<TFuncShape extends Func<any[], any>>(fn: TFuncShape, until)
+export function repeat<TFuncShape extends Func<any[], any>>(
+    fn: TFuncShape,
+    times: number | bigint
+) {
+    times = BigInt(times)
+    for (let c = BigInt('0'); c < times; ++c) fn()
 }

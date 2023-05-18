@@ -51,6 +51,15 @@ export type Merge<L, R> = [L, R] extends [any, Function]
     ? L & R
     : MergeObjects<L, R>
 
+export type Merge3<A, B, C> = Merge<A, Merge<B, C>>
+export type Merge4<A, B, C, D> = Merge<A, Merge3<B, C, D>>
+export type Merge5<A, B, C, D, E> = Merge<A, Merge4<B, C, D, E>>
+export type Merge6<A, B, C, D, E, F> = Merge<A, Merge5<B, C, D, E, F>>
+export type Merge7<A, B, C, D, E, F, G> = Merge<A, Merge6<B, C, D, E, F, G>>
+export type Merge8<A, B, C, D, E, F, G, H> = Merge<A, Merge7<B, C, D, E, F, G, H>>
+export type Merge9<A, B, C, D, E, F, G, H, I> = Merge<A, Merge8<B, C, D, E, F, G, H, I>>
+export type Merge10<A, B, C, D, E, F, G, H, I, J> = Merge<A, Merge9<B, C, D, E, F, G, H, I, J>>
+
 export type Spread<A extends readonly [...any]> = A extends [infer L, ...infer R]
     ? MergeObjects<L, Spread<R>>
     : unknown

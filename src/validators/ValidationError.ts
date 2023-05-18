@@ -6,12 +6,19 @@ import {
     TypeGuardError,
 } from '../TypeGuards'
 
-export type ValidationArgs<Value, Schema, Name extends string = string, Parent = any> = {
+export type ValidationArgs<
+    Value,
+    Schema,
+    Name extends string = string,
+    Parent = any,
+    Context extends {} | null = null
+> = {
     value: Value
     schema: TypeGuard<Schema>
     message: string
     name?: Name
     parent?: Parent
+    context?: Context
 }
 
 const defaultMessageFormator = (path: string, message: string) => `[${path}] - ${message}`
@@ -20,10 +27,12 @@ export class ValidationError<
     Value,
     Schema,
     Path extends string = string,
-    Parent = any
+    Parent = any,
+    Context extends {} = any
 > extends TypeGuardError<Value, TypeGuard<Schema>> {
     private Path?: Path
     private Parent?: Parent
+    public readonly context: Context | null = null
 
     constructor({
         message,
@@ -31,11 +40,14 @@ export class ValidationError<
         value,
         name,
         parent,
-    }: ValidationArgs<Value, Schema, Path, Parent>) {
+        context,
+    }: ValidationArgs<Value, Schema, Path, Parent, Context>) {
         super(message, value, schema)
 
         this.Path = name
         this.Parent = parent
+
+        if (context) this.context = context
 
         setValidatorMessageFormator(defaultMessageFormator, this)
     }
