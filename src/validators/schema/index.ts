@@ -35,6 +35,7 @@ export { getStructMetadata }
 
 import { Merge } from '../../types'
 import { NumberRules } from '../rules/Number'
+import { RecordRules } from '../rules/Record'
 import { and } from './and'
 import { any } from './any'
 import { array } from './array'
@@ -47,6 +48,7 @@ import { number, NumberRulesConfig } from './number'
 import { object } from './object'
 import { or } from './or'
 import { primitive } from './primitive'
+import { record } from './record'
 import { string } from './string'
 import { symbol } from './symbol'
 import { useSchema } from './useSchema'
@@ -62,6 +64,7 @@ export const Schema = {
     number,
     bigint,
     object,
+    record,
     or,
     primitive,
     string,
@@ -89,6 +92,7 @@ export type OptionalSchema = Merge<
             | 'string'
             | 'array'
             | 'object'
+            | 'record'
             | 'and'
             | 'or'
             | 'asEnum'
@@ -122,6 +126,24 @@ export type OptionalSchema = Merge<
         // ): OptionalizeTypeGuard<TypeGuard<GetTypeFromValidatorMap<T>>>
         object(): OptionalizeTypeGuard<TypeGuard<Record<any, any>>>
         object(tree: {}): OptionalizeTypeGuard<TypeGuard<{}>>
+
+        record(): OptionalizeTypeGuard<TypeGuard<Record<string, any>>>
+        // record(rules: Partial<Rules>): OptionalizeTypeGuard<TypeGuard<Record<string, any>>>
+        record(rules: RecordRules[]): OptionalizeTypeGuard<TypeGuard<Record<string, any>>>
+        record<K extends keyof any, T>(
+            keyGuard: TypeGuard<K>,
+            valueGuard: TypeGuard<T>
+        ): OptionalizeTypeGuard<TypeGuard<Record<K, T>>>
+        // record<K extends keyof any, T>(
+        //     keyGuard: TypeGuard<K>,
+        //     valueGuard: TypeGuard<T>,
+        //     rules: Partial<Rules>
+        // ): OptionalizeTypeGuard<TypeGuard<Record<K, T>>>
+        record<K extends keyof any, T>(
+            keyGuard: TypeGuard<K>,
+            valueGuard: TypeGuard<T>,
+            rules: RecordRules[]
+        ): OptionalizeTypeGuard<TypeGuard<Record<K, T>>>
 
         and<T1, T2>(
             guard1: TypeGuard<T1>,

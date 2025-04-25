@@ -41,6 +41,7 @@ export type BaseTypes =
     | 'primitive'
     | 'union'
     | 'intersection'
+    | 'record'
     | 'any'
 
 export type BaseStruct<T extends BaseTypes, U> = {
@@ -134,6 +135,17 @@ export namespace V3 {
 
     export type ArrayStruct<U> = BaseStruct<'object', U[]> & ArrayEntries<U>
 
+    export type RecordMetadata<T extends {}> = {
+        keyMetadata: V3.GenericStruct<keyof T>
+        valueMetadata: V3.GenericStruct<T[keyof T]>
+    }
+
+    export type RecordStruct<K extends keyof any = string, T = any> = BaseStruct<
+        'record',
+        Record<K, T>
+    > &
+        RecordMetadata<Record<K, T>>
+
     export type GenericStruct<
         T = any,
         UnionOrIntersection extends 'union' | 'intersection' | true | false = true
@@ -199,7 +211,7 @@ export namespace V3 {
         : T extends (infer U)[]
         ? ArrayStruct<U>
         : T extends {}
-        ? ObjectStruct<T>
+        ? ObjectStruct<T> | RecordStruct<keyof T, T[keyof T]>
         : never
 
     export type StructType =
@@ -215,6 +227,9 @@ export namespace V3 {
         | EnumStruct<Generics.PrimitiveType>
         | UnionStruct<any[]>
         | IntersectionStruct<any[]>
+        | ObjectStruct<any>
+        | ArrayStruct<any>
+        | RecordStruct
 
     export type FromStruct<T extends Struct<any>> = T extends Struct<infer U> ? U : never
     export type FromUnionStruct<T extends UnionStruct<any>> = T extends UnionStruct<infer U>
@@ -222,6 +237,13 @@ export namespace V3 {
         : never
     export type FromIntersectionStruct<T extends IntersectionStruct<any>> =
         T extends IntersectionStruct<infer U> ? TIntersection<U> : never
+
+    export type FromRecordStruct<T extends RecordStruct<any, any>> = T extends RecordStruct<
+        infer K,
+        infer T
+    >
+        ? Record<K, T>
+        : never
 
     // type aa = Struct<{ a: 1; b: { c: 'a1b2c3'; d: { e: { f: true }[] } } }>
 

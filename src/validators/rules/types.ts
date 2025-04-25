@@ -1,6 +1,7 @@
-import type { bindings, keys } from './constants'
 import type { ArrayRules } from './Array'
+import type { bindings, keys } from './constants'
 import type { NumberRules } from './Number'
+import type { RecordRules } from './Record'
 import type { StringRules } from './String'
 
 export type MessageFormator = (...args: any[]) => string
@@ -30,7 +31,7 @@ export type CustomFactory<
     Subject = unknown
 > = (...args: Args) => Custom<Args, RuleName, Subject>
 
-export type Default = StringRules | NumberRules | ArrayRules
+export type Default = StringRules | NumberRules | ArrayRules | RecordRules
 export type All<
     Args extends any[] = unknown[],
     RuleName extends string = string,

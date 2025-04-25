@@ -4,14 +4,14 @@ import { GetTypeGuard } from '../TypeGuards'
 export * from './GetOptional'
 export * from './GetRequired'
 export {
-    __OE_2_T as ObjectEntries,
     __E_2_T as Entries,
-    __OE_1_T as ObjectEntry,
     __E_1_T as Entry,
-    __OV_2_T as ObjectValues,
-    __V_2_T as Values,
+    __OE_2_T as ObjectEntries,
+    __OE_1_T as ObjectEntry,
     __OV_1_T as ObjectValue,
+    __OV_2_T as ObjectValues,
     __V_1_T as Value,
+    __V_2_T as Values,
 }
 
 type __OE_2_T<T extends {}> = ObjectEntries<T>
@@ -76,3 +76,5 @@ export type TMapFn<T, U> = {
     (value: T, index: number): U
     (value: T, index: number, array: T[]): U
 }
+
+export type TypeFromArray<T> = T extends Array<infer U> ? U : never
