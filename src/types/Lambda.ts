@@ -1,6 +1,5 @@
-import { TypeGuard } from '../TypeGuards'
 import type { Func } from './Func'
-import { MergeObjects } from './index'
+import type { MergeObjects } from './index'
 
 export type NoParamsLambda<ReturnType = void> = Lambda<[], ReturnType>
 export type Lambda0<ReturnType = void> = NoParamsLambda<ReturnType>
@@ -205,45 +204,3 @@ export type AsyncLambda<Params extends any[] = [], ReturnType = void> = Lambda<
     Params,
     Promise<ReturnType>
 >
-
-declare const a: ILambdaProps<(a: number, b: string, c: boolean, d: object) => symbol>
-declare const b: ILambdaProps<(a: number) => symbol>
-declare const x: ILambdaProps<() => symbol>
-
-const cc = a.curry()
-const c = a.curry(true)
-
-c.invoke(1, '2', true, {})
-c.invoke(1, '2', false).invoke({})
-c.invoke(1, '2').invoke(true, {})
-c.invoke(1, '2').invoke(true).invoke({})
-c.invoke(1).invoke('2', true, {})
-c.invoke(1).invoke('2', true).invoke({})
-c.invoke(1).invoke('2').invoke(true, {})
-
-c.invoke(1).invoke('2').invoke(true).invoke({})
-cc.invoke(1).invoke('2').invoke(true).invoke({})
-
-b.invoke(1)
-
-x.invoke()
-
-declare function lambda<T>(guard: TypeGuard<T>): LambdaTypeGuard<T>
-declare function lambda<TFunc extends (...args: any) => any>(lambda: TFunc): AsLambda<TFunc>
-declare function lambda(lambda: Function): Lambda<any[], any>
-
-const f = lambda((a: number, b: string, c: boolean, d: object) => Symbol(`${a}${b}${c}${d}`))
-const curried = f.curry()
-
-curried(1)('2')(true).invoke({})
-
-const ff = f.curry(true)
-
-ff(1, '2', true, {})
-ff(1, '2', true)({})
-ff(1, '2')(true, {})
-ff(1, '2')(true)({})
-ff(1)('2', true, {})
-ff(1)('2', true)({})
-ff(1)('2')(true, {})
-ff(1)('2')(true)({})
