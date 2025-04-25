@@ -31,6 +31,8 @@ export const keys = {
     'String.regex': '__String.regex__',
     'String.nonEmpty': '__String.nonEmpty__',
 
+    'Record.nonEmpty': '__Record.nonEmpty__',
+
     'optional': '__optional__',
 } as const
 export type keys = typeof keys
@@ -59,6 +61,11 @@ export const bindings = {
     ),
     [keys['String.nonEmpty']]: setMessageFormator(nonEmptyFormator, (arg: string) =>
         getRule('Number.nonZero')?.(arg.length)
+    ),
+
+    [keys['Record.nonEmpty']]: setMessageFormator(
+        nonEmptyFormator,
+        (arg: Record<keyof any, unknown>) => getRule('Number.nonZero')?.(Object.keys(arg).length)
     ),
 
     [keys.optional]: (arg: unknown) => arg === void 0,

@@ -73,22 +73,24 @@ export function curry<TFunc extends Func<any[], any>, partialApply extends boole
     fn: TFunc,
     partialApply: partialApply
 ): Curried<TFunc, partialApply>
-export function curry(fn: CallableFunction, partialApply: boolean = false) {
+
+/**
+ * @ignore
+ */
+export function curry(fn: CallableFunction, partialApply: boolean, args: any[]): CallableFunction
+
+export function curry(fn: CallableFunction, partialApply: boolean = false, args: any[] = []) {
     if (isCurried(fn)) return fn
 
     if (fn.length < 2) return fn
 
     if (!partialApply) {
-        const args = [] as any[]
+        if (args.length >= fn.length) return fn(...args)
 
         function curried(arg: any = NO_ARG) {
             if (arg === NO_ARG) return curried
 
-            args.push(arg)
-
-            if (args.length >= fn.length) return fn(...args)
-
-            return curried
+            return curry(fn, partialApply, [...args, arg])
         }
 
         if (isLambda(fn)) addInvoke(curried)
@@ -97,8 +99,6 @@ export function curry(fn: CallableFunction, partialApply: boolean = false) {
     }
 
     function curriedPartialApply(...args: any[]) {
-        //if (args.length == 0) throw new Error('curried function called with no arguments')
-
         if (args.length >= fn.length) return fn(...args)
 
         function partialApply(...args2: any[]) {

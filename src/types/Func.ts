@@ -56,6 +56,65 @@ export type Func5<
     Param5 = any,
     ReturnType = void
 > = FiveParamsFunc<Param1, Param2, Param3, Param4, Param5, ReturnType>
+export type Func6<
+    Param1 = any,
+    Param2 = any,
+    Param3 = any,
+    Param4 = any,
+    Param5 = any,
+    Param6 = any,
+    ReturnType = void
+> = Func<[Param1, Param2, Param3, Param4, Param5, Param6], ReturnType>
+export type Func7<
+    Param1 = any,
+    Param2 = any,
+    Param3 = any,
+    Param4 = any,
+    Param5 = any,
+    Param6 = any,
+    Param7 = any,
+    ReturnType = void
+> = Func<[Param1, Param2, Param3, Param4, Param5, Param6, Param7], ReturnType>
+
+export type Func8<
+    Param1 = any,
+    Param2 = any,
+    Param3 = any,
+    Param4 = any,
+    Param5 = any,
+    Param6 = any,
+    Param7 = any,
+    Param8 = any,
+    ReturnType = void
+> = Func<[Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8], ReturnType>
+export type Func9<
+    Param1 = any,
+    Param2 = any,
+    Param3 = any,
+    Param4 = any,
+    Param5 = any,
+    Param6 = any,
+    Param7 = any,
+    Param8 = any,
+    Param9 = any,
+    ReturnType = void
+> = Func<[Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8, Param9], ReturnType>
+export type Func10<
+    Param1 = any,
+    Param2 = any,
+    Param3 = any,
+    Param4 = any,
+    Param5 = any,
+    Param6 = any,
+    Param7 = any,
+    Param8 = any,
+    Param9 = any,
+    Param10 = any,
+    ReturnType = void
+> = Func<
+    [Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8, Param9, Param10],
+    ReturnType
+>
 
 export type Func<Params extends any[] = [], ReturnType = void> = (...args: Params) => ReturnType
 

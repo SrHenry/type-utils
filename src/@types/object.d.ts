@@ -43,3 +43,13 @@ interface ArrayConstructor {
 }
 
 declare var Array: ArrayConstructor
+
+declare type TypeOfTag =
+    | 'undefined'
+    | 'boolean'
+    | 'string'
+    | 'number'
+    | 'bigint'
+    | 'symbol'
+    | 'object'
+    | 'function'

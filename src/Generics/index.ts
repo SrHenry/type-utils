@@ -21,7 +21,10 @@ export namespace Generics {
         | symbol
         | null
         | undefined
-    export declare type Primitives = Extract<typeof TypeOfTag[number], typeof Primitives[number]>
+    export declare type Primitives = Extract<
+        (typeof TypeOfTag)[number],
+        (typeof Primitives)[number]
+    >
     export declare type GetPrimitiveTag<T extends PrimitiveType> = T extends string
         ? 'string'
         : T extends number
@@ -95,49 +98,5 @@ export namespace Generics {
         }
     }
 }
-
-export type NoParamsFunc<ReturnType = void> = Func<[], ReturnType>
-
-export type OneParamFunc<Param1 = any, ReturnType = void> = Func<[Param1], ReturnType>
-export type TwoParamsFunc<Param1 = any, Param2 = any, ReturnType = void> = Func<
-    [Param1, Param2],
-    ReturnType
->
-export type ThreeParamsFunc<Param1 = any, Param2 = any, Param3 = any, ReturnType = void> = Func<
-    [Param1, Param2, Param3],
-    ReturnType
->
-export type FourParamsFunc<
-    Param1 = any,
-    Param2 = any,
-    Param3 = any,
-    Param4 = any,
-    ReturnType = void
-> = Func<[Param1, Param2, Param3, Param4], ReturnType>
-export type FiveParamsFunc<
-    Param1 = any,
-    Param2 = any,
-    Param3 = any,
-    Param4 = any,
-    Param5 = any,
-    ReturnType = void
-> = Func<[Param1, Param2, Param3, Param4, Param5], ReturnType>
-
-export type Func<Params extends any[] = [], ReturnType = void> = (...args: Params) => ReturnType
-export type AsyncFunc<Params extends any[] = [], ReturnType = void> = (
-    ...args: Params
-) => Promise<ReturnType>
-
-export type Async<T> = T extends Func<infer Params, infer RT>
-    ? AsyncFunc<Params, RT>
-    : T extends Promise<any>
-    ? T
-    : Promise<T>
-
-export type MaybeAsync<T> = T extends Func<any[], any>
-    ? T | Async<T>
-    : T extends Promise<any>
-    ? T
-    : Promise<T>
 
 export default Generics
