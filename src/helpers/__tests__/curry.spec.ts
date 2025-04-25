@@ -1,4 +1,4 @@
-import { curry } from '../Experimental'
+import { curry, isPartialApply } from '../Experimental/curry'
 
 describe('curry', () => {
     it('should have no effect in functions with up to one parameter', () => {
@@ -37,5 +37,21 @@ describe('curry', () => {
         expect(curriedPartialApplyFn(1)('foo')(true)).toBe(`${1} foo ${true}`)
         expect(curriedPartialApplyFn(1)('foo')()(true)).toBe(`${1} foo ${true}`)
         expect(curriedPartialApplyFn(1)()('foo')()()(true)).toBe(`${1} foo ${true}`)
+    })
+})
+
+describe('isPartialApply', () => {
+    it('should return true if function is partially applied', () => {
+        const fn = (a: number, b: string, c: boolean) => `${a} ${b} ${c}`
+        const curriedFn = curry(fn, true)
+
+        expect(isPartialApply(curriedFn)).toBe(true)
+    })
+
+    it('should return false if function is not partially applied', () => {
+        const fn = (a: number, b: string, c: boolean) => `${a} ${b} ${c}`
+        const curriedFn = curry(fn)
+
+        expect(isPartialApply(curriedFn)).toBe(false)
     })
 })
