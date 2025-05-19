@@ -1,3 +1,4 @@
+import { Func } from '../../types/Func'
 import type { ArrayRules } from './Array'
 import type { bindings, keys } from './constants'
 import type { NumberRules } from './Number'
@@ -8,11 +9,13 @@ export type MessageFormator = (...args: any[]) => string
 
 export type Rule<Arg = any, Args = any> = (arg: Arg, ...args: Args[]) => boolean
 
-export type OmitFirstItem<T extends any[]> = T extends [any, ...any[]] ? [...T[1]] : never
+export type OmitFirstItemFromTuple<T extends any[]> = T extends [any, ...infer rest]
+    ? [...rest]
+    : never
 
-export type RuleTuple = [
-    rule: keys[keyof keys],
-    args: OmitFirstItem<Parameters<bindings[keyof bindings]>>
+export type RuleTuple<Rule extends keyof keys = keyof keys> = [
+    rule: keys[Rule],
+    args: OmitFirstItemFromTuple<Parameters<bindings[keys[Rule]]>>
 ]
 
 export type CustomHandler<Args extends any[] = any[], Subject = any> = (
@@ -49,3 +52,10 @@ export type CreateRuleArgs<
     messageFormator?: Formator
     handler: Handler
 }
+
+export type RuleFactory<
+    RuleName extends keyof keys = keyof keys,
+    Args extends any[] = RuleTuple<RuleName>[1]
+> = Func<Args, RuleTuple<RuleName>>
+
+export type NoArgs = []

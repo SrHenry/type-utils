@@ -19,12 +19,12 @@ import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
 import { TypeFromArray } from '../../types'
 import { Predicate } from '../../types/Predicate'
 import { template as ruleTemplate } from '../rules/common'
-import type { Optional as OptionalRule } from '../rules/optional'
 import type {
     All as AllRules,
     Custom as CustomRule,
     Default as DefaultRules,
     Rule,
+    RuleTuple,
 } from '../rules/types'
 import { baseTypes } from './constants'
 import type { Exact, GenericStruct, ObjectStruct, V3 } from './types'
@@ -32,9 +32,9 @@ import type { Exact, GenericStruct, ObjectStruct, V3 } from './types'
 const __metadata__ = Symbol('__metadata__')
 const __optional__ = Symbol('__optional__')
 
-export const isOptional = (rule: AllRules): rule is OptionalRule =>
+export const isOptional = (rule: AllRules): rule is RuleTuple<'optional'> =>
     rule[0] in RuleKeys && rule[0] === RuleKeys.optional
-export const isRequired = (rule: AllRules): rule is Exclude<AllRules, OptionalRule> =>
+export const isRequired = (rule: AllRules): rule is Exclude<AllRules, RuleTuple<'optional'>> =>
     !isOptional(rule)
 export const branchIfOptional = (arg: unknown, rules: AllRules[]) =>
     rules.some(isOptional) ? getRule(rules.find(isOptional)![0]).call(null, arg) : false
