@@ -1,5 +1,6 @@
 import 'reflect-metadata'
 
+export * as Classes from './classes/index'
 export * as Experimental from './Experimental'
 export * from './Generics/index'
 export * from './TypeGuards/index'
