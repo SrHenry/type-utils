@@ -18,7 +18,7 @@ import { max as arrayMaxHandler } from './Array/handlers/max'
 import { min as arrayMinHandler } from './Array/handlers/min'
 import { unique as uniqueHandler } from './Array/handlers/unique'
 
-// <NumberRules> import section:
+// <StringRules> import section:
 import { emailFormator as stringEmailFormator } from './String/formators/email'
 import { stringMaxFormator } from './String/formators/max'
 import { stringMinFormator } from './String/formators/min'
