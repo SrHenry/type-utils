@@ -437,9 +437,12 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
 
 export const SchemaValidator = __SchemaValidator as unknown as ISchemaValidatorConstructor & {
     // static methods:
+    /** @throws {ValidationErrors} */
     validate<T>(arg: unknown, schema: TypeGuard<T>): T
+    /** @throws {ValidationErrors} */
     validate<T>(arg: unknown, schema: TypeGuard<T>, shouldThrow: true): T
     validate<T>(arg: unknown, schema: TypeGuard<T>, shouldThrow: false): ValidateReturn<T>
+    /** @throws {ValidationErrors} */
     validate<T>(arg: unknown, schema: TypeGuard<T>, shouldThrow: boolean): ValidateReturn<T>
 
     // setValidatorMessage<T>(message: string, schema: TypeGuard<T>): TypeGuard<T>

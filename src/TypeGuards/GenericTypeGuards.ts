@@ -72,15 +72,19 @@ export function ensureInterface<Interface, Instance = unknown>(
 
     if (!isTypeGuard(validator))
         throw new TypeGuardError(
-            'Invalid validator. must be a TypeGuard (function as predicate).',
+            'Invalid validator. It must be a TypeGuard (function as predicate).',
             validator,
             isTypeGuard
         )
 
     if (!(validator as TypeGuard<Interface>)(value)) {
         const message = `Failed while ensuring interface type constraint of ${JSON.stringify(
-            value
-        )} against ${hasMessage(validator) ? getMessage(validator) : JSON.stringify(validator)}`
+            value,
+            null,
+            2
+        )} against ${
+            hasMessage(validator) ? getMessage(validator) : JSON.stringify(validator, null, 2)
+        }`
 
         throw new TypeGuardError(message, value, validator)
     }
