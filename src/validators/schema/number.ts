@@ -1,12 +1,11 @@
-import { NumberRules } from '../rules/Number'
-import {
-    branchIfOptional,
-    enpipeRuleMessageIntoGuard,
-    enpipeSchemaStructIntoGuard,
-    isFollowingRules,
-} from './helpers'
+import type { TypeGuard } from '../../TypeGuards/types'
+import { type NumberRule, NumberRules } from '../rules/Number'
 
-import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
+import { branchIfOptional } from './helpers/branchIfOptional'
+import { isFollowingRules } from './helpers/isFollowingRules'
+import { optionalizeOverloadFactory } from './helpers/optional'
+import { setRuleMessage } from './helpers/setRuleMessage'
+import { setStructMetadata } from './helpers/setStructMetadata'
 
 type Rules = {
     min: number
@@ -17,18 +16,19 @@ type Rules = {
 
 export type { Rules as NumberRulesConfig }
 
-export function number(): TypeGuard<number>
-export function number(rules: Partial<Rules>): TypeGuard<number>
-export function number(rules: NumberRules[]): TypeGuard<number>
-export function number(rules: Partial<Rules> | NumberRules[] = []): TypeGuard<number> {
-    if (Array.isArray<NumberRules>(rules)) {
-        const guard = (arg: unknown): arg is number =>
-            branchIfOptional(arg, rules as NumberRules[]) ||
-            (typeof arg === 'number' && isFollowingRules(arg, rules as NumberRules[]))
+function _fn(): TypeGuard<number>
+function _fn(rules: Partial<Rules>): TypeGuard<number>
+function _fn(rules: NumberRule[]): TypeGuard<number>
 
-        return enpipeSchemaStructIntoGuard(
+function _fn(rules: Partial<Rules> | NumberRule[] = []): TypeGuard<number> {
+    if (Array.isArray<NumberRule>(rules)) {
+        const guard = (arg: unknown): arg is number =>
+            branchIfOptional(arg, rules as NumberRule[]) ||
+            (typeof arg === 'number' && isFollowingRules(arg, rules as NumberRule[]))
+
+        return setStructMetadata(
             { type: 'number', schema: guard, optional: false },
-            enpipeRuleMessageIntoGuard('number', guard, rules)
+            setRuleMessage('number', guard, rules)
         )
     }
 
@@ -43,3 +43,11 @@ export function number(rules: Partial<Rules> | NumberRules[] = []): TypeGuard<nu
 
     return number(rules)
 }
+
+type OptionalizedNumber = {
+    (): TypeGuard<undefined | number>
+    (rules: Partial<Rules>): TypeGuard<undefined | number>
+    (rules: NumberRule[]): TypeGuard<undefined | number>
+}
+
+export const number = optionalizeOverloadFactory(_fn).optionalize<OptionalizedNumber>()

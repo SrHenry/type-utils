@@ -1,15 +1,37 @@
 export namespace Generics {
-    export const Primitives = [
+    export const TypeOfTagPrimitives = [
         'string',
         'number',
         'bigint',
         'boolean',
         'symbol',
-        'null',
         'undefined',
-        'bigint',
     ] as const
-    export const TypeOfTag = [...Primitives, 'object', 'function'] as const
+    export const Primitives = [...TypeOfTagPrimitives, 'null'] as const
+    export const TypeOfTag = [...TypeOfTagPrimitives, 'object', 'function'] as const
+
+    export const BaseTypes = [
+        ...Generics.TypeOfTag,
+        'null',
+        'enum',
+        'primitive',
+        'union',
+        'intersection',
+        'any',
+    ] as const
+
+    export declare type TypeOfTag = (typeof TypeOfTag)[number]
+
+    export declare type BaseTypes =
+        | TypeOfTag
+        | 'null'
+        | 'enum'
+        | 'primitive'
+        | 'union'
+        | 'intersection'
+        | 'record'
+        | 'any'
+
     export declare interface GenericObject<T = any> {
         [key: string]: T
     }
@@ -21,10 +43,8 @@ export namespace Generics {
         | symbol
         | null
         | undefined
-    export declare type Primitives = Extract<
-        (typeof TypeOfTag)[number],
-        (typeof Primitives)[number]
-    >
+    export declare type Primitives = (typeof Primitives)[number]
+
     export declare type GetPrimitiveTag<T extends PrimitiveType> = T extends string
         ? 'string'
         : T extends number

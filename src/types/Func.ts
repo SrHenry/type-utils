@@ -122,3 +122,34 @@ export type AsyncFunc<Params extends any[] = [], ReturnType = void> = Func<
     Params,
     Promise<ReturnType>
 >
+
+export type Factory<Args extends any[], ReturnType> = Func<Args, ReturnType>
+
+/** A wrapper for the `Parameters<T>` type helper */
+export type Param<
+    Index extends keyof Parameters<Fn>,
+    Fn extends Func<any[], any>
+> = Parameters<Fn>[Index]
+
+/** Returns the first parameter of a function type */
+export type Param0<Fn extends Func<any[], any>> = Param<0, Fn>
+/** Returns the second parameter of a function type */
+export type Param1<Fn extends Func<any[], any>> = Param<1, Fn>
+/** Returns the third parameter of a function type */
+export type Param2<Fn extends Func<any[], any>> = Param<2, Fn>
+/** Returns the fourth parameter of a function type */
+export type Param3<Fn extends Func<any[], any>> = Param<3, Fn>
+/** Returns the fifth parameter of a function type */
+export type Param4<Fn extends Func<any[], any>> = Param<4, Fn>
+/** Returns the sixth parameter of a function type */
+export type Param5<Fn extends Func<any[], any>> = Param<5, Fn>
+/** Returns the seventh parameter of a function type */
+export type Param6<Fn extends Func<any[], any>> = Param<6, Fn>
+/** Returns the eighth parameter of a function type */
+export type Param7<Fn extends Func<any[], any>> = Param<7, Fn>
+/** Returns the ninth parameter of a function type */
+export type Param8<Fn extends Func<any[], any>> = Param<8, Fn>
+/** Returns the tenth parameter of a function type */
+export type Param9<Fn extends Func<any[], any>> = Param<9, Fn>
+/** Returns the eleventh parameter of a function type */
+export type Param10<Fn extends Func<any[], any>> = Param<10, Fn>

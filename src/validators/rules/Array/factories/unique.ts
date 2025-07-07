@@ -1,5 +1,6 @@
+import type { RuleFactory } from '../../types/RuleFactory'
+
 import { keys } from '../../constants'
-import { RuleFactory } from '../../index'
 
 type UniqueArgs = [deepObject: boolean] | []
 

@@ -1,7 +1,7 @@
 import type Generics from '../../Generics'
-import type { GetTypeGuard, TypeGuard } from '../../TypeGuards/GenericTypeGuards'
+import type { GetTypeGuard, TypeGuard } from '../../TypeGuards/types'
 import type { Spread } from '../../types'
-import type { Custom as CustomRule } from '../rules/types'
+import type { RecordRule } from '../rules/Record'
 
 export type Optionalize<T> = {
     [K in keyof T]: T[K] extends () => TypeGuard<any | any[]>
@@ -35,16 +35,7 @@ export type GetSchemaStruct<T extends TypeGuard> = GetStruct<GetTypeGuard<T>>
       } */
 export type GetStruct<T> = Struct<T>
 
-export type BaseTypes =
-    | (typeof Generics.TypeOfTag)[number]
-    | 'enum'
-    | 'primitive'
-    | 'union'
-    | 'intersection'
-    | 'record'
-    | 'any'
-
-export type BaseStruct<T extends BaseTypes, U> = {
+export type BaseStruct<T extends Generics.BaseTypes, U> = {
     type: T
     schema: TypeGuard<U>
     optional: boolean
@@ -138,6 +129,7 @@ export namespace V3 {
     export type RecordMetadata<T extends {}> = {
         keyMetadata: V3.GenericStruct<keyof T>
         valueMetadata: V3.GenericStruct<T[keyof T]>
+        rules: RecordRule[]
     }
 
     export type RecordStruct<K extends keyof any = string, T = any> = BaseStruct<
@@ -244,20 +236,6 @@ export namespace V3 {
     >
         ? Record<K, T>
         : never
-
-    // type aa = Struct<{ a: 1; b: { c: 'a1b2c3'; d: { e: { f: true }[] } } }>
-
-    // const A: aa = {
-    //     type: 'object',
-    //     tree: {
-    //         a: {
-    //             type: 'number',
-    //         },
-    //     },
-    // }
-
-    // type aaa = aa['type'] extends 'object' ? aa['tree']['b']['d']['e']['f']['type'] : 'object'
-    // type b = Struct<[{ a: 1 }]>
 }
 
 export namespace V2 {
@@ -292,36 +270,26 @@ export namespace V2 {
                   T
               >
         )[]
-        // | V2.PrimitiveStruct<T>
     }
 
     export type EnumStruct<T extends Generics.PrimitiveType = any> = Spread<
         [BaseStruct<'enum', T>, EnumPartialStruct<T>]
     >
 
-    // export type UnionStruct<T extends Generics.PrimitiveType> = BaseStruct<'union', T>
     export type UnionStruct<T1 = unknown, T2 = unknown> = Spread<
         [BaseStruct<'union', T1 | T2>, UnionOrIntersectionPartialStruct<T1, T2>]
     >
-    // export type intersectionStruct<T extends Generics.PrimitiveType> = BaseStruct<'intersection', T>
     export type IntersectionStruct<T1 = unknown, T2 = unknown> = Spread<
         [BaseStruct<'intersection', T1 & T2>, UnionOrIntersectionPartialStruct<T1, T2>]
     >
 
     export type ObjectTree<T> = {
         tree: {
-            // [K in keyof T]: Struct<
-            //     T[K] extends Generics.PrimitiveType ? Generics.GetPrimitiveTag<T[K]> : 'object',
-            //     T[K]
-            // >
             [K in keyof T]: V2.GenericStruct<T[K]>
         }
     }
     export type ObjectStruct<T> = Spread<
         [
-            // {
-            //     [K1 in keyof BaseStruct<'object', T>]: BaseStruct<'object', T>[K1]
-            // },
             BaseStruct<'object', T>,
             {
                 [K2 in keyof ObjectTree<T>]: V2.ObjectTree<T>[K2]
@@ -398,19 +366,6 @@ export namespace V2 {
         | EnumStruct<Generics.PrimitiveType>
         | UnionStruct<any>
         | IntersectionStruct<any>
-    // type aa = Struct<{ a: 1; b: { c: 'a1b2c3'; d: { e: { f: true }[] } } }>
-
-    // const A: aa = {
-    //     type: 'object',
-    //     tree: {
-    //         a: {
-    //             type: 'number',
-    //         },
-    //     },
-    // }
-
-    // type aaa = aa['type'] extends 'object' ? aa['tree']['b']['d']['e']['f']['type'] : 'object'
-    // type b = Struct<[{ a: 1 }]>
 }
 
 export namespace V1 {
@@ -433,10 +388,10 @@ export namespace V1 {
         ]
     >
 
-    export type ArrayEntries<T extends BaseTypes, U> = {
+    export type ArrayEntries<T extends Generics.BaseTypes, U> = {
         entries: BaseStruct<T, U> | ObjectStruct<U> | ArrayStruct<T, U>
     }
-    export type ArrayStruct<T extends BaseTypes, U> = Spread<
+    export type ArrayStruct<T extends Generics.BaseTypes, U> = Spread<
         [
             {
                 [K1 in keyof BaseStruct<'object', U>]: BaseStruct<'object', U>[K1]
@@ -447,7 +402,7 @@ export namespace V1 {
         ]
     >
 
-    export type Struct<T extends BaseTypes, U> = U extends Generics.PrimitiveType
+    export type Struct<T extends Generics.BaseTypes, U> = U extends Generics.PrimitiveType
         ? T extends 'enum'
             ? BaseStruct<'enum', U>
             : T extends 'primitive'
@@ -510,20 +465,6 @@ export namespace V1 {
         : never
 }
 
-// const struct: V2.Struct = {
-//     // type: 'object',
-//     type: 'boolean',
-//     // schema: array(string()),
-//     // schema: array(boolean()),
-//     schema: boolean(),
-//     optional: false,
-//     entries: {
-//         type: 'boolean',
-//         optional: false,
-//         schema: boolean(),
-//     },
-// }
-
 export type PrimitiveStruct<T = Generics.PrimitiveType> = V2.PrimitiveStruct<T>
 export type AnyStruct = V2.AnyStruct
 export type UndefinedStruct = V2.UndefinedStruct
@@ -551,5 +492,3 @@ export type GenericStruct<
 > = V2.GenericStruct<T, UnionOrIntersection>
 export type Struct<T = any> = V2.Struct<T>
 export type StructType = V2.StructType
-
-export type Exact<T> = CustomRule<[to: T], '__Custom.exact__'>

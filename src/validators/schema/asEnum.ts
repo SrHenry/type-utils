@@ -1,19 +1,18 @@
-import { Generics } from '../../Generics'
-import {
-    branchIfOptional,
-    enpipeRuleMessageIntoGuard,
-    enpipeSchemaStructIntoGuard,
-} from './helpers'
-import { primitive } from './primitive'
-
-import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
+import type { Generics } from '../../Generics'
+import type { TypeGuard } from '../../TypeGuards/types'
 import type { V3 } from './types'
 
-export function asEnum<T extends Generics.PrimitiveType>(values: T[]): TypeGuard<T> {
+import { branchIfOptional } from './helpers/branchIfOptional'
+import { optionalize } from './helpers/optional'
+import { setRuleMessage } from './helpers/setRuleMessage'
+import { setStructMetadata } from './helpers/setStructMetadata'
+import { primitive } from './primitive'
+
+function _fn<T extends Generics.PrimitiveType>(values: T[]): TypeGuard<T> {
     const guard = (arg: unknown): arg is T =>
         branchIfOptional(arg, []) || (primitive()(arg) && values.some(value => value === arg))
 
-    return enpipeSchemaStructIntoGuard<T>(
+    return setStructMetadata<T>(
         {
             type: 'enum',
             schema: guard,
@@ -24,6 +23,8 @@ export function asEnum<T extends Generics.PrimitiveType>(values: T[]): TypeGuard
                 optional: false,
             })),
         } as V3.EnumStruct<T>,
-        enpipeRuleMessageIntoGuard(`enum [ ${values.map(String).join(' | ')} ]`, guard)
+        setRuleMessage(`enum [ ${values.map(String).join(' | ')} ]`, guard)
     )
 }
+
+export const asEnum = optionalize(_fn)

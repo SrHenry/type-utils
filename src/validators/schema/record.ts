@@ -1,18 +1,19 @@
-import { getMessage } from '../../TypeGuards/GenericTypeGuards'
-import {
-    branchIfOptional,
-    enpipeRuleMessageIntoGuard,
-    enpipeSchemaStructIntoGuard,
-    getStructMetadata,
-    isFollowingRules,
-} from './helpers'
-
-import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
-import Rules, { StringRules } from '../rules'
-import { RecordRules } from '../rules/Record'
-import { any } from './any'
-import { string } from './string'
+import type { TypeGuard } from '../../TypeGuards/types'
+import { type RecordRule, RecordRules } from '../rules/Record'
 import type { V3 } from './types'
+
+import { getMessage } from '../../TypeGuards/helpers/getMessage'
+import { StringRules } from '../rules'
+import { any } from './any'
+
+import { branchIfOptional } from './helpers/branchIfOptional'
+import { getStructMetadata } from './helpers/getStructMetadata'
+import { isFollowingRules } from './helpers/isFollowingRules'
+import { setRuleMessage } from './helpers/setRuleMessage'
+import { setStructMetadata } from './helpers/setStructMetadata'
+
+import { optionalizeOverloadFactory } from './helpers/optional'
+import { string } from './string'
 
 const NULL = Symbol('NULL')
 
@@ -21,7 +22,7 @@ type Rules = {
     optional: boolean
 }
 
-const RulesObject = (arg: unknown): arg is Partial<Rules> => {
+const isPartialRulesObject = (arg: unknown): arg is Partial<Rules> => {
     if (typeof arg !== 'object' || arg === null || Array.isArray(arg)) return false
 
     if ('nonEmpty' in arg && typeof arg.nonEmpty !== 'boolean') return false
@@ -30,31 +31,37 @@ const RulesObject = (arg: unknown): arg is Partial<Rules> => {
     return true
 }
 
-export function record(): TypeGuard<Record<string, any>>
-export function record(rules: Partial<Rules>): TypeGuard<Record<string, any>>
-export function record(rules: RecordRules[]): TypeGuard<Record<string, any>>
+const defaults = {
+    keyGuard: string([StringRules.nonEmpty()]),
+    valueGuard: any(),
+    rules: [] as any[],
+} as const
 
-export function record<K extends keyof any, T>(
+function _fn(): TypeGuard<Record<string, any>>
+function _fn(rules: Partial<Rules>): TypeGuard<Record<string, any>>
+function _fn(rules: RecordRule[]): TypeGuard<Record<string, any>>
+
+function _fn<K extends keyof any, T>(
     keyGuard: TypeGuard<K>,
     valueGuard: TypeGuard<T>
 ): TypeGuard<Record<K, T>>
-export function record<K extends keyof any, T>(
+function _fn<K extends keyof any, T>(
     keyGuard: TypeGuard<K>,
     valueGuard: TypeGuard<T>,
     rules: Partial<Rules>
 ): TypeGuard<Record<K, T>>
-export function record<K extends keyof any, T>(
+function _fn<K extends keyof any, T>(
     keyGuard: TypeGuard<K>,
     valueGuard: TypeGuard<T>,
-    rules: RecordRules[]
+    rules: RecordRule[]
 ): TypeGuard<Record<K, T>>
 
-export function record<K extends keyof any, T>(
-    keyGuard_or_rules: TypeGuard<K> | Partial<Rules> | RecordRules[] | typeof NULL = NULL,
+function _fn<K extends keyof any, T>(
+    keyGuard_or_rules: TypeGuard<K> | Partial<Rules> | RecordRule[] | typeof NULL = NULL,
     valueGuard: TypeGuard<T> | typeof NULL = NULL,
-    rules: Partial<Rules> | RecordRules[] | typeof NULL = NULL
+    rules: Partial<Rules> | RecordRule[] | typeof NULL = NULL
 ): TypeGuard<Record<K, T>> | TypeGuard<Record<string, any>> {
-    if (keyGuard_or_rules === NULL) return record(string([StringRules.nonEmpty()]), any())
+    if (keyGuard_or_rules === NULL) return _fn(defaults.keyGuard, defaults.valueGuard)
 
     const handleRulesObject = (rules: Partial<Rules>) => {
         const _rules = []
@@ -63,41 +70,33 @@ export function record<K extends keyof any, T>(
         if (nonEmpty === true) _rules.push(RecordRules.nonEmpty())
         if (optional === true) _rules.push(RecordRules.optional())
 
-        return record(string([StringRules.nonEmpty()]), any(), _rules)
+        return _fn(defaults.keyGuard, defaults.valueGuard, _rules)
     }
 
-    if (RulesObject(keyGuard_or_rules)) return handleRulesObject(keyGuard_or_rules)
+    if (isPartialRulesObject(keyGuard_or_rules)) return handleRulesObject(keyGuard_or_rules)
 
-    if (Array.isArray<RecordRules>(keyGuard_or_rules)) {
+    if (Array.isArray<RecordRule>(keyGuard_or_rules)) {
         const guard = (arg: unknown): arg is Record<string, any> =>
-            branchIfOptional(arg, keyGuard_or_rules as RecordRules[]) ||
-            (typeof arg === 'object' && isFollowingRules(arg, keyGuard_or_rules as RecordRules[]))
+            branchIfOptional(arg, keyGuard_or_rules) ||
+            (typeof arg === 'object' && isFollowingRules(arg, keyGuard_or_rules))
 
         const metadata: V3.RecordStruct<string, any> = {
             type: 'record',
             schema: guard,
-            keyMetadata: getStructMetadata(string([StringRules.nonEmpty()])) as V3.StringStruct,
-            valueMetadata: getStructMetadata(any()),
+            keyMetadata: getStructMetadata(defaults.keyGuard) as V3.StringStruct,
+            valueMetadata: getStructMetadata(defaults.valueGuard),
+            rules: keyGuard_or_rules,
             optional: false,
         }
 
-        return enpipeSchemaStructIntoGuard(
-            metadata,
-            enpipeRuleMessageIntoGuard('record', guard, keyGuard_or_rules)
-        )
+        return setStructMetadata(metadata, setRuleMessage('record', guard, keyGuard_or_rules))
     }
 
-    const keyGuard = keyGuard_or_rules
+    if (valueGuard === NULL) ({ valueGuard } = defaults)
 
-    if (valueGuard === NULL) {
-        valueGuard = any()
-    }
+    if (rules === NULL) ({ rules } = defaults)
 
-    if (rules === NULL) {
-        rules = []
-    }
-
-    if (RulesObject(rules)) return handleRulesObject(rules)
+    if (isPartialRulesObject(rules)) return handleRulesObject(rules)
 
     const _guard = (arg: unknown): arg is Record<K, T> => {
         if (arg === null || typeof arg !== 'object') {
@@ -105,7 +104,7 @@ export function record<K extends keyof any, T>(
         }
 
         for (const key in arg) {
-            if (!keyGuard(key)) {
+            if (!keyGuard_or_rules(key)) {
                 return false
             }
 
@@ -122,15 +121,38 @@ export function record<K extends keyof any, T>(
     const guard = (arg: unknown): arg is Record<K, T> =>
         branchIfOptional(arg, []) || (isFollowingRules(arg, rules) && _guard(arg))
 
-    const message = `record<${getMessage(keyGuard)}, ${getMessage(valueGuard)}>`
+    const message = `record<${getMessage(keyGuard_or_rules)}, ${getMessage(valueGuard)}>`
 
     const metadata: V3.RecordStruct<K, T> = {
         type: 'record',
         schema: guard,
-        keyMetadata: getStructMetadata(keyGuard) as V3.GenericStruct<K>,
+        keyMetadata: getStructMetadata(keyGuard_or_rules) as V3.GenericStruct<K>,
         valueMetadata: getStructMetadata(valueGuard) as V3.GenericStruct<T>,
+        rules,
         optional: false,
     }
 
-    return enpipeSchemaStructIntoGuard<K, T>(metadata, enpipeRuleMessageIntoGuard(message, guard))
+    return setStructMetadata<K, T>(metadata, setRuleMessage(message, guard))
 }
+
+type OptionalizedRecord = {
+    (): TypeGuard<undefined | Record<string, any>>
+    (rules: Partial<Rules>): TypeGuard<undefined | Record<string, any>>
+    (rules: RecordRule[]): TypeGuard<undefined | Record<string, any>>
+
+    <K extends keyof any, T>(keyGuard: TypeGuard<K>, valueGuard: TypeGuard<T>): TypeGuard<
+        undefined | Record<K, T>
+    >
+    <K extends keyof any, T>(
+        keyGuard: TypeGuard<K>,
+        valueGuard: TypeGuard<T>,
+        rules: Partial<Rules>
+    ): TypeGuard<undefined | Record<K, T>>
+    <K extends keyof any, T>(
+        keyGuard: TypeGuard<K>,
+        valueGuard: TypeGuard<T>,
+        rules: RecordRule[]
+    ): TypeGuard<undefined | Record<K, T>>
+}
+
+export const record = optionalizeOverloadFactory(_fn).optionalize<OptionalizedRecord>()

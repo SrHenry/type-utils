@@ -1,14 +1,25 @@
-import { ArrayRules } from './Array'
+import { ArrayRule, ArrayRules } from './Array'
 import * as helpers from './helpers'
-import { NumberRules } from './Number'
-import { OptionalRules } from './Optional'
-import { RecordRules } from './Record'
-import { StringRules } from './String'
+import { NumberRule, NumberRules } from './Number'
+import { OptionalRule, OptionalRules } from './Optional'
+import { RecordRule, RecordRules } from './Record'
+import { StringRule, StringRules } from './String'
 
 export * from './helpers'
 export * from './types'
 
-export { ArrayRules, NumberRules, OptionalRules, RecordRules, StringRules }
+export {
+    ArrayRule,
+    ArrayRules,
+    NumberRule,
+    NumberRules,
+    OptionalRule,
+    OptionalRules,
+    RecordRule,
+    RecordRules,
+    StringRule,
+    StringRules,
+}
 
 export const Rules = {
     Array: ArrayRules,
