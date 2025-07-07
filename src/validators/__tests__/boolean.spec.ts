@@ -42,11 +42,34 @@ describe('boolean', () => {
         Promise.reject().catch(r => r),
         new Proxy({}, {}),
     ]
+
     it('should return true if value is boolean', () => {
         expect(schema(true)).toBe(true)
         expect(schema(false)).toBe(true)
     })
+
     it('should return false if value is not boolean', () => {
         for (const value of values) expect(schema(value)).toBe(false)
+    })
+
+    it('should have an optional method embeded in the schema', () => {
+        expect(boolean).toHaveProperty('optional')
+        expect(typeof boolean.optional).toBe('function')
+
+        const schema = boolean.optional()
+
+        expect(typeof schema).toBe('function')
+    })
+
+    it('should return true if value is boolean or undefined', () => {
+        const schema = boolean.optional()
+
+        expect(schema(true)).toBe(true)
+        expect(schema(false)).toBe(true)
+        expect(schema(undefined)).toBe(true)
+    })
+
+    it('should return false if value is not boolean when optional schema', () => {
+        for (const value of values.filter(v => v !== undefined)) expect(schema(value)).toBe(false)
     })
 })

@@ -1,17 +1,18 @@
-import {
-    branchIfOptional,
-    enpipeRuleMessageIntoGuard,
-    enpipeSchemaStructIntoGuard,
-} from './helpers'
+import type { TypeGuard } from '../../TypeGuards/types'
 
-import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
+import { branchIfOptional } from './helpers/branchIfOptional'
+import { optionalize } from './helpers/optional'
+import { setRuleMessage } from './helpers/setRuleMessage'
+import { setStructMetadata } from './helpers/setStructMetadata'
 
-export function boolean(): TypeGuard<boolean> {
+function _fn(): TypeGuard<boolean> {
     const guard = (arg: unknown): arg is boolean =>
         branchIfOptional(arg, []) || typeof arg === 'boolean'
 
-    return enpipeSchemaStructIntoGuard(
+    return setStructMetadata(
         { type: 'boolean', schema: guard, optional: false },
-        enpipeRuleMessageIntoGuard('boolean', guard)
+        setRuleMessage('boolean', guard)
     )
 }
+
+export const boolean = optionalize(_fn)

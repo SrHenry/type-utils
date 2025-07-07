@@ -1,23 +1,26 @@
-import { getRule } from './helpers'
-
+/** Rule formator template */
 export const template = (message: string) => `[rule: ${message}]`
 
-export const max = (arg: number, n: number | bigint) => arg <= n
-export const maxFormator = (n: number) => template(`max(${n})`)
-export const arrayMaxFormator = (n: number) => template(`max ${n} items`)
-export const stringMaxFormator = (n: number) => template(`max ${n} items`)
+/** checks if `arg` is below `n` max value  */
+export const max = (arg: number | bigint, n: number | bigint) => arg <= n
 
-export const min = (arg: number, n: number | bigint) => arg >= n
-export const minFormator = (n: number) => template(`min(${n})`)
-export const arrayMinFormator = (n: number) => template(`min ${n} items`)
-export const stringMinFormator = (n: number) => template(`min ${n} items`)
+/** checks if `arg` is above `n` min value  */
+export const min = (arg: number | bigint, n: number | bigint) => arg >= n
 
+/** checks if `arg` is not zero */
 export const nonZero = (arg: number) => arg !== 0
-export const nonZeroFormator = () => template(`!= 0`)
 
-export const regexFormator = (regex: RegExp) => template(`matches ${regex}`)
-export const nonEmptyFormator = () => template(`non empty`)
-
+/**
+ * Compares if two values are equal.
+ * It can compare primitive values, arrays, and objects.
+ * For arrays and objects, it checks for deep equality if `deepObject` is true.
+ *
+ * @param a a value to compare
+ * @param b another value to compare
+ * @param deepObject Whether to check for deep equality of objects inside the array
+ *
+ * @returns `true` if the values are equal, `false` otherwise
+ */
 export const equals = (a: any, b: any, deepObject: boolean): boolean => {
     if (a === b) return true
     if (typeof a !== typeof b) return false
@@ -40,13 +43,29 @@ export const equals = (a: any, b: any, deepObject: boolean): boolean => {
         })
         .every(bool => bool)
 }
+/**
+ * Counts the number of occurrences of an element in an array.
+ *
+ * @param element
+ * @param arr
+ * @param deepObject Whether to check for deep equality of objects inside the array
+ *
+ * @returns The number of occurrences of the element in the array
+ */
 export const count = (element: unknown, arr: unknown[], deepObject: boolean = true) => {
     if (arr.length === 0) return 0
 
     return arr.filter(item => equals(item, element, deepObject)).length
 }
 
+/**
+ * Checks if a given array has unique elements.
+ *
+ * @param arg - The array to check
+ * @param deepObject - Whether to check for deep equality of objects inside the array
+ *
+ * @returns `true` if all elements are unique, `false` otherwise
+ * */
 export const unique = (arg: unknown[], deepObject: boolean) =>
-    getRule('Array.max').call(null, arg, 0) ||
-    arg.every((item, _, arr) => count(item, arr, deepObject) === 1)
-export const uniqueFormator = () => template(`unique items`)
+    // arrayMaxHandler.call(null, arg, 0) ||
+    max(arg.length, 0) || arg.every((item, _, arr) => count(item, arr, deepObject) === 1)

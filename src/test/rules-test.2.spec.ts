@@ -1,24 +1,26 @@
+import type { TypeGuard } from '../TypeGuards/types'
+
 import { ValidationError, ValidationErrors, Validator } from '../Experimental'
 import { Generics } from '../Generics'
-import { createRule, getRule, useCustomRules } from '../rules'
+import { createRule } from '../validators/rules/helpers/createRule'
+import { getRule } from '../validators/rules/helpers/getRule'
+import { useCustomRules } from '../validators/rules/helpers/useCustomRules'
+
 import { unique } from '../rules/array'
 import { min, nonEmpty } from '../rules/string'
-import { array, getStructMetadata, number, object, optional, string } from '../schema'
-import {
-    ensureInterface,
-    getMessage,
-    getValidatorMessageFormator,
-    imprintMetadata,
-    is,
-    isInstanceOf,
-    retrieveMessage,
-    retrieveMetadata,
-    setValidatorMessage,
-    TypeGuard,
-    TypeGuardError,
-} from '../TypeGuards'
+import { any, array, getStructMetadata, number, object, string } from '../schema'
+
+import { ensureInterface } from '../TypeGuards/helpers/ensureInterface'
+import { getMessage } from '../TypeGuards/helpers/getMessage'
+import { getMetadata } from '../TypeGuards/helpers/getMetadata'
+import { getValidatorMessageFormator } from '../TypeGuards/helpers/getValidatorMessageFormator'
+import { is } from '../TypeGuards/helpers/is'
+import { isInstanceOf } from '../TypeGuards/helpers/isInstanceOf'
+import { setMetadata } from '../TypeGuards/helpers/setMetadata'
+import { setValidatorMessage } from '../TypeGuards/helpers/setValidatorMessage'
+import { TypeGuardError } from '../TypeGuards/TypeErrors'
 import { asEnum, asNull, or, StringRules, Validators } from '../validators'
-import { hasOptionalFlag } from '../validators/schema/helpers'
+import { hasOptionalFlag } from '../validators/schema/helpers/optionalFlag'
 
 function prettier(e: unknown): string {
     if (e instanceof ValidationError) return getValidatorMessageFormator(e)!(e.path, e.message)
@@ -39,7 +41,7 @@ const patterns = Object.freeze({
 const schema = object({
     ean: setValidatorMessage('EAN deve conter apenas números!', string(/^[0-9]+$/)),
     sku: setValidatorMessage('SKU inválido!', string(patterns.SKU)),
-    opc: optional().number(),
+    opc: number.optional(),
 })
 
 const a = {
@@ -61,12 +63,12 @@ console.log(
     )
 )
 
-console.log('===', is(undefined, optional().object({})))
+console.log('===', is(undefined, object.optional({})))
 
 console.log('a', is(a, schema))
 console.log('b', is(b, schema))
 
-console.log(hasOptionalFlag(optional().number()))
+console.log(hasOptionalFlag(number.optional()))
 
 const isTypeError = (_: unknown): _ is TypeGuardError<typeof c, typeof _schema> =>
     _ instanceof TypeGuardError && is(_, object({ checked: string() }))
@@ -114,12 +116,12 @@ console.log(
 )
 
 const __metadata__ = Symbol('__metadata__')
-const f1 = imprintMetadata(__metadata__, { a: 1 }, function () {
+const f1 = setMetadata(__metadata__, { a: 1 }, function () {
     void 0
 })
 
-const _b = retrieveMetadata(__metadata__, f1)
-const _b2 = retrieveMetadata(__metadata__, f1, object({ a: number() }))
+const _b = getMetadata(__metadata__, f1)
+const _b2 = getMetadata(__metadata__, f1, object({ a: number() }))
 
 console.log('metadata', _b, _b2)
 
@@ -134,10 +136,10 @@ const EnvSchema = object({
     APP_PORT: number(),
 
     JWT_SECRET: string(),
-    JWT_EXPIRES_IN: optional().number(),
+    JWT_EXPIRES_IN: number.optional(),
 
     JWT_REFRESH_SECRET: string(),
-    JWT_REFRESH_EXPIRES_IN: optional().number(),
+    JWT_REFRESH_EXPIRES_IN: number.optional(),
 })
 
 const envSchemaMetadata = getStructMetadata(EnvSchema)
@@ -149,7 +151,7 @@ const envSchemaKeys = Object.keys(envSchemaTree) as (keyof typeof envSchemaTree)
 
 const preEnvSchema = object({
     ...envSchemaKeys
-        .map(key => ({ [key]: optional().any() }))
+        .map(key => ({ [key]: any.optional() }))
         .reduce((acc, item) => Object.assign(acc, item), {}),
 }) as TypeGuard<
     Validators.Sanitize<{
@@ -196,7 +198,7 @@ console.log(parsed)
 
 const aa = string('aaa')
 
-console.log(retrieveMessage(aa))
+console.log(getMessage(aa))
 
 console.log('generic object', object()({ a: 1, b: 2 }))
 console.log('blank object', object({})({ a: 1, b: 2 }), object({})({ a: 1, b: 2 }))
@@ -563,10 +565,10 @@ const Roles = ['admin', 'user'] as const
 const ___schema = object({
     id: GuidSchema,
     nome: string(),
-    matricula: optional().or(string(), asNull()),
+    matricula: or.optional(string(), asNull()),
     cpf: CPFSchema,
     email: string(),
-    telefone: optional().or(string(), asNull()),
+    telefone: or.optional(string(), asNull()),
     secretaria: string(),
     lotacao: string(),
     roles: array(asEnum([...Roles])),
@@ -575,7 +577,7 @@ const ___schema = object({
 const GroupSchemaObject = {
     sid: string(),
     nome: string(),
-    descricao: optional().or(string(), asNull()),
+    descricao: or.optional(string(), asNull()),
 }
 const GroupSchema = object(GroupSchemaObject)
 
@@ -590,10 +592,10 @@ const LDAPSchema = object({
 const ___full_schema = object({
     id: GuidSchema,
     nome: string(),
-    matricula: optional().or(string(), asNull()),
+    matricula: or.optional(string(), asNull()),
     cpf: CPFSchema,
     email: string(),
-    telefone: optional().or(string(), asNull()),
+    telefone: or.optional(string(), asNull()),
     secretaria: string(),
     lotacao: string(),
     roles: array(asEnum([...Roles])),
@@ -657,7 +659,7 @@ try {
 
 // const ___ = object({
 //     a: string(),
-//     b: optional().or(
+//     b: or.optional(
 //         asNull(),
 //         object({
 //             c: number(),
@@ -677,7 +679,7 @@ try {
 
 // const $$$ = object<aaaaaa>({
 //     a: number(),
-//     foo: optional().object({
+//     foo: object.optional({
 //         bar: string(),
 //         baz: or(asNull(), symbol()),
 //     }),

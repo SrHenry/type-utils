@@ -51,4 +51,25 @@ describe('asUndefined', () => {
     it('should return false if value is not undefined', () => {
         for (const value of values) expect(schema(value)).toBe(false)
     })
+
+    it('should have an optional method embeded in the schema', () => {
+        expect(asUndefined).toHaveProperty('optional')
+        expect(typeof asUndefined.optional).toBe('function')
+
+        const schema = asUndefined.optional()
+
+        expect(typeof schema).toBe('function')
+    })
+
+    it('should return true if value is undefined with optional schema', () => {
+        const schema = asUndefined.optional()
+
+        expect(schema(undefined)).toBe(true)
+    })
+
+    it('should return false if value is not undefined with optional schema', () => {
+        const schema = asUndefined.optional()
+
+        for (const value of values) expect(schema(value)).toBe(false)
+    })
 })

@@ -1,24 +1,21 @@
-import { Generics } from '../Generics'
+import type { Generics } from '../Generics'
+import type { TypeGuard } from '../TypeGuards/types'
+import type { Sanitize } from '../validators/types'
+
 import { ArrayRules } from '../rules'
 import { regex } from '../rules/string'
-import { array, getStructMetadata, number, object, optional, string } from '../schema'
-import {
-    ensureInterface,
-    imprintMetadata,
-    is,
-    retrieveMessage,
-    retrieveMetadata,
-    TypeGuard,
-    TypeGuardError,
-} from '../TypeGuards'
-import { Validators } from '../validators'
-
-console.log(optional())
+import { any, array, getStructMetadata, number, object, string } from '../schema'
+import { ensureInterface } from '../TypeGuards/helpers/ensureInterface'
+import { getMessage } from '../TypeGuards/helpers/getMessage'
+import { getMetadata } from '../TypeGuards/helpers/getMetadata'
+import { is } from '../TypeGuards/helpers/is'
+import { setMetadata } from '../TypeGuards/helpers/setMetadata'
+import { TypeGuardError } from '../TypeGuards/TypeErrors'
 
 const schema = object({
     ean: string([regex(/^[0-9]+$/)]),
     sku: string([regex(/^LV[0-9]+EAN[0-9]+$/)]),
-    opc: optional().number(),
+    opc: number.optional(),
 })
 
 const a = {
@@ -40,12 +37,12 @@ console.log(
     )
 )
 
-console.log('===', is(undefined, optional().object({})))
+console.log('===', is(undefined, object.optional({})))
 
 console.log('a', is(a, schema))
 console.log('b', is(b, schema))
 
-console.log('__optional__' in optional().number())
+console.log('__optional__' in number.optional())
 
 const isTypeError = (_: unknown): _ is TypeGuardError<typeof c, typeof _schema> =>
     _ instanceof TypeGuardError && is(_, object({ checked: string() }))
@@ -91,12 +88,12 @@ console.log(
 )
 
 const __metadata__ = Symbol('__metadata__')
-const f1 = imprintMetadata(__metadata__, { a: 1 }, function () {
+const f1 = setMetadata(__metadata__, { a: 1 }, function () {
     void 0
 })
 
-const _b = retrieveMetadata(__metadata__, f1)
-const _b2 = retrieveMetadata(__metadata__, f1, object({ a: number() }))
+const _b = getMetadata(__metadata__, f1)
+const _b2 = getMetadata(__metadata__, f1, object({ a: number() }))
 
 console.log('metadata', _b, _b2)
 
@@ -111,10 +108,10 @@ const EnvSchema = object({
     APP_PORT: number(),
 
     JWT_SECRET: string(),
-    JWT_EXPIRES_IN: optional().number(),
+    JWT_EXPIRES_IN: number.optional(),
 
     JWT_REFRESH_SECRET: string(),
-    JWT_REFRESH_EXPIRES_IN: optional().number(),
+    JWT_REFRESH_EXPIRES_IN: number.optional(),
 })
 
 const envSchemaMetadata = getStructMetadata(EnvSchema)
@@ -126,10 +123,10 @@ const envSchemaKeys = Object.keys(envSchemaTree) as (keyof typeof envSchemaTree)
 
 const preEnvSchema = object({
     ...envSchemaKeys
-        .map(key => ({ [key]: optional().any() }))
+        .map(key => ({ [key]: any.optional() }))
         .reduce((acc, item) => Object.assign(acc, item), {}),
 }) as TypeGuard<
-    Validators.Sanitize<{
+    Sanitize<{
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [K in keyof typeof envSchemaTree]?: any
     }>
@@ -173,7 +170,7 @@ console.log(parsed)
 
 const aa = string('aaa')
 
-console.log(retrieveMessage(aa))
+console.log(getMessage(aa))
 
 console.log('generic object', object()({ a: 1, b: 2 }))
 console.log('blank object', object({})({ a: 1, b: 2 }), object({})({ a: 1, b: 2 }))
