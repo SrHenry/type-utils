@@ -1,8 +1,6 @@
 import { Generics } from '../Generics'
 import type { GetTypeGuard } from '../TypeGuards/types'
 
-export * from './Experimental'
-
 export * from './GetOptional'
 export * from './GetRequired'
 export {

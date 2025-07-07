@@ -1,4 +1,3 @@
-export * from './constants'
 export * from './defaultMessageFormator'
 export * from './ensureInstanceOf'
 export * from './ensureInterface'
@@ -13,6 +12,7 @@ export * from './hasTypeGuardMetadata'
 export * from './hasValidatorMessage'
 export * from './hasValidatorMessageFormator'
 
+export * from './asTypeGuard'
 export * from './is'
 export * from './isInstanceOf'
 export * from './isTypeGuard'
