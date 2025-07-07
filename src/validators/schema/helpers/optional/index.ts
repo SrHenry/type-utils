@@ -1,41 +1,15 @@
-import type { GetTypeGuard, TypeGuard } from '../../../TypeGuards/types'
-import type { Func } from '../../../types/Func'
-import type { OptionalizeTypeGuardClosure, TypeGuardClosure, V3 } from '../types'
+import type { GetTypeGuard, TypeGuard } from '../../../../TypeGuards/types'
+import type { OptionalizeTypeGuardClosure, TypeGuardClosure, V3 } from '../../types'
 
-import { getMessage } from '../../../TypeGuards/helpers/getMessage'
-import { isTypeGuard } from '../../../TypeGuards/helpers/isTypeGuard'
-import { setMessage } from '../../../TypeGuards/helpers/setMessage'
-import { getRule } from '../../rules/helpers/getRule'
-import { ValidationError } from '../../ValidationError'
-import { getStructMetadata } from './getStructMetadata'
-import { setOptionalFlag } from './optionalFlag'
-import { setStructMetadata } from './setStructMetadata'
-
-export type OptionalizeTypeGuard<T extends TypeGuard<any | any[]>> = TypeGuard<
-    GetTypeGuard<T> | undefined
->
-export type TypeGuardFactory<Args extends any[] = any[], T = any> = Func<Args, TypeGuard<T>>
-export type OptionalizeTypeGuardFactory<Factory extends TypeGuardFactory> =
-    Factory extends TypeGuardFactory<infer Args, infer Type>
-        ? TypeGuardFactory<Args, Type | undefined>
-        : never
-
-export type OptionalizedTypeGuardFactory<Factory extends TypeGuardFactory> = Factory & {
-    optional: OptionalizeTypeGuardFactory<Factory>
-}
-
-export type TypeGuardFactoryParameters<T extends TypeGuardFactory> = T extends TypeGuardFactory<
-    infer Args,
-    any
->
-    ? Args
-    : never
-export type TypeGuardFactoryType<T extends TypeGuardFactory> = T extends TypeGuardFactory<
-    any[],
-    infer Type
->
-    ? Type
-    : never
+import { getMessage } from '../../../../TypeGuards/helpers/getMessage'
+import { isTypeGuard } from '../../../../TypeGuards/helpers/isTypeGuard'
+import { setMessage } from '../../../../TypeGuards/helpers/setMessage'
+import { getRule } from '../../../rules/helpers/getRule'
+import { ValidationError } from '../../../ValidationError'
+import { getStructMetadata } from '../getStructMetadata'
+import { setOptionalFlag } from '../optionalFlag'
+import { setStructMetadata } from '../setStructMetadata'
+import { OptionalizedTypeGuardFactory, TypeGuardFactory } from './types'
 
 const wrapOptional =
     <T extends TypeGuardClosure>(fn: T): OptionalizeTypeGuardClosure<T> =>
