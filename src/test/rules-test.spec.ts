@@ -4,7 +4,7 @@ import type { Sanitize } from '../validators/types'
 
 import { ArrayRules } from '../rules'
 import { regex } from '../rules/string'
-import { array, getStructMetadata, number, object, optional, string } from '../schema'
+import { any, array, getStructMetadata, number, object, string } from '../schema'
 import { ensureInterface } from '../TypeGuards/helpers/ensureInterface'
 import { getMessage } from '../TypeGuards/helpers/getMessage'
 import { getMetadata } from '../TypeGuards/helpers/getMetadata'
@@ -12,12 +12,10 @@ import { is } from '../TypeGuards/helpers/is'
 import { setMetadata } from '../TypeGuards/helpers/setMetadata'
 import { TypeGuardError } from '../TypeGuards/TypeErrors'
 
-console.log(optional())
-
 const schema = object({
     ean: string([regex(/^[0-9]+$/)]),
     sku: string([regex(/^LV[0-9]+EAN[0-9]+$/)]),
-    opc: optional().number(),
+    opc: number.optional(),
 })
 
 const a = {
@@ -39,12 +37,12 @@ console.log(
     )
 )
 
-console.log('===', is(undefined, optional().object({})))
+console.log('===', is(undefined, object.optional({})))
 
 console.log('a', is(a, schema))
 console.log('b', is(b, schema))
 
-console.log('__optional__' in optional().number())
+console.log('__optional__' in number.optional())
 
 const isTypeError = (_: unknown): _ is TypeGuardError<typeof c, typeof _schema> =>
     _ instanceof TypeGuardError && is(_, object({ checked: string() }))
@@ -110,10 +108,10 @@ const EnvSchema = object({
     APP_PORT: number(),
 
     JWT_SECRET: string(),
-    JWT_EXPIRES_IN: optional().number(),
+    JWT_EXPIRES_IN: number.optional(),
 
     JWT_REFRESH_SECRET: string(),
-    JWT_REFRESH_EXPIRES_IN: optional().number(),
+    JWT_REFRESH_EXPIRES_IN: number.optional(),
 })
 
 const envSchemaMetadata = getStructMetadata(EnvSchema)
@@ -125,7 +123,7 @@ const envSchemaKeys = Object.keys(envSchemaTree) as (keyof typeof envSchemaTree)
 
 const preEnvSchema = object({
     ...envSchemaKeys
-        .map(key => ({ [key]: optional().any() }))
+        .map(key => ({ [key]: any.optional() }))
         .reduce((acc, item) => Object.assign(acc, item), {}),
 }) as TypeGuard<
     Sanitize<{

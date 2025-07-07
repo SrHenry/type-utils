@@ -8,7 +8,7 @@ import { useCustomRules } from '../validators/rules/helpers/useCustomRules'
 
 import { unique } from '../rules/array'
 import { min, nonEmpty } from '../rules/string'
-import { array, getStructMetadata, number, object, optional, string } from '../schema'
+import { any, array, getStructMetadata, number, object, string } from '../schema'
 
 import { ensureInterface } from '../TypeGuards/helpers/ensureInterface'
 import { getMessage } from '../TypeGuards/helpers/getMessage'
@@ -41,7 +41,7 @@ const patterns = Object.freeze({
 const schema = object({
     ean: setValidatorMessage('EAN deve conter apenas números!', string(/^[0-9]+$/)),
     sku: setValidatorMessage('SKU inválido!', string(patterns.SKU)),
-    opc: optional().number(),
+    opc: number.optional(),
 })
 
 const a = {
@@ -63,12 +63,12 @@ console.log(
     )
 )
 
-console.log('===', is(undefined, optional().object({})))
+console.log('===', is(undefined, object.optional({})))
 
 console.log('a', is(a, schema))
 console.log('b', is(b, schema))
 
-console.log(hasOptionalFlag(optional().number()))
+console.log(hasOptionalFlag(number.optional()))
 
 const isTypeError = (_: unknown): _ is TypeGuardError<typeof c, typeof _schema> =>
     _ instanceof TypeGuardError && is(_, object({ checked: string() }))
@@ -136,10 +136,10 @@ const EnvSchema = object({
     APP_PORT: number(),
 
     JWT_SECRET: string(),
-    JWT_EXPIRES_IN: optional().number(),
+    JWT_EXPIRES_IN: number.optional(),
 
     JWT_REFRESH_SECRET: string(),
-    JWT_REFRESH_EXPIRES_IN: optional().number(),
+    JWT_REFRESH_EXPIRES_IN: number.optional(),
 })
 
 const envSchemaMetadata = getStructMetadata(EnvSchema)
@@ -151,7 +151,7 @@ const envSchemaKeys = Object.keys(envSchemaTree) as (keyof typeof envSchemaTree)
 
 const preEnvSchema = object({
     ...envSchemaKeys
-        .map(key => ({ [key]: optional().any() }))
+        .map(key => ({ [key]: any.optional() }))
         .reduce((acc, item) => Object.assign(acc, item), {}),
 }) as TypeGuard<
     Validators.Sanitize<{
@@ -565,10 +565,10 @@ const Roles = ['admin', 'user'] as const
 const ___schema = object({
     id: GuidSchema,
     nome: string(),
-    matricula: optional().or(string(), asNull()),
+    matricula: or.optional(string(), asNull()),
     cpf: CPFSchema,
     email: string(),
-    telefone: optional().or(string(), asNull()),
+    telefone: or.optional(string(), asNull()),
     secretaria: string(),
     lotacao: string(),
     roles: array(asEnum([...Roles])),
@@ -577,7 +577,7 @@ const ___schema = object({
 const GroupSchemaObject = {
     sid: string(),
     nome: string(),
-    descricao: optional().or(string(), asNull()),
+    descricao: or.optional(string(), asNull()),
 }
 const GroupSchema = object(GroupSchemaObject)
 
@@ -592,10 +592,10 @@ const LDAPSchema = object({
 const ___full_schema = object({
     id: GuidSchema,
     nome: string(),
-    matricula: optional().or(string(), asNull()),
+    matricula: or.optional(string(), asNull()),
     cpf: CPFSchema,
     email: string(),
-    telefone: optional().or(string(), asNull()),
+    telefone: or.optional(string(), asNull()),
     secretaria: string(),
     lotacao: string(),
     roles: array(asEnum([...Roles])),
@@ -659,7 +659,7 @@ try {
 
 // const ___ = object({
 //     a: string(),
-//     b: optional().or(
+//     b: or.optional(
 //         asNull(),
 //         object({
 //             c: number(),
@@ -679,7 +679,7 @@ try {
 
 // const $$$ = object<aaaaaa>({
 //     a: number(),
-//     foo: optional().object({
+//     foo: object.optional({
 //         bar: string(),
 //         baz: or(asNull(), symbol()),
 //     }),
