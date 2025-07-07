@@ -30,6 +30,7 @@
       - [`Schema.asNull`](#schemaasnull)
       - [`Schema.primitive`](#schemaprimitive)
       - [`Schema.any`](#schemaany)
+      - [`Schema.optional`](#schemaoptional)
     - [Schema helpers](#schema-helpers)
       - [`Schema.and`](#schemaand)
       - [`Schema.or`](#schemaor)
@@ -201,15 +202,14 @@ const objectHasFoo = object({ foo: isAny }) //it checks if is object and if has 
 
 #### `Schema.optional`
 
-#### `Schema.optional.*`
+> Since [`v0.5.0`](https://github.com/SrHenry/type-utils/releases/tag/v0.5.0), this method was removed, but also embeded in all exported schemas.
 
-It represents a optional value to typescript's type infers and runtime validation. It returns recursive structure of schema helpers to narrow validation.
+It represents a optional value to typescript's type infers and runtime validation. You can access this schema by acessing the `.optional` property in the desired optional schema:
 
 ```typescript
-import { optional, object } from '@srhenry/type-utils'
+import { object, string } from '@srhenry/type-utils'
 
-const maybeString = optional().string()
-const objectMaybeHasFoo = object({ foo: maybeString }) //it checks if is object and if has `foo`. if it has `foo` then check if it is string, if it hasn't then pass anyway as it is optional property
+const objectMaybeHasFoo = object({ foo: string.optional() }) //it checks if is object and if has `foo`. if it has `foo` then check if it is string or undefined, if it hasn't then pass anyway as it is optional property
 ```
 
 ### Schema helpers
