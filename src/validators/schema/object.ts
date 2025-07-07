@@ -1,42 +1,42 @@
-import { getMessage } from '../../TypeGuards/GenericTypeGuards'
+import type { TypeGuard } from '../../TypeGuards/types'
+import type { Sanitize, ValidatorMap } from '../types'
+import type { V3 } from './types'
+
+import { getMessage } from '../../TypeGuards/helpers/getMessage'
 import { BaseValidator } from '../BaseValidator'
-import {
-    _hasOptionalProp,
-    branchIfOptional,
-    enpipeRuleMessageIntoGuard,
-    enpipeSchemaStructIntoGuard,
-    getStructMetadata,
-} from './helpers'
+import { branchIfOptional } from './helpers/branchIfOptional'
+import { getStructMetadata } from './helpers/getStructMetadata'
+import { hasOptionalFlag } from './helpers/optionalFlag'
+import { setRuleMessage } from './helpers/setRuleMessage'
+import { setStructMetadata } from './helpers/setStructMetadata'
 
 import { join } from '../../helpers/Experimental/join'
 import { map } from '../../helpers/Experimental/map'
 import { pipe } from '../../helpers/Experimental/pipeline'
-import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
-import type { Sanitize, ValidatorMap } from '../Validators'
-import type { V3 } from './types'
+import { optionalizeOverloadFactory } from './helpers/optional'
 
-export function object<T extends {}>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
-// export function object<T extends ValidatorMap<any>>(tree: T): TypeGuard<GetTypeFromValidatorMap<T>>
+function _fn<T extends {}>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
+// function _fn<T extends ValidatorMap<any>>(tree: T): TypeGuard<GetTypeFromValidatorMap<T>>
 
-export function object(): TypeGuard<Record<any, any>>
-export function object(tree: {}): TypeGuard<{}>
-export function object<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, any> | {}> {
+function _fn(): TypeGuard<Record<any, any>>
+function _fn(tree: {}): TypeGuard<{}>
+function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, any> | {}> {
     const isBlankObject = (arg: unknown) =>
         typeof arg === 'object' && !!arg && Object.keys(arg).length === 0
     if (!tree || isBlankObject(tree)) {
         const guard = (arg: unknown): arg is Record<any, any> | {} =>
             tree !== null && typeof arg === 'object'
 
-        return enpipeSchemaStructIntoGuard(
+        return setStructMetadata(
             { type: 'object', schema: guard, optional: false, tree: {} },
-            enpipeRuleMessageIntoGuard('object', guard)
+            setRuleMessage('object', guard)
         )
     }
 
     const keys = Object.keys(tree)
 
-    const optional = keys.filter(key => _hasOptionalProp(tree[key]))
-    const required = keys.filter(key => !_hasOptionalProp(tree[key]))
+    const optional = keys.filter(key => hasOptionalFlag(tree[key]))
+    const required = keys.filter(key => !hasOptionalFlag(tree[key]))
 
     const config = { validators: tree, required, optional }
 
@@ -79,5 +79,15 @@ export function object<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Reco
             .reduce((acc, item) => Object.assign(acc, item), {}),
     } as V3.ObjectStruct<T>
 
-    return enpipeSchemaStructIntoGuard<T>(metadata, enpipeRuleMessageIntoGuard(message, guard))
+    return setStructMetadata<T>(metadata, setRuleMessage(message, guard))
 }
+
+type OptionalizedObject = {
+    <T extends {}>(tree: ValidatorMap<T>): TypeGuard<undefined | Sanitize<T>>
+    // <T extends ValidatorMap<any>>(tree: T): TypeGuard<undefined|GetTypeFromValidatorMap<T>>
+
+    (): TypeGuard<undefined | Record<any, any>>
+    (tree: {}): TypeGuard<undefined | {}>
+}
+
+export const object = optionalizeOverloadFactory(_fn).optionalize<OptionalizedObject>()

@@ -1,0 +1,6 @@
+export const __curry_param__ = Symbol('design:curry_param')
+export const __message__ = Symbol('__message__')
+export const __type_guard__ = Symbol('__type_guard__')
+export const __message_formator__ = Symbol('__message_formator__')
+export const __validator_message__ = Symbol('__validator_message__')
+export const __validator_message_formator__ = Symbol('__validator_message_formator__')

@@ -12,4 +12,4 @@ export const NumberRules = {
 
 export { max, min, nonZero, optional }
 
-export type NumberRules = ReturnType<(typeof NumberRules)[keyof typeof NumberRules]>
+export type NumberRule = ReturnType<(typeof NumberRules)[keyof typeof NumberRules]>

@@ -1,17 +1,15 @@
-import 'reflect-metadata'
-import {
-    ensureInstanceOf,
-    ensureInterface,
-    getMessage,
-    getMetadata,
-    hasMessage,
-    hasMetadata,
-    is,
-    isInstanceOf,
-    isTypeGuard,
-    setMessage,
-    setMetadata,
-} from '../GenericTypeGuards'
+import { ensureInstanceOf } from '../helpers/ensureInstanceOf'
+import { ensureInterface } from '../helpers/ensureInterface'
+import { getMessage } from '../helpers/getMessage'
+import { getMetadata } from '../helpers/getMetadata'
+import { hasMessage } from '../helpers/hasMessage'
+import { hasMetadata } from '../helpers/hasMetadata'
+import { is } from '../helpers/is'
+import { isInstanceOf } from '../helpers/isInstanceOf'
+import { isTypeGuard } from '../helpers/isTypeGuard'
+import { setMessage } from '../helpers/setMessage'
+import { setMetadata } from '../helpers/setMetadata'
+
 import { TypeGuardError } from '../TypeErrors'
 
 describe('isInstanceOf', () => {
@@ -70,8 +68,8 @@ describe('ensureInterface', () => {
     const alwaysFalse = (_: unknown): _ is any => false
 
     it('should throw a `TypeGuardError` for the given tests', () => {
-        expect(() => ensureInterface(1, isString)).toThrowError(TypeGuardError)
-        expect(() => ensureInterface({ foo: 'bar' }, alwaysFalse)).toThrowError(TypeGuardError)
+        expect(() => ensureInterface(1, isString)).toThrow(TypeGuardError)
+        expect(() => ensureInterface({ foo: 'bar' }, alwaysFalse)).toThrow(TypeGuardError)
     })
 
     it('should return the given value for the given tests', () => {
@@ -103,9 +101,9 @@ describe('ensureInterface', () => {
         expect(() => ensureArray([1, 2, 3])).not.toThrow()
         expect(ensureArray([1, 2, 3])).toEqual([1, 2, 3])
 
-        expect(() => ensureString(1)).toThrowError(TypeGuardError)
-        expect(() => ensureBar({ foo: 'baz' })).toThrowError(TypeGuardError)
-        expect(() => ensureArray('foo')).toThrowError(TypeGuardError)
+        expect(() => ensureString(1)).toThrow(TypeGuardError)
+        expect(() => ensureBar({ foo: 'baz' })).toThrow(TypeGuardError)
+        expect(() => ensureArray('foo')).toThrow(TypeGuardError)
     })
 })
 
@@ -130,18 +128,18 @@ describe('ensureInstanceOf', () => {
     const bar = new Bar()
 
     it('should throw a `TypeGuardError` for the given tests', () => {
-        expect(() => ensureInstanceOf(1, String)).toThrowError(TypeGuardError)
-        expect(() => ensureInstanceOf(1, Number)).toThrowError(TypeGuardError)
-        expect(() => ensureInstanceOf('foo', Number)).toThrowError(TypeGuardError)
-        expect(() => ensureInstanceOf('foo', String)).toThrowError(TypeGuardError)
+        expect(() => ensureInstanceOf(1, String)).toThrow(TypeGuardError)
+        expect(() => ensureInstanceOf(1, Number)).toThrow(TypeGuardError)
+        expect(() => ensureInstanceOf('foo', Number)).toThrow(TypeGuardError)
+        expect(() => ensureInstanceOf('foo', String)).toThrow(TypeGuardError)
 
-        expect(() => ensureInstanceOf(a, B)).toThrowError(TypeGuardError)
-        expect(() => ensureInstanceOf(b, C)).toThrowError(TypeGuardError)
-        expect(() => ensureInstanceOf(a, C)).toThrowError(TypeGuardError)
+        expect(() => ensureInstanceOf(a, B)).toThrow(TypeGuardError)
+        expect(() => ensureInstanceOf(b, C)).toThrow(TypeGuardError)
+        expect(() => ensureInstanceOf(a, C)).toThrow(TypeGuardError)
 
-        expect(() => ensureInstanceOf(foo, Bar)).toThrowError(TypeGuardError)
-        expect(() => ensureInstanceOf(bar, Foo)).toThrowError(TypeGuardError)
-        expect(() => ensureInstanceOf(c, Bar)).toThrowError(TypeGuardError)
+        expect(() => ensureInstanceOf(foo, Bar)).toThrow(TypeGuardError)
+        expect(() => ensureInstanceOf(bar, Foo)).toThrow(TypeGuardError)
+        expect(() => ensureInstanceOf(c, Bar)).toThrow(TypeGuardError)
     })
     it('should return the given value for the given tests', () => {
         expect(() => ensureInstanceOf(a, A)).not.toThrow()

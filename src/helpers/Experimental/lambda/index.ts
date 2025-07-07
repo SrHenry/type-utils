@@ -1,10 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { TypeGuard } from '../../TypeGuards'
-import type { Func } from '../../types/Func'
-import type { AsLambda, Lambda, LambdaTypeGuard } from '../../types/Lambda'
-import { curry } from './curry'
+import type { TypeGuard } from '../../../TypeGuards/types'
+import type { AsLambda, Lambda, LambdaTypeGuard } from '../../../types/Lambda'
+
+import { curry } from '../curry'
+import { __lambda__ } from './constants'
+import { isLambda } from './helpers'
+
+export * from './helpers'
 
 function addInvoke<TFunc extends (...args: any) => any>(fn: TFunc): AsLambda<TFunc> {
     return Object.defineProperty(fn, 'invoke', {
@@ -32,18 +36,6 @@ function addSignature<TFunc extends (...args: any) => any>(fn: TFunc): AsLambda<
         value: true,
     }) as unknown as AsLambda<TFunc>
 }
-
-export function isLambda<Fn extends Func<any[], any>>(fn: unknown): fn is AsLambda<Fn>
-export function isLambda<TParams extends any[], TReturn extends any>(
-    fn: unknown
-): fn is Lambda<TParams, TReturn>
-export function isLambda(fn: unknown): fn is Lambda<any[], any>
-
-export function isLambda(fn: unknown): fn is Lambda<any[], any> {
-    return typeof fn === 'function' && __lambda__ in fn && !!fn[__lambda__]
-}
-
-const __lambda__ = Symbol(`[[${lambda.name}]]`)
 
 export function lambda<T>(guard: TypeGuard<T>): LambdaTypeGuard<T>
 export function lambda<TFunc extends (...args: any) => any>(lambda: TFunc): AsLambda<TFunc>

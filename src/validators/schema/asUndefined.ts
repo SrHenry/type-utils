@@ -1,16 +1,17 @@
-import {
-    branchIfOptional,
-    enpipeRuleMessageIntoGuard,
-    enpipeSchemaStructIntoGuard,
-} from './helpers'
+import type { TypeGuard } from '../../TypeGuards/types'
 
-import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
+import { branchIfOptional } from './helpers/branchIfOptional'
+import { optionalize } from './helpers/optional'
+import { setRuleMessage } from './helpers/setRuleMessage'
+import { setStructMetadata } from './helpers/setStructMetadata'
 
-export function asUndefined(): TypeGuard<undefined> {
+function _fn(): TypeGuard<undefined> {
     const guard = (arg: unknown): arg is undefined => branchIfOptional(arg, []) || arg === void 0
 
-    return enpipeSchemaStructIntoGuard(
+    return setStructMetadata(
         { type: 'undefined', schema: guard, optional: false },
-        enpipeRuleMessageIntoGuard('undefined', guard)
+        setRuleMessage('undefined', guard)
     )
 }
+
+export const asUndefined = optionalize(_fn)

@@ -1,5 +1,3 @@
-import { max as arrayMaxHandler } from '../rules/Array/handlers/max'
-
 /** Rule formator template */
 export const template = (message: string) => `[rule: ${message}]`
 
@@ -69,5 +67,5 @@ export const count = (element: unknown, arr: unknown[], deepObject: boolean = tr
  * @returns `true` if all elements are unique, `false` otherwise
  * */
 export const unique = (arg: unknown[], deepObject: boolean) =>
-    arrayMaxHandler.call(null, arg, 0) ||
-    arg.every((item, _, arr) => count(item, arr, deepObject) === 1)
+    // arrayMaxHandler.call(null, arg, 0) ||
+    max(arg.length, 0) || arg.every((item, _, arr) => count(item, arr, deepObject) === 1)

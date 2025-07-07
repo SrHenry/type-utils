@@ -1,4 +1,4 @@
-import { setMessageFormator } from '../../TypeGuards/GenericTypeGuards'
+import { setMessageFormator } from '../../TypeGuards/helpers/setMessageFormator'
 
 // <NumberRules> import section:
 import { maxFormator } from './Number/formators/max'

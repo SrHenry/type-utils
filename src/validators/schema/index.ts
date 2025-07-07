@@ -1,51 +1,51 @@
-import {
-    getMessage,
-    GetTypeGuards,
-    setMessage,
-    TypeGuards,
-} from '../../TypeGuards/GenericTypeGuards'
-import { getRule } from '../rules/helpers'
-import { enpipeSchemaStructIntoGuard, getStructMetadata, setOptionalFlag } from './helpers'
-
 import type { Generics } from '../../Generics'
-import type { GetTypeGuard, TypeGuard } from '../../TypeGuards/GenericTypeGuards'
-import type { ArrayRules } from '../rules/Array'
-import type { StringRules } from '../rules/String'
-import type { Sanitize, ValidatorMap } from '../Validators'
+import type { GetTypeGuard, GetTypeGuards, TypeGuard, TypeGuards } from '../../TypeGuards/types'
+import type { Merge } from '../../types'
+import type { ArrayRule } from '../rules/Array'
+import type { NumberRule } from '../rules/Number'
+import type { RecordRule } from '../rules/Record'
+import type { StringRule } from '../rules/String'
+import type { Sanitize, ValidatorMap } from '../types'
 import type { OptionalizeTypeGuardClosure, TypeGuardClosure, V3 } from './types'
 
-export * from './and'
-export * from './any'
-export * from './array'
-export * from './asEnum'
-export * from './asNull'
-export * from './asUndefined'
-export * from './bigint'
-export * from './boolean'
-export { hasOptionalFlag } from './helpers'
-export * from './number'
-export * from './object'
-export * from './or'
-export * from './primitive'
-export * from './record'
-export * from './string'
-export * from './symbol'
-export * from './types'
-export * from './useSchema'
+import { getRule } from '../rules/helpers/getRule'
+import { getStructMetadata } from './helpers/getStructMetadata'
+import { setOptionalFlag } from './helpers/optionalFlag'
+
+export type * from './types'
+
+export { and } from './and'
+export { any } from './any'
+export { array } from './array'
+export { asEnum } from './asEnum'
+export { asNull } from './asNull'
+export { asUndefined } from './asUndefined'
+export { bigint } from './bigint'
+export { boolean } from './boolean'
+export { hasOptionalFlag } from './helpers/optionalFlag'
+export { number } from './number'
+export { object } from './object'
+export { or } from './or'
+export { primitive } from './primitive'
+export { record } from './record'
+export { string } from './string'
+export { symbol } from './symbol'
+export { useSchema } from './useSchema'
 export { getStructMetadata }
 
-import { Merge } from '../../types'
-import { NumberRules } from '../rules/Number'
-import { RecordRules } from '../rules/Record'
+import { getMessage } from '../../TypeGuards/helpers/getMessage'
+import { setMessage } from '../../TypeGuards/helpers/setMessage'
+
 import { and } from './and'
 import { any } from './any'
 import { array } from './array'
 import { asEnum } from './asEnum'
 import { asNull } from './asNull'
 import { asUndefined } from './asUndefined'
-import { bigint, BigIntRulesConfig } from './bigint'
+import { bigint, type BigIntRulesConfig } from './bigint'
 import { boolean } from './boolean'
-import { number, NumberRulesConfig } from './number'
+import { setStructMetadata } from './helpers/setStructMetadata'
+import { number, type NumberRulesConfig } from './number'
 import { object } from './object'
 import { or } from './or'
 import { primitive } from './primitive'
@@ -103,22 +103,22 @@ export type OptionalSchema = Merge<
         >
     >,
     {
-        number(): TypeGuard<number>
-        number(rules: Partial<NumberRulesConfig>): TypeGuard<number>
-        number(rules: NumberRules[]): TypeGuard<number>
+        number(): OptionalizeTypeGuard<TypeGuard<number>>
+        number(rules: Partial<NumberRulesConfig>): OptionalizeTypeGuard<TypeGuard<number>>
+        number(rules: NumberRule[]): OptionalizeTypeGuard<TypeGuard<number>>
 
-        bigint(): TypeGuard<bigint>
-        bigint(rules: Partial<BigIntRulesConfig>): TypeGuard<bigint>
-        bigint(rules: NumberRules[]): TypeGuard<bigint>
+        bigint(): OptionalizeTypeGuard<TypeGuard<bigint>>
+        bigint(rules: Partial<BigIntRulesConfig>): OptionalizeTypeGuard<TypeGuard<bigint>>
+        bigint(rules: NumberRule[]): OptionalizeTypeGuard<TypeGuard<bigint>>
 
         string(): OptionalizeTypeGuard<TypeGuard<string>>
-        string(rules: StringRules[]): OptionalizeTypeGuard<TypeGuard<string>>
+        string(rules: StringRule[]): OptionalizeTypeGuard<TypeGuard<string>>
         string<T extends string>(matches: T): OptionalizeTypeGuard<TypeGuard<T>>
         string(regex: RegExp): OptionalizeTypeGuard<TypeGuard<string>>
 
         array(): OptionalizeTypeGuard<TypeGuard<any[]>>
-        array(rules: ArrayRules[]): OptionalizeTypeGuard<TypeGuard<any[]>>
-        array<T>(rules: ArrayRules[], schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
+        array(rules: ArrayRule[]): OptionalizeTypeGuard<TypeGuard<any[]>>
+        array<T>(rules: ArrayRule[], schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
         array<T>(schema: TypeGuard<T>): OptionalizeTypeGuard<TypeGuard<T[]>>
 
         object<T extends {}>(tree: ValidatorMap<T>): OptionalizeTypeGuard<TypeGuard<Sanitize<T>>>
@@ -130,7 +130,7 @@ export type OptionalSchema = Merge<
 
         record(): OptionalizeTypeGuard<TypeGuard<Record<string, any>>>
         // record(rules: Partial<Rules>): OptionalizeTypeGuard<TypeGuard<Record<string, any>>>
-        record(rules: RecordRules[]): OptionalizeTypeGuard<TypeGuard<Record<string, any>>>
+        record(rules: RecordRule[]): OptionalizeTypeGuard<TypeGuard<Record<string, any>>>
         record<K extends keyof any, T>(
             keyGuard: TypeGuard<K>,
             valueGuard: TypeGuard<T>
@@ -143,7 +143,7 @@ export type OptionalSchema = Merge<
         record<K extends keyof any, T>(
             keyGuard: TypeGuard<K>,
             valueGuard: TypeGuard<T>,
-            rules: RecordRules[]
+            rules: RecordRule[]
         ): OptionalizeTypeGuard<TypeGuard<Record<K, T>>>
 
         and<T1, T2>(
@@ -207,6 +207,10 @@ export type OptionalSchema = Merge<
     }
 >
 
+///! TODO: Remove global optional and place it as an optional method inside the library's default schemas:
+///! E.g.: `number().optional()` or `number.optional()`
+///! This will allow users to use the `optional` method without importing it directly.
+
 export function optional(): OptionalSchema {
     const wrapOptional =
         <T extends TypeGuardClosure>(fn: T): OptionalizeTypeGuardClosure<T> =>
@@ -217,7 +221,7 @@ export function optional(): OptionalSchema {
             setOptionalFlag(closure)
             // closure[__optional__] = true
 
-            return enpipeSchemaStructIntoGuard(
+            return setStructMetadata(
                 { ...getStructMetadata(fn(...args)), optional: true } as unknown as
                     | V3.GenericStruct<T>
                     | V3.AnyStruct,

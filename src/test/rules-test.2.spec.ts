@@ -1,24 +1,26 @@
+import type { TypeGuard } from '../TypeGuards/types'
+
 import { ValidationError, ValidationErrors, Validator } from '../Experimental'
 import { Generics } from '../Generics'
-import { createRule, getRule, useCustomRules } from '../rules'
+import { createRule } from '../validators/rules/helpers/createRule'
+import { getRule } from '../validators/rules/helpers/getRule'
+import { useCustomRules } from '../validators/rules/helpers/useCustomRules'
+
 import { unique } from '../rules/array'
 import { min, nonEmpty } from '../rules/string'
 import { array, getStructMetadata, number, object, optional, string } from '../schema'
-import {
-    ensureInterface,
-    getMessage,
-    getValidatorMessageFormator,
-    imprintMetadata,
-    is,
-    isInstanceOf,
-    retrieveMessage,
-    retrieveMetadata,
-    setValidatorMessage,
-    TypeGuard,
-    TypeGuardError,
-} from '../TypeGuards'
+
+import { ensureInterface } from '../TypeGuards/helpers/ensureInterface'
+import { getMessage } from '../TypeGuards/helpers/getMessage'
+import { getMetadata } from '../TypeGuards/helpers/getMetadata'
+import { getValidatorMessageFormator } from '../TypeGuards/helpers/getValidatorMessageFormator'
+import { is } from '../TypeGuards/helpers/is'
+import { isInstanceOf } from '../TypeGuards/helpers/isInstanceOf'
+import { setMetadata } from '../TypeGuards/helpers/setMetadata'
+import { setValidatorMessage } from '../TypeGuards/helpers/setValidatorMessage'
+import { TypeGuardError } from '../TypeGuards/TypeErrors'
 import { asEnum, asNull, or, StringRules, Validators } from '../validators'
-import { hasOptionalFlag } from '../validators/schema/helpers'
+import { hasOptionalFlag } from '../validators/schema/helpers/optionalFlag'
 
 function prettier(e: unknown): string {
     if (e instanceof ValidationError) return getValidatorMessageFormator(e)!(e.path, e.message)
@@ -114,12 +116,12 @@ console.log(
 )
 
 const __metadata__ = Symbol('__metadata__')
-const f1 = imprintMetadata(__metadata__, { a: 1 }, function () {
+const f1 = setMetadata(__metadata__, { a: 1 }, function () {
     void 0
 })
 
-const _b = retrieveMetadata(__metadata__, f1)
-const _b2 = retrieveMetadata(__metadata__, f1, object({ a: number() }))
+const _b = getMetadata(__metadata__, f1)
+const _b2 = getMetadata(__metadata__, f1, object({ a: number() }))
 
 console.log('metadata', _b, _b2)
 
@@ -196,7 +198,7 @@ console.log(parsed)
 
 const aa = string('aaa')
 
-console.log(retrieveMessage(aa))
+console.log(getMessage(aa))
 
 console.log('generic object', object()({ a: 1, b: 2 }))
 console.log('blank object', object({})({ a: 1, b: 2 }), object({})({ a: 1, b: 2 }))

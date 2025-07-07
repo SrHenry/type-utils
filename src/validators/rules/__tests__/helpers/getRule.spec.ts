@@ -1,4 +1,4 @@
-import { getRule } from '../../helpers'
+import { getRule } from '../../helpers/getRule'
 
 describe('getRule', () => {
     it('should return a rule', () => {

@@ -127,4 +127,111 @@ describe('string', () => {
         ).toBe(false)
         expect(string([StringRules.nonEmpty()])('')).toBe(false)
     })
+
+    it('should have an optional method embeded in the schema', () => {
+        expect(string).toHaveProperty('optional')
+        expect(typeof string.optional).toBe('function')
+
+        const schema = string.optional()
+
+        expect(typeof schema).toBe('function')
+    })
+
+    it('should return true if the input is a string or undefined', () => {
+        expect(string.optional()('')).toBe(true)
+        expect(string.optional()('hello')).toBe(true)
+        expect(string.optional()('123')).toBe(true)
+        expect(string.optional()('true')).toBe(true)
+        expect(string.optional()('false')).toBe(true)
+        expect(string.optional()('null')).toBe(true)
+        expect(string.optional()('undefined')).toBe(true)
+        expect(string.optional()('Symbol()')).toBe(true)
+    })
+
+    it('should return false if the input is not a string or undefined', () => {
+        for (const value of values.filter(v => v !== undefined))
+            expect(string.optional()(value)).toBe(false)
+    })
+
+    it('should return false if the input does not follow defined rules when optional schema', () => {
+        expect(string.optional({ min: 1 })('')).toBe(false)
+        expect(string.optional({ min: 1 })('hello')).toBe(true)
+        expect(string.optional({ min: 1 })('123')).toBe(true)
+        expect(string.optional({ min: 1 })('true')).toBe(true)
+        expect(string.optional({ min: 1 })('false')).toBe(true)
+        expect(string.optional({ min: 1 })('null')).toBe(true)
+        expect(string.optional({ max: 1 })('ssssss')).toBe(false)
+        expect(string.optional({ max: 1 })('s')).toBe(true)
+        expect(string.optional({ max: 1 })('')).toBe(true)
+        expect(string.optional({ max: 1 })('hello')).toBe(false)
+        expect(string.optional({ max: 1 })('123')).toBe(false)
+        expect(string.optional({ min: 1, max: 1 })('true')).toBe(false)
+        expect(string.optional({ min: 1, max: 1 })('false')).toBe(false)
+        expect(string.optional({ min: 1, max: 1 })('null')).toBe(false)
+        expect(string.optional({ min: 1, max: 1 })('!')).toBe(true)
+        expect(string.optional({ min: 1, max: 1 })('')).toBe(false)
+        expect(string.optional({ min: 1, max: 1 })('hello')).toBe(false)
+        expect(string.optional({ min: 1, max: 5, regex: /^hel+o$/ })('123')).toBe(false)
+        expect(string.optional({ min: 1, max: 5, regex: /^hel+o$/ })('hello')).toBe(true)
+        expect(string.optional({ min: 1, max: 5, regex: /^hel+o$/ })('hello')).toBe(true)
+        expect(string.optional({ min: 1, max: 5, regex: /^hel+o$/ })('helllo')).toBe(false)
+        expect(string.optional({ min: 1, max: 5, regex: /^hel+o$/ })('hellllo')).toBe(false)
+        expect(string.optional({ min: 1, max: 5, regex: /^hel+o$/ })('true')).toBe(false)
+        expect(string.optional({ min: 1, max: 5, regex: /^hel+o$/ })('false')).toBe(false)
+        expect(string.optional({ nonEmpty: true })('')).toBe(false)
+
+        expect(string.optional([StringRules.min(1)])('')).toBe(false)
+        expect(string.optional([StringRules.min(1)])('hello')).toBe(true)
+        expect(string.optional([StringRules.min(1)])('123')).toBe(true)
+        expect(string.optional([StringRules.min(1)])('true')).toBe(true)
+        expect(string.optional([StringRules.min(1)])('false')).toBe(true)
+        expect(string.optional([StringRules.min(1)])('null')).toBe(true)
+        expect(string.optional([StringRules.max(1)])('ssssss')).toBe(false)
+        expect(string.optional([StringRules.max(1)])('s')).toBe(true)
+        expect(string.optional([StringRules.max(1)])('')).toBe(true)
+        expect(string.optional([StringRules.max(1)])('hello')).toBe(false)
+        expect(string.optional([StringRules.max(1)])('123')).toBe(false)
+        expect(string.optional([StringRules.min(1), StringRules.max(1)])('true')).toBe(false)
+        expect(string.optional([StringRules.min(1), StringRules.max(1)])('false')).toBe(false)
+        expect(string.optional([StringRules.min(1), StringRules.max(1)])('null')).toBe(false)
+        expect(string.optional([StringRules.min(1), StringRules.max(1)])('!')).toBe(true)
+        expect(string.optional([StringRules.min(1), StringRules.max(1)])('')).toBe(false)
+        expect(string.optional([StringRules.min(1), StringRules.max(1)])('hello')).toBe(false)
+        expect(
+            string.optional([StringRules.min(1), StringRules.max(5), StringRules.regex(/^hel+o$/)])(
+                '123'
+            )
+        ).toBe(false)
+        expect(
+            string.optional([StringRules.min(1), StringRules.max(5), StringRules.regex(/^hel+o$/)])(
+                'hello'
+            )
+        ).toBe(true)
+        expect(
+            string.optional([StringRules.min(1), StringRules.max(5), StringRules.regex(/^hel+o$/)])(
+                'hello'
+            )
+        ).toBe(true)
+        expect(
+            string.optional([StringRules.min(1), StringRules.max(5), StringRules.regex(/^hel+o$/)])(
+                'helllo'
+            )
+        ).toBe(false)
+        expect(
+            string.optional([StringRules.min(1), StringRules.max(5), StringRules.regex(/^hel+o$/)])(
+                'hellllo'
+            )
+        ).toBe(false)
+        expect(
+            string.optional([StringRules.min(1), StringRules.max(5), StringRules.regex(/^hel+o$/)])(
+                'true'
+            )
+        ).toBe(false)
+        expect(
+            string.optional([StringRules.min(1), StringRules.max(5), StringRules.regex(/^hel+o$/)])(
+                'false'
+            )
+        ).toBe(false)
+        expect(string.optional([StringRules.nonEmpty()])('')).toBe(false)
+    })
 })
