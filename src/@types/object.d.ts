@@ -44,6 +44,7 @@ interface ArrayConstructor {
 
 declare var Array: ArrayConstructor
 
+/** string values returned by `typeof` operator */
 declare type TypeOfTag =
     | 'undefined'
     | 'boolean'

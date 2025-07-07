@@ -43,10 +43,33 @@ describe('asNull', () => {
         Promise.reject().catch(r => r),
         new Proxy({}, {}),
     ]
+
     it('should return true if value is null', () => {
         expect(schema(null)).toBe(true)
     })
     it('should return false if falue is not null', () => {
         for (const value of values) expect(schema(value)).toBe(false)
+    })
+
+    it('should have an optional method embeded in the schema', () => {
+        expect(asNull).toHaveProperty('optional')
+        expect(typeof asNull.optional).toBe('function')
+
+        const schema = asNull.optional()
+
+        expect(typeof schema).toBe('function')
+    })
+
+    it('should return true if value is null or undefined', () => {
+        const schema = asNull.optional()
+
+        expect(schema(null)).toBe(true)
+        expect(schema(undefined)).toBe(true)
+    })
+
+    it('should return false if value is not null or undefined', () => {
+        const schema = asNull.optional()
+
+        for (const value of values.filter(v => v !== undefined)) expect(schema(value)).toBe(false)
     })
 })

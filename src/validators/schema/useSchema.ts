@@ -1,5 +1,9 @@
-import { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
+import type { TypeGuard } from '../../TypeGuards/types'
 
-export function useSchema<T>(schema: TypeGuard<T>): TypeGuard<T> {
+import { optionalize } from './helpers/optional'
+
+function _fn<T>(schema: TypeGuard<T>): TypeGuard<T> {
     return schema
 }
+
+export const useSchema = optionalize(_fn)

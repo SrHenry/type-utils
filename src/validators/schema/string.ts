@@ -1,15 +1,14 @@
-import { setMessage } from '../../TypeGuards/GenericTypeGuards'
-import { StringRules } from '../rules/String'
-import {
-    branchIfOptional,
-    enpipeRuleMessageIntoGuard,
-    enpipeSchemaStructIntoGuard,
-    exact,
-    exactFormator,
-    isFollowingRules,
-} from './helpers'
+import type { TypeGuard } from '../../TypeGuards/types'
 
-import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
+import { setMessage } from '../../TypeGuards/helpers/setMessage'
+import { template as ruleTemplate } from '../rules/common'
+import { type StringRule, StringRules } from '../rules/String'
+
+import { branchIfOptional } from './helpers/branchIfOptional'
+import { isFollowingRules } from './helpers/isFollowingRules'
+import { optionalizeOverloadFactory } from './helpers/optional'
+import { setRuleMessage } from './helpers/setRuleMessage'
+import { setStructMetadata } from './helpers/setStructMetadata'
 
 type Rules = {
     min: number | bigint
@@ -21,20 +20,24 @@ type Rules = {
 
 export type { Rules as StringRulesConfig }
 
-export function string(): TypeGuard<string>
-export function string(rules: Partial<Rules>): TypeGuard<string>
-export function string(rules: StringRules[]): TypeGuard<string>
-export function string<T extends string>(matches: T): TypeGuard<T>
-export function string(regex: RegExp): TypeGuard<string>
+const exactFormator = <StringLiteral extends string>(to: StringLiteral) =>
+    ruleTemplate(`exact '${to}'`)
 
-export function string(
-    rules: Partial<Rules> | StringRules[] | string | RegExp = []
-): TypeGuard<string> {
+function _fn(): TypeGuard<string>
+function _fn(rules: Partial<Rules>): TypeGuard<string>
+function _fn(rules: StringRule[]): TypeGuard<string>
+function _fn<T extends string>(matches: T): TypeGuard<T>
+function _fn(regex: RegExp): TypeGuard<string>
+
+function _fn(rules: Partial<Rules> | StringRule[] | string | RegExp = []): TypeGuard<string> {
     if (typeof rules === 'string') {
         const guard = (arg: unknown): arg is string =>
-            typeof arg === 'string' && isFollowingRules(arg, [exact(rules)])
+            // typeof arg === 'string' && isFollowingRules<ExactRule<string>>(arg, [exact(rules as string)])
+            // typeof arg === 'string' && useCustomRules(guard, exact(rules))
+            // typeof arg === 'string' && isExactString(arg, rules)
+            typeof arg === 'string' && arg === rules
 
-        return enpipeSchemaStructIntoGuard(
+        return setStructMetadata(
             { type: 'string', schema: guard, optional: false },
             setMessage(`string & ${exactFormator(rules)}`, guard)
         )
@@ -45,20 +48,20 @@ export function string(
         const guard = (arg: unknown): arg is string =>
             typeof arg === 'string' && isFollowingRules(arg, rules_arr)
 
-        return enpipeSchemaStructIntoGuard(
+        return setStructMetadata(
             { type: 'string', schema: guard, optional: false },
-            enpipeRuleMessageIntoGuard('string', guard, rules_arr)
+            setRuleMessage('string', guard, rules_arr)
         )
     }
 
-    if (Array.isArray<StringRules>(rules)) {
+    if (Array.isArray<StringRule>(rules)) {
         const guard = (arg: unknown): arg is string =>
-            branchIfOptional(arg, rules as StringRules[]) ||
-            (typeof arg === 'string' && isFollowingRules(arg, rules as StringRules[]))
+            branchIfOptional(arg, rules as StringRule[]) ||
+            (typeof arg === 'string' && isFollowingRules(arg, rules as StringRule[]))
 
-        return enpipeSchemaStructIntoGuard(
+        return setStructMetadata(
             { type: 'string', schema: guard, optional: false },
-            enpipeRuleMessageIntoGuard('string', guard, rules)
+            setRuleMessage('string', guard, rules)
         )
     }
 
@@ -72,5 +75,15 @@ export function string(
     if (nonEmpty === true) rules.push(StringRules.nonEmpty())
     if (optional === true) rules.push(StringRules.optional())
 
-    return string(rules)
+    return _fn(rules)
 }
+
+type OptionalizedString = {
+    (): TypeGuard<string>
+    (rules: Partial<Rules>): TypeGuard<string>
+    (rules: StringRule[]): TypeGuard<string>
+    <T extends string>(matches: T): TypeGuard<T>
+    (regex: RegExp): TypeGuard<string>
+}
+
+export const string = optionalizeOverloadFactory(_fn).optionalize<OptionalizedString>()

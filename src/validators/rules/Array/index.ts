@@ -13,4 +13,4 @@ export const ArrayRules = {
 
 export { max, min, optional, unique }
 
-export type ArrayRules = ReturnType<(typeof ArrayRules)[keyof typeof ArrayRules]>
+export type ArrayRule = ReturnType<(typeof ArrayRules)[keyof typeof ArrayRules]>

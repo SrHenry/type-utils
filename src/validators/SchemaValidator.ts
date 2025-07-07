@@ -1,27 +1,25 @@
+import type Generics from '../Generics'
+import type { GetTypeGuard, MessageFormator, TypeGuard } from '../TypeGuards/types'
+import type { Merge } from '../types'
+import type { ArrayStruct, BaseStruct } from './schema'
+import type { ValidatorMessageMap } from './types'
+
 import { AutoBind } from '../helpers'
 import { TypeGuardError } from '../TypeGuards'
-import {
-    ensureInterface,
-    getMessage,
-    getMetadata,
-    GetTypeGuard,
-    getValidatorMessage,
-    hasValidatorMessage,
-    isInstanceOf,
-    setMetadata,
-    setValidatorMessage,
-    setValidatorMessageFormator,
-    TypeGuard,
-} from '../TypeGuards/GenericTypeGuards'
-import { Merge } from '../types'
-import { MessageFormator } from './rules/types'
-import type { ArrayStruct, BaseStruct, BaseTypes } from './schema'
-import { getStructMetadata, object, or } from './schema'
-import { asTypeGuard, hasStructMetadata } from './schema/helpers'
-import { ValidationError, ValidationErrors } from './ValidationError'
-import { ValidatorMessageMap } from './Validators'
 
-// type Err = ValidationError<unknown, Generics.PrimitiveType>
+import { asTypeGuard } from '../TypeGuards/helpers/asTypeGuard'
+import { ensureInterface } from '../TypeGuards/helpers/ensureInterface'
+import { getMessage } from '../TypeGuards/helpers/getMessage'
+import { getMetadata } from '../TypeGuards/helpers/getMetadata'
+import { getValidatorMessage } from '../TypeGuards/helpers/getValidatorMessage'
+import { hasValidatorMessage } from '../TypeGuards/helpers/hasValidatorMessage'
+import { isInstanceOf } from '../TypeGuards/helpers/isInstanceOf'
+import { setMetadata } from '../TypeGuards/helpers/setMetadata'
+import { setValidatorMessage } from '../TypeGuards/helpers/setValidatorMessage'
+import { setValidatorMessageFormator } from '../TypeGuards/helpers/setValidatorMessageFormator'
+import { getStructMetadata, object, or } from './schema'
+import { hasStructMetadata } from './schema/helpers/hasStructMetadata'
+import { ValidationError, ValidationErrors } from './ValidationError'
 
 type ValidateReturn<T> = T | ValidationErrors
 
@@ -417,7 +415,7 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
         else if ('entries' in metadata)
             __SchemaValidator.setValidatorMessage(
                 message,
-                (metadata.entries as BaseStruct<BaseTypes, any>).schema
+                (metadata.entries as BaseStruct<Generics.BaseTypes, any>).schema
             )
         else throw new Error('Invalid metadata for object')
 

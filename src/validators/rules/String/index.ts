@@ -18,4 +18,4 @@ export const StringRules = {
 
 export { email, max, min, nonEmpty, optional, regex, url }
 
-export type StringRules = ReturnType<(typeof StringRules)[keyof typeof StringRules]>
+export type StringRule = ReturnType<(typeof StringRules)[keyof typeof StringRules]>

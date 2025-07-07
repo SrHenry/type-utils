@@ -14,4 +14,5 @@ export const OptionalRules = {
 
 export { optional }
 
-export type OptionalRules = ReturnType<(typeof OptionalRules)[keyof typeof OptionalRules]>
+/** @deprecated */
+export type OptionalRule = ReturnType<(typeof OptionalRules)[keyof typeof OptionalRules]>

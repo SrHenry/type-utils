@@ -1,3 +1,11 @@
+export type * from './types/Action'
+export type * from './types/Async'
+export type * from './types/Func'
+export type * from './types/Lambda'
+export type * from './types/Predicate'
+export type * from './types/Result'
+export type * from './types/Tuple'
+
 export * from './helpers/Experimental'
 export * from './types/Experimental'
 export * from './validators/Experimental'

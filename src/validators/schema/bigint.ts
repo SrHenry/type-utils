@@ -1,12 +1,12 @@
-import { NumberRules } from '../rules/Number'
-import {
-    branchIfOptional,
-    enpipeRuleMessageIntoGuard,
-    enpipeSchemaStructIntoGuard,
-    isFollowingRules,
-} from './helpers'
+import type { TypeGuard } from '../../TypeGuards/types'
 
-import type { TypeGuard } from '../../TypeGuards/GenericTypeGuards'
+import { type NumberRule, NumberRules } from '../rules/Number'
+import { branchIfOptional } from './helpers/branchIfOptional'
+import { isFollowingRules } from './helpers/isFollowingRules'
+import { setRuleMessage } from './helpers/setRuleMessage'
+import { setStructMetadata } from './helpers/setStructMetadata'
+
+import { optionalizeOverloadFactory } from './helpers/optional'
 
 type Rules = {
     min: bigint
@@ -16,18 +16,19 @@ type Rules = {
 }
 export type { Rules as BigIntRulesConfig }
 
-export function bigint(): TypeGuard<bigint>
-export function bigint(rules: Partial<Rules>): TypeGuard<bigint>
-export function bigint(rules: NumberRules[]): TypeGuard<bigint>
-export function bigint(rules: Partial<Rules> | NumberRules[] = []): TypeGuard<bigint> {
-    if (Array.isArray<NumberRules>(rules)) {
-        const guard = (arg: unknown): arg is bigint =>
-            branchIfOptional(arg, rules as NumberRules[]) ||
-            (typeof arg === 'bigint' && isFollowingRules(arg, rules as NumberRules[]))
+function _fn(): TypeGuard<bigint>
+function _fn(rules: Partial<Rules>): TypeGuard<bigint>
+function _fn(rules: NumberRule[]): TypeGuard<bigint>
 
-        return enpipeSchemaStructIntoGuard(
+function _fn(rules: Partial<Rules> | NumberRule[] = []): TypeGuard<bigint> {
+    if (Array.isArray<NumberRule>(rules)) {
+        const guard = (arg: unknown): arg is bigint =>
+            branchIfOptional(arg, rules as NumberRule[]) ||
+            (typeof arg === 'bigint' && isFollowingRules(arg, rules as NumberRule[]))
+
+        return setStructMetadata(
             { type: 'bigint', schema: guard, optional: false },
-            enpipeRuleMessageIntoGuard('bigint', guard, rules)
+            setRuleMessage('bigint', guard, rules)
         )
     }
 
@@ -42,3 +43,11 @@ export function bigint(rules: Partial<Rules> | NumberRules[] = []): TypeGuard<bi
 
     return bigint(rules)
 }
+
+type OptionalizedBigInt = {
+    (): TypeGuard<undefined | bigint>
+    (rules: Partial<Rules>): TypeGuard<undefined | bigint>
+    (rules: NumberRule[]): TypeGuard<undefined | bigint>
+}
+
+export const bigint = optionalizeOverloadFactory(_fn).optionalize<OptionalizedBigInt>()
