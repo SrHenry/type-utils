@@ -31,7 +31,7 @@
         "prebuild:umd:dev": "npm run build",
         "build:umd:dev": "npx webpack --entry=./dist/umd.js --output-path=./umd --output-filename=index.js --mode=development --target=web --library=TypeUtils --library-type=umd --library-target=web",
         "circular-dependencies": "madge --ts-config tsconfig.json --circular --extensions ts src",
-        "circular-dependencies:graph": "madge --ts-config tsconfig.json --circular --extensions ts --image dependencies.svg src"
+        "circular-dependencies:graph": "madge --ts-config tsconfig.json --circular --extensions ts --image .madge/circular-dependencies.graph.svg src"
     },
     "repository": "github:SrHenry/type-utils.git",
     "keywords": [

@@ -10,3 +10,4 @@ umd
 **/*.draft
 yarn-error.log
 coverage
+.madge
