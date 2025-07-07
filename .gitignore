@@ -3,10 +3,11 @@
 node_modules
 dist
 types
-!src/types
+!src/**/types
 umd
 .env
 **/*.draft.*
 **/*.draft
 yarn-error.log
 coverage
+.madge

@@ -1,22 +1,13 @@
-import { Func } from '../../types/Func'
-import type { ArrayRules } from './Array'
-import type { bindings, keys } from './constants'
-import type { NumberRules } from './Number'
-import type { RecordRules } from './Record'
-import type { StringRules } from './String'
+import type { MessageFormator } from '../../../TypeGuards/types'
+import type { ArrayRule } from './../Array'
+import type { NumberRule } from './../Number'
+import type { RecordRule } from './../Record'
+import type { StringRule } from './../String'
 
-export type MessageFormator = (...args: any[]) => string
+export type * from './RuleFactory'
+export type * from './RuleTuple'
 
 export type Rule<Arg = any, Args = any> = (arg: Arg, ...args: Args[]) => boolean
-
-export type OmitFirstItemFromTuple<T extends any[]> = T extends [any, ...infer rest]
-    ? [...rest]
-    : never
-
-export type RuleTuple<Rule extends keyof keys = keyof keys> = [
-    rule: keys[Rule],
-    args: OmitFirstItemFromTuple<Parameters<bindings[keys[Rule]]>>
-]
 
 export type CustomHandler<Args extends any[] = any[], Subject = any> = (
     subject: Subject
@@ -28,13 +19,17 @@ export type Custom<
     Subject = unknown
 > = [rule: RuleName, args: Args, handler: CustomHandler<Args, Subject>]
 
+export type GetCustomRuleName<CustomRule extends Custom> = CustomRule[0]
+export type GetCustomRuleArgs<CustomRule extends Custom> = CustomRule[1]
+export type GetCustomRuleHandler<CustomRule extends Custom> = CustomRule[2]
+
 export type CustomFactory<
     Args extends any[] = unknown[],
     RuleName extends string = string,
     Subject = unknown
 > = (...args: Args) => Custom<Args, RuleName, Subject>
 
-export type Default = StringRules | NumberRules | ArrayRules | RecordRules
+export type Default = StringRule | NumberRule | ArrayRule | RecordRule
 export type All<
     Args extends any[] = unknown[],
     RuleName extends string = string,
@@ -52,10 +47,5 @@ export type CreateRuleArgs<
     messageFormator?: Formator
     handler: Handler
 }
-
-export type RuleFactory<
-    RuleName extends keyof keys = keyof keys,
-    Args extends any[] = RuleTuple<RuleName>[1]
-> = Func<Args, RuleTuple<RuleName>>
 
 export type NoArgs = []

@@ -1,6 +1,10 @@
-import { ensureInstanceOf, ensureInterface, is, TypeGuard } from '../TypeGuards/GenericTypeGuards'
+import type { TypeGuard } from '../TypeGuards/types'
+import type { ValidatorArgs } from './types'
+
+import { ensureInstanceOf } from '../TypeGuards/helpers/ensureInstanceOf'
+import { ensureInterface } from '../TypeGuards/helpers/ensureInterface'
+import { is } from '../TypeGuards/helpers/is'
 import { TypeGuardError } from '../TypeGuards/TypeErrors'
-import { ValidatorArgs } from './Validators'
 
 export abstract class BaseValidator {
     public static validateProperties<T, U>(

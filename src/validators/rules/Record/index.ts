@@ -6,7 +6,6 @@ export const RecordRules = {
     optional,
 } as const
 
-// export const { nonEmpty } = RecordRules
 export { nonEmpty, optional }
 
-export type RecordRules = ReturnType<(typeof RecordRules)[keyof typeof RecordRules]>
+export type RecordRule = ReturnType<(typeof RecordRules)[keyof typeof RecordRules]>

@@ -1,28 +1,26 @@
-import { isInstanceOf, TypeGuard } from '../../TypeGuards'
+import type { TypeGuard } from '../../TypeGuards/types'
+
+import { asTypeGuard } from '../../TypeGuards/helpers/asTypeGuard'
+import { isInstanceOf } from '../../TypeGuards/helpers/isInstanceOf'
 import { nonZero } from '../rules/Number'
 import { nonEmpty } from '../rules/String'
-import { and, array, boolean, number, object, optional, or, string, symbol } from '../schema'
-import { asTypeGuard } from '../schema/helpers'
+import { and, array, boolean, number, object, or, string, symbol } from '../schema'
 import { SchemaValidator } from '../SchemaValidator'
 import { ValidationErrors } from '../ValidationError'
 
 describe('SchemaValidator', () => {
     it('should validate a primitive value', () => {
         expect(SchemaValidator.validate(20, number())).toBe(20)
-        expect(() => SchemaValidator.validate(0, number([nonZero()]))).toThrowError(
-            ValidationErrors
-        )
+        expect(() => SchemaValidator.validate(0, number([nonZero()]))).toThrow(ValidationErrors)
 
         expect(SchemaValidator.validate('foo', string())).toBe('foo')
-        expect(() => SchemaValidator.validate('', string([nonEmpty()]))).toThrowError(
-            ValidationErrors
-        )
+        expect(() => SchemaValidator.validate('', string([nonEmpty()]))).toThrow(ValidationErrors)
 
         expect(SchemaValidator.validate(true, boolean())).toBe(true)
-        expect(() => SchemaValidator.validate(undefined, boolean())).toThrowError(ValidationErrors)
+        expect(() => SchemaValidator.validate(undefined, boolean())).toThrow(ValidationErrors)
 
         expect(SchemaValidator.validate(Symbol(), symbol()))
-        expect(() => SchemaValidator.validate('[Symbol symbol]', symbol())).toThrowError(
+        expect(() => SchemaValidator.validate('[Symbol symbol]', symbol())).toThrow(
             ValidationErrors
         )
     })
@@ -35,7 +33,7 @@ describe('SchemaValidator', () => {
 
         expect(SchemaValidator.validate(value1, schema)).toBe(value1)
         expect(SchemaValidator.validate(value2, schema)).toBe(value2)
-        expect(() => SchemaValidator.validate(value3, schema)).toThrowError(ValidationErrors)
+        expect(() => SchemaValidator.validate(value3, schema)).toThrow(ValidationErrors)
 
         const schema2 = or(
             schema,
@@ -46,7 +44,7 @@ describe('SchemaValidator', () => {
         )
 
         expect(SchemaValidator.validate("I'm a string", schema2)).toBe("I'm a string")
-        expect(() => SchemaValidator.validate(value3, schema2)).toThrowError(ValidationErrors)
+        expect(() => SchemaValidator.validate(value3, schema2)).toThrow(ValidationErrors)
     })
 
     const value1 = {
@@ -78,16 +76,14 @@ describe('SchemaValidator', () => {
     it('should validate using a recursible schema', () => {
         expect(SchemaValidator.validate(value1, schema1)).toBe(value1)
         expect(SchemaValidator.validate(value2, schema1)).toBe(value2)
-        expect(() => SchemaValidator.validate(value3, schema1)).toThrowError(ValidationErrors)
+        expect(() => SchemaValidator.validate(value3, schema1)).toThrow(ValidationErrors)
 
         expect(SchemaValidator.validate([value1, value2], schema2)).toEqual([value1, value2])
-        expect(() => SchemaValidator.validate([value3], schema2)).toThrowError(ValidationErrors)
-        expect(() => SchemaValidator.validate([value3], schema2, false)).not.toThrowError(
+        expect(() => SchemaValidator.validate([value3], schema2)).toThrow(ValidationErrors)
+        expect(() => SchemaValidator.validate([value3], schema2, false)).not.toThrow(
             ValidationErrors
         )
-        expect(() => SchemaValidator.validate(value3, schema1, false)).not.toThrowError(
-            ValidationErrors
-        )
+        expect(() => SchemaValidator.validate(value3, schema1, false)).not.toThrow(ValidationErrors)
         expect(() =>
             SchemaValidator.validate(
                 SchemaValidator.validate(value3, schema1, false),
@@ -99,7 +95,7 @@ describe('SchemaValidator', () => {
                     )
                 )
             )
-        ).not.toThrowError(ValidationErrors)
+        ).not.toThrow(ValidationErrors)
     })
     it('should validate using a schema with a custom message', () => {
         SchemaValidator.setValidatorMessage(
@@ -133,8 +129,8 @@ describe('SchemaValidator', () => {
                             (err.path === '$[3].c' && err.message === 'must be a boolean')
                     )) as TypeGuard<ValidationErrors>
         )
-        expect(() => SchemaValidator.validate(value3, schema1)).toThrowError(ValidationErrors)
-        expect(() => SchemaValidator.validate([value1, value3, value2], schema2)).toThrowError(
+        expect(() => SchemaValidator.validate(value3, schema1)).toThrow(ValidationErrors)
+        expect(() => SchemaValidator.validate([value1, value3, value2], schema2)).toThrow(
             ValidationErrors
         )
         expect(validatedValue3(SchemaValidator.validate(value3, schema1, false))).toBe(true)
@@ -150,10 +146,10 @@ describe('SchemaValidator', () => {
             a: number(),
             b: string(),
             c: boolean(),
-            d: optional().number(),
-            e: optional().string(),
-            f: optional().boolean(),
-            g: optional().object({
+            d: number.optional(),
+            e: string.optional(),
+            f: boolean.optional(),
+            g: object.optional({
                 foo: array(number()),
                 bar: string(),
             }),
@@ -274,11 +270,11 @@ describe('SchemaValidator', () => {
             },
         }
 
-        expect(() => SchemaValidator.validate(value9, schema)).toThrowError(ValidationErrors)
-        expect(() => SchemaValidator.validate(value10, schema)).toThrowError(ValidationErrors)
-        expect(() => SchemaValidator.validate(value11, schema)).toThrowError(ValidationErrors)
-        expect(() => SchemaValidator.validate(value12, schema)).toThrowError(ValidationErrors)
-        expect(() => SchemaValidator.validate(value13, schema)).toThrowError(ValidationErrors)
+        expect(() => SchemaValidator.validate(value9, schema)).toThrow(ValidationErrors)
+        expect(() => SchemaValidator.validate(value10, schema)).toThrow(ValidationErrors)
+        expect(() => SchemaValidator.validate(value11, schema)).toThrow(ValidationErrors)
+        expect(() => SchemaValidator.validate(value12, schema)).toThrow(ValidationErrors)
+        expect(() => SchemaValidator.validate(value13, schema)).toThrow(ValidationErrors)
 
         const validatedValue9 = and(
             isInstanceOf(ValidationErrors),

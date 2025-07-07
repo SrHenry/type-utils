@@ -1,5 +1,7 @@
 import { Generics } from '../Generics'
-import { GetTypeGuard } from '../TypeGuards'
+import type { GetTypeGuard } from '../TypeGuards/types'
+
+export * from './Experimental'
 
 export * from './GetOptional'
 export * from './GetRequired'

@@ -1,10 +1,11 @@
-import type { Func } from '../../types/Func'
-import type { Curried, CurriedFunc, CurriedLambda, Lambda } from '../../types/Lambda'
-import { isLambda } from './lambda'
+import type { Func } from '../../../types/Func'
+import type { Curried, Lambda } from '../../../types/Lambda'
 
-const NO_ARG = Symbol('NO_ARG')
-const __curried__ = Symbol(`[[${curry.name}]]`)
-const __partialApply__ = Symbol(`[[${curry.name}\`partialApply]]`)
+import { isLambda } from '../lambda/helpers'
+import { __curried__, __partialApply__, NO_ARG } from './constants'
+import { isCurried } from './helpers'
+
+export * from './helpers'
 
 function addInvoke(fn: CallableFunction) {
     return Object.defineProperty(fn, 'invoke', {
@@ -30,34 +31,6 @@ function addPartialApplySignature(fn: CallableFunction) {
         writable: false,
         value: true,
     }) as unknown as Lambda
-}
-
-export function isCurried<TLambda extends Lambda<any[], any>>(
-    fn: unknown
-): fn is CurriedLambda<TLambda, boolean>
-export function isCurried<TFunc extends Func<any[], any>>(
-    fn: unknown
-): fn is CurriedFunc<TFunc, boolean>
-export function isCurried<TParams extends any[], TReturn extends any>(
-    fn: unknown
-): fn is Curried<Func<TParams, TReturn>, boolean>
-export function isCurried(fn: unknown): fn is Curried<Func<any[], any>, boolean>
-export function isCurried(fn: unknown): boolean {
-    return typeof fn === 'function' && __curried__ in fn && !!fn[__curried__]
-}
-
-export function isPartialApply<TLambda extends Lambda<any[], any>>(
-    fn: unknown
-): fn is CurriedLambda<TLambda, true>
-export function isPartialApply<TFunc extends Func<any[], any>>(
-    fn: unknown
-): fn is CurriedFunc<TFunc, true>
-export function isPartialApply<TParams extends any[], TReturn extends any>(
-    fn: unknown
-): fn is Curried<Func<TParams, TReturn>, true>
-export function isPartialApply(fn: unknown): fn is Curried<Func<any[], any>, true>
-export function isPartialApply(fn: unknown): boolean {
-    return typeof fn === 'function' && __partialApply__ in fn && !!fn[__partialApply__]
 }
 
 export function curry<TFunc extends Func<any[], any>>(fn: TFunc): Curried<TFunc, false>
