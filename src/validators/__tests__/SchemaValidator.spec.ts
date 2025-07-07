@@ -4,7 +4,7 @@ import { asTypeGuard } from '../../TypeGuards/helpers/asTypeGuard'
 import { isInstanceOf } from '../../TypeGuards/helpers/isInstanceOf'
 import { nonZero } from '../rules/Number'
 import { nonEmpty } from '../rules/String'
-import { and, array, boolean, number, object, optional, or, string, symbol } from '../schema'
+import { and, array, boolean, number, object, or, string, symbol } from '../schema'
 import { SchemaValidator } from '../SchemaValidator'
 import { ValidationErrors } from '../ValidationError'
 
@@ -146,10 +146,10 @@ describe('SchemaValidator', () => {
             a: number(),
             b: string(),
             c: boolean(),
-            d: optional().number(),
-            e: optional().string(),
-            f: optional().boolean(),
-            g: optional().object({
+            d: number.optional(),
+            e: string.optional(),
+            f: boolean.optional(),
+            g: object.optional({
                 foo: array(number()),
                 bar: string(),
             }),
