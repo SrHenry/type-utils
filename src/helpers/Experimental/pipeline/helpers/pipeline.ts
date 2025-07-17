@@ -6,8 +6,7 @@ import { addDepipe } from './addDepipe'
 import { addPipe } from './addPipe'
 import { addPipeAsync } from './addPipeAsync'
 import { getPipeFn } from './getPipeFn'
-
-/// TODO!: implement pipeline metadata to recognize if a given value is managed by this pipeline feature
+import { setPipelineMetadata } from './setPipelineMetadata'
 
 export function pipeline(): HasPipe<void>
 export function pipeline<RValue, Arg = never>(
@@ -21,22 +20,24 @@ export function pipeline<RValue extends {}, Arg>(
     this: any,
     cb?: Func1<Arg, RValue | Promise<RValue>>
 ) {
-    if (!cb) return { pipe: getPipeFn() }
+    if (!cb) return setPipelineMetadata({ pipe: getPipeFn() })
 
-    return function (this: any, arg0: Arg) {
-        let rvalue: RValue | Promise<RValue>
+    return setPipelineMetadata(
+        function (this: any, arg0: Arg) {
+            let rvalue: RValue | Promise<RValue>
 
-        if (arg0 instanceof Promise) {
-            rvalue = arg0.then(r => cb.apply(this, [r]))
-            rvalue = addPipeAsync(rvalue)
-        } else {
-            rvalue = cb.apply(this, [arg0])
-            if (rvalue === null || rvalue === undefined) return rvalue
-            if (rvalue instanceof Promise) rvalue = addPipeAsync(rvalue)
-        }
-        rvalue = addPipe(rvalue)
-        rvalue = addDepipe(rvalue)
+            if (arg0 instanceof Promise) {
+                rvalue = arg0.then(r => cb.apply(this, [r]))
+                rvalue = addPipeAsync(rvalue)
+            } else {
+                rvalue = cb.apply(this, [arg0])
+                if (rvalue === null || rvalue === undefined) return rvalue
+                if (rvalue instanceof Promise) rvalue = addPipeAsync(rvalue)
+            }
+            rvalue = addPipe(rvalue)
+            rvalue = addDepipe(rvalue)
 
-        return rvalue
-    }.bind(this)
+            return setPipelineMetadata(rvalue)
+        }.bind(this)
+    )
 }
