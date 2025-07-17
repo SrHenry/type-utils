@@ -1,6 +1,10 @@
 import { v4 as uuid } from 'uuid'
+
 import { lambda } from '../Experimental'
-import { enpipe, pipe, pipeline } from '../Experimental/pipeline'
+// import { enpipe, pipe, pipeline } from '../Experimental/pipeline'
+import { createPipeline } from '../Experimental/pipeline/createPipeline'
+import { enpipe } from '../Experimental/pipeline/enpipe'
+import { pipe } from '../Experimental/pipeline/pipe'
 
 const addUserFactory = (db: Record<string, Record<string, any>[]>) => (user: Record<string, any>) =>
     new Promise<string>(resolve => {
@@ -94,7 +98,7 @@ describe('pipe', () => {
                 }, 350)
             })
 
-        const result = await pipeline()
+        const result = await createPipeline()
             .pipe(getFromDb)
             .pipeAsync(db => {
                 log.push('edit')
