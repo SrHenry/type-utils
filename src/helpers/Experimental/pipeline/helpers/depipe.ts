@@ -1,24 +1,27 @@
 import type { GetPipeline } from '../types/GetPipeline'
-import type { BaseAsyncPipable } from '../types/interfaces/BaseAsyncPipable'
-import type { BasePipable } from '../types/interfaces/BasePipable'
+import type { internal } from '../types/Pipable'
 
 import { hasPipelineMetadata } from './hasPipelineMetadata'
 
-export function depipe<RValue>(arg: (RValue & BasePipable<RValue>) | null): RValue | null
-export function depipe<RValue>(arg: (RValue & BasePipable<RValue>) | undefined): RValue | undefined
+export function depipe<RValue>(arg: (RValue & internal.BasePipable<RValue>) | null): RValue | null
 export function depipe<RValue>(
-    arg: (RValue & BasePipable<RValue>) | null | undefined
-): RValue | null | undefined
-export function depipe<RValue>(arg: RValue & BasePipable<RValue>): RValue
-
-export function depipe<RValue>(arg: (RValue & BaseAsyncPipable<RValue>) | null): RValue | null
-export function depipe<RValue>(
-    arg: (RValue & BaseAsyncPipable<RValue>) | undefined
+    arg: (RValue & internal.BasePipable<RValue>) | undefined
 ): RValue | undefined
 export function depipe<RValue>(
-    arg: (RValue & BaseAsyncPipable<RValue>) | null | undefined
+    arg: (RValue & internal.BasePipable<RValue>) | null | undefined
 ): RValue | null | undefined
-export function depipe<RValue>(arg: RValue & BaseAsyncPipable<RValue>): RValue
+export function depipe<RValue>(arg: RValue & internal.BasePipable<RValue>): RValue
+
+export function depipe<RValue>(
+    arg: (RValue & internal.BaseAsyncPipable<RValue>) | null
+): RValue | null
+export function depipe<RValue>(
+    arg: (RValue & internal.BaseAsyncPipable<RValue>) | undefined
+): RValue | undefined
+export function depipe<RValue>(
+    arg: (RValue & internal.BaseAsyncPipable<RValue>) | null | undefined
+): RValue | null | undefined
+export function depipe<RValue>(arg: RValue & internal.BaseAsyncPipable<RValue>): RValue
 
 export function depipe<RValue>(arg: RValue): RValue
 

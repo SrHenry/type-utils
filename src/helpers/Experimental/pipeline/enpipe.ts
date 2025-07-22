@@ -1,6 +1,7 @@
-import { pipe } from './pipe'
-import { Pipe } from './types/Pipe'
+import type { internal } from './types/Pipable'
 
-export function enpipe<TValue extends {}>(value: TValue): Pipe<TValue> {
-    return <Pipe<TValue>>pipe(value).pipe
+import { pipe } from './pipe'
+
+export function enpipe<TValue extends {}>(value: TValue): internal.Pipe<TValue> {
+    return <internal.Pipe<TValue>>pipe(value).pipe
 }

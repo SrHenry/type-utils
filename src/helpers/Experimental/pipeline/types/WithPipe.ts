@@ -1,3 +1,3 @@
-import { HasPipe } from './interfaces/HasPipe'
+import { internal } from './Pipable'
 
-export type WithPipe<TValue> = TValue & HasPipe<TValue>
+export type WithPipe<TValue> = TValue & internal.HasPipe<TValue>

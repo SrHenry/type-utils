@@ -1,3 +1,3 @@
-import { HasPipeAsync } from './interfaces/HasPipeAsync'
+import { internal } from './Pipable'
 
-export type WithPipeAsync<TValue> = TValue & HasPipeAsync<TValue>
+export type WithPipeAsync<TValue> = TValue & internal.HasPipeAsync<TValue>

@@ -1,9 +1,34 @@
-import type { BaseAsyncPipable } from './interfaces/BaseAsyncPipable'
-import type { BasePipable } from './interfaces/BasePipable'
+import type { Func1 } from '../../../../types/Func'
 import type { Unpipable } from './Unpipable'
+
+import { HasDepipe } from './interfaces/HasDepipe'
 
 export type Pipable<T> = T extends Unpipable
     ? T
     : T extends Promise<any>
-    ? BaseAsyncPipable<T>
-    : BasePipable<T>
+    ? internal.BaseAsyncPipable<T>
+    : internal.BasePipable<T>
+
+export namespace internal {
+    export type AsyncPipe<T> = <U>(
+        this: any,
+        fn: Func1<Awaited<T>, U>
+    ) => Promise<U> & Pipable<Promise<U>>
+
+    export interface HasPipeAsync<T> {
+        readonly pipeAsync: AsyncPipe<Awaited<T>>
+    }
+
+    export interface BaseAsyncPipable<T> extends BasePipable<T>, HasPipeAsync<T> {}
+
+    export interface HasPipe<T> {
+        readonly pipe: Pipe<T>
+    }
+
+    export type Pipe<T> = <U>(
+        this: any,
+        fn: Func1<T, U>
+    ) => U extends Unpipable ? U : U & Pipable<U>
+
+    export interface BasePipable<T> extends HasPipe<T>, HasDepipe<T> {}
+}
