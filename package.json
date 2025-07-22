@@ -1,11 +1,12 @@
 {
     "name": "@srhenry/type-utils",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "Type utilities for Typescript and also Javascript",
     "main": "dist/index.js",
     "types": "types/index.d.ts",
     "scripts": {
         "test": "jest",
+        "test:inspect": "node --inspect node_modules/.bin/jest",
         "test:coverage": "jest --coverage",
         "clear": "run-script-os",
         "clear:win32": "rmdir /s /q dist && rmdir /s /q types",
