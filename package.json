@@ -6,6 +6,7 @@
     "types": "types/index.d.ts",
     "scripts": {
         "test": "jest",
+        "test:inspect": "node --inspect node_modules/.bin/jest",
         "test:coverage": "jest --coverage",
         "clear": "run-script-os",
         "clear:win32": "rmdir /s /q dist && rmdir /s /q types",
