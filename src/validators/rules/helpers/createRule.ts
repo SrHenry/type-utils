@@ -64,7 +64,7 @@ export function createRule<
 
         if (!!messageFormator)
             return getSetterWithSubject(subject).setErrorMessageFormator(messageFormator)
-        if (!!message) return getSetterWithSubject(handler(subject)).setErrorMessage(message)
+        if (!!message) return getSetterWithSubject(subject).setErrorMessage(message)
 
         return handler(subject)
     }
