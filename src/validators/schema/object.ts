@@ -12,7 +12,7 @@ import { setStructMetadata } from './helpers/setStructMetadata'
 
 import { join } from '../../helpers/Experimental/join'
 import { map } from '../../helpers/Experimental/map'
-import { pipe } from '../../helpers/Experimental/pipeline'
+import { pipe } from '../../helpers/Experimental/pipeline/pipe'
 import { optionalizeOverloadFactory } from './helpers/optional'
 
 function _fn<T extends {}>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
