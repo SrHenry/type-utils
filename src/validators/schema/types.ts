@@ -2,6 +2,7 @@ import type Generics from '../../Generics'
 import type { GetTypeGuard, TypeGuard } from '../../TypeGuards/types'
 import type { Spread } from '../../types'
 import type { RecordRule } from '../rules/Record'
+import type { TypeGuardFactory, TypeGuardFactoryType } from './helpers/optional/types'
 
 export type Optionalize<T> = {
     [K in keyof T]: T[K] extends () => TypeGuard<any | any[]>
@@ -33,7 +34,11 @@ export type GetSchemaStruct<T extends TypeGuard> = GetStruct<GetTypeGuard<T>>
     : {
           [K in keyof T]: GetStruct<T[K]>
       } */
-export type GetStruct<T> = Struct<T>
+export type GetStruct<TFrom extends TypeGuard | TypeGuardFactory> = TFrom extends TypeGuard<infer T>
+    ? Struct<T>
+    : TFrom extends TypeGuardFactory
+    ? TypeGuardFactoryType<TFrom>
+    : never
 
 export type BaseStruct<T extends Generics.BaseTypes, U> = {
     type: T
