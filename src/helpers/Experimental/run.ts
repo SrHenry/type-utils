@@ -1,4 +1,4 @@
-import { isPromise } from '../..//helpers'
+import { isPromise } from '../../helpers/isPromise'
 import { AsyncFunc, Func } from '../../types/Func'
 import { AsyncLambda, Lambda } from '../../types/Lambda'
 import { AsyncResult, ErrorResult, Result, SucessfulResult } from '../../types/Result'

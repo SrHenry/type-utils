@@ -1,4 +1,4 @@
-import { NOT } from '../../../helpers'
+import { NOT } from '../../logic'
 
 describe('NOT', () => {
     it('should return true if the value is false and vice-versa', () => {

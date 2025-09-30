@@ -1,4 +1,4 @@
-import { AND } from '../../../helpers'
+import { AND } from '../../logic'
 
 const LARGE_ARRAY_SIZE = 10000
 

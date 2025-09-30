@@ -1,4 +1,4 @@
-import { round } from '../../helpers'
+import { round } from '../round'
 
 describe('round', () => {
     it('should round a number to the given precision', () => {

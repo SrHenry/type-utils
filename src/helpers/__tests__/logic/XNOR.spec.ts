@@ -1,4 +1,4 @@
-import { XNOR } from '../../../helpers'
+import { XNOR } from '../../logic'
 
 const LARGE_ARRAY_SIZE = 10000
 

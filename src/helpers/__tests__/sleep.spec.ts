@@ -1,4 +1,4 @@
-import { sleep } from '../../helpers'
+import { sleep } from '../sleep'
 
 describe('sleep', () => {
     it('should return a promise that resolves after the given time', async () => {

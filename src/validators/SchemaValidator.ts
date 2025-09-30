@@ -4,7 +4,7 @@ import type { Merge } from '../types'
 import type { ArrayStruct, BaseStruct } from './schema'
 import type { ValidatorMessageMap } from './types'
 
-import { AutoBind } from '../helpers'
+import { AutoBind } from '../helpers/decorators/AutoBind'
 import { TypeGuardError } from '../TypeGuards'
 
 import { asTypeGuard } from '../TypeGuards/helpers/asTypeGuard'

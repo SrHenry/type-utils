@@ -1,4 +1,4 @@
-import { XOR } from '../../../helpers'
+import { XOR } from '../../logic'
 
 const LARGE_ARRAY_SIZE = 10000
 

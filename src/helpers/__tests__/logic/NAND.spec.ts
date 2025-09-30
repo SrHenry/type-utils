@@ -1,4 +1,4 @@
-import { NAND } from '../../../helpers'
+import { NAND } from '../../logic'
 
 const LARGE_ARRAY_SIZE = 10000
 

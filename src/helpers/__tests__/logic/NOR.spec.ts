@@ -1,4 +1,4 @@
-import { NOR } from '../../../helpers'
+import { NOR } from '../../logic'
 
 const LARGE_ARRAY_SIZE = 10000
 

@@ -1,4 +1,4 @@
-import { isAsyncFunction } from '../../../helpers'
+import { isAsyncFunction } from '../../isAsyncFunction'
 ;((async () => {}).constructor.name === 'AsyncFunction' ? describe : describe.skip)(
     'isAsyncFunction',
     () => {

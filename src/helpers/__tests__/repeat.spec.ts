@@ -1,4 +1,4 @@
-import { repeat } from '../../helpers'
+import { repeat } from '../../helpers/repeat'
 import { curry } from '../Experimental/curry'
 
 describe('repeat', () => {
