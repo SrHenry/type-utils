@@ -118,6 +118,9 @@ const envSchemaMetadata = getStructMetadata(EnvSchema)
 
 if (!('tree' in envSchemaMetadata)) throw new Error('tree not found')
 
+if ('className' in envSchemaMetadata)
+    throw new Error('schema struct metadata is not suppose to be a class instance struct type')
+
 const envSchemaTree = envSchemaMetadata.tree
 const envSchemaKeys = Object.keys(envSchemaTree) as (keyof typeof envSchemaTree)[]
 
