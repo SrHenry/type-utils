@@ -80,28 +80,4 @@ export class ValidationError<
     }
 }
 
-export class ValidationErrors<
-    T extends ValidationError<any, any>[] = ValidationError<unknown, unknown>[]
-> {
-    public constructor(public readonly errors: T) {}
-
-    [Symbol.iterator]() {
-        return this.errors[Symbol.iterator]()
-    }
-
-    toJSON() {
-        return this.errors.map(e => e?.toJSON() ?? e)
-    }
-
-    toString() {
-        return this.errors.map(e => e?.toString() ?? e).join('\n')
-    }
-
-    toPrimitive(hint: TypeOfTag) {
-        if (hint === 'string') return this.toString()
-
-        return
-    }
-}
-
 export default ValidationError

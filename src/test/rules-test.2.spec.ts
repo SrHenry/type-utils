@@ -1,10 +1,12 @@
 import type { TypeGuard } from '../TypeGuards/types'
 
-import { ValidationError, ValidationErrors, Validator } from '../Experimental'
 import { Generics } from '../Generics'
 import { createRule } from '../validators/rules/helpers/createRule'
 import { getRule } from '../validators/rules/helpers/getRule'
 import { useCustomRules } from '../validators/rules/helpers/useCustomRules'
+import { SchemaValidator as Validator } from '../validators/SchemaValidator'
+import { ValidationError } from '../validators/ValidationError'
+import { ValidationErrors } from '../validators/ValidationErrors'
 
 import { unique } from '../rules/array'
 import { min, nonEmpty } from '../rules/string'

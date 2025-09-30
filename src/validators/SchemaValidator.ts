@@ -19,7 +19,8 @@ import { setValidatorMessage } from '../TypeGuards/helpers/setValidatorMessage'
 import { setValidatorMessageFormator } from '../TypeGuards/helpers/setValidatorMessageFormator'
 import { getStructMetadata, object, or } from './schema'
 import { hasStructMetadata } from './schema/helpers/hasStructMetadata'
-import { ValidationError, ValidationErrors } from './ValidationError'
+import { ValidationError } from './ValidationError'
+import { ValidationErrors } from './ValidationErrors'
 
 type ValidateReturn<T> = T | ValidationErrors
 
