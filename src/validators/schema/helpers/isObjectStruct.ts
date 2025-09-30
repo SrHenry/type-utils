@@ -4,19 +4,24 @@ import type { ObjectStruct } from '../types'
 import { isStruct } from './isStruct'
 
 export function isObjectStruct(struct: unknown): struct is ObjectStruct<any>
-export function isObjectStruct<T>(struct: unknown, schema: TypeGuard<T>): struct is ObjectStruct<T>
+export function isObjectStruct<T extends {}>(
+    struct: unknown,
+    schema: TypeGuard<T>
+): struct is ObjectStruct<T>
 
-export function isObjectStruct<T>(
+export function isObjectStruct<T extends {}>(
     struct: unknown,
     schema?: TypeGuard<T>
-): struct is ObjectStruct<any> {
+): struct is ObjectStruct<T> {
     if (!isStruct(struct, schema)) return false
-    if (
-        !('tree' in struct) ||
-        !struct?.tree ||
-        typeof struct.tree === 'object' ||
-        !Object.values(struct.tree).every(isStruct)
-    )
+
+    const isTreeInStruct = 'tree' in struct && typeof struct.tree === 'object'
+    const isClassNameInStruct = 'className' in struct && typeof struct.className === 'string'
+    const isConstructorInStruct =
+        'constructor' in struct && typeof struct.constructor === 'function'
+    const areTreeElementsStruct = isTreeInStruct && Object.values(struct.tree).every(isStruct)
+
+    if (!isTreeInStruct || isClassNameInStruct || isConstructorInStruct || !areTreeElementsStruct)
         return false
 
     return true

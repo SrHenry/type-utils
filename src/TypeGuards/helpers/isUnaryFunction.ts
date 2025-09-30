@@ -1,4 +1,4 @@
-import { isFunction } from '../../helpers'
+import { isFunction } from '../../helpers/isFunction'
 
 export const isUnaryFunction = <TFuncShape = (arg: unknown) => unknown>(
     arg: unknown

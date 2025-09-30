@@ -4,7 +4,7 @@ import type { Merge } from '../types'
 import type { ArrayStruct, BaseStruct } from './schema'
 import type { ValidatorMessageMap } from './types'
 
-import { AutoBind } from '../helpers'
+import { AutoBind } from '../helpers/decorators/AutoBind'
 import { TypeGuardError } from '../TypeGuards'
 
 import { asTypeGuard } from '../TypeGuards/helpers/asTypeGuard'
@@ -19,7 +19,8 @@ import { setValidatorMessage } from '../TypeGuards/helpers/setValidatorMessage'
 import { setValidatorMessageFormator } from '../TypeGuards/helpers/setValidatorMessageFormator'
 import { getStructMetadata, object, or } from './schema'
 import { hasStructMetadata } from './schema/helpers/hasStructMetadata'
-import { ValidationError, ValidationErrors } from './ValidationError'
+import { ValidationError } from './ValidationError'
+import { ValidationErrors } from './ValidationErrors'
 
 type ValidateReturn<T> = T | ValidationErrors
 
@@ -103,6 +104,29 @@ function validate<T, Name extends string, Parent>(
                 // if (!parent) name ??= '$' as Name
 
                 if ('tree' in metadata) {
+                    if ('className' in metadata) {
+                        const { constructor, className } = metadata
+
+                        if (!(arg instanceof constructor)) {
+                            errors.push(
+                                new ValidationError({
+                                    message:
+                                        getMessage(schema) ??
+                                        `Expected ${className} instance, got ${arg}`,
+                                    schema,
+                                    value: arg,
+                                    name,
+                                    parent,
+                                    context: {
+                                        structMetadata: metadata,
+                                    },
+                                })
+                            )
+                        }
+
+                        break
+                    }
+
                     const entries = Object.entries(arg)
                     const { tree } = metadata
 
@@ -405,14 +429,19 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
         if (metadata.type !== 'object')
             throw new Error('Cannot set validator message mapper for non-object/array schema')
 
-        if ('tree' in metadata)
+        if ('tree' in metadata) {
+            if ('className' in metadata)
+                throw new TypeError(
+                    "Cannot set validator message mapper for class instance schema's properties"
+                )
+
             Object.entries(message).forEach(([k, item]) =>
                 __SchemaValidator.setValidatorMessage<Value<T>>(
                     item as ValidatorMessageMap<Value<T>>,
                     metadata.tree[k as keyof T].schema as TypeGuard<Value<T>>
                 )
             )
-        else if ('entries' in metadata)
+        } else if ('entries' in metadata)
             __SchemaValidator.setValidatorMessage(
                 message,
                 (metadata.entries as BaseStruct<Generics.BaseTypes, any>).schema

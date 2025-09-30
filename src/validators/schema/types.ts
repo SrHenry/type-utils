@@ -1,7 +1,8 @@
 import type Generics from '../../Generics'
-import type { GetTypeGuard, TypeGuard } from '../../TypeGuards/types'
+import type { ConstructorSignature, GetTypeGuard, TypeGuard } from '../../TypeGuards/types'
 import type { Spread } from '../../types'
 import type { RecordRule } from '../rules/Record'
+import type { TypeGuardFactory, TypeGuardFactoryType } from './helpers/optional/types'
 
 export type Optionalize<T> = {
     [K in keyof T]: T[K] extends () => TypeGuard<any | any[]>
@@ -33,7 +34,11 @@ export type GetSchemaStruct<T extends TypeGuard> = GetStruct<GetTypeGuard<T>>
     : {
           [K in keyof T]: GetStruct<T[K]>
       } */
-export type GetStruct<T> = Struct<T>
+export type GetStruct<TFrom extends TypeGuard | TypeGuardFactory> = TFrom extends TypeGuard<infer T>
+    ? Struct<T>
+    : TFrom extends TypeGuardFactory
+    ? TypeGuardFactoryType<TFrom>
+    : never
 
 export type BaseStruct<T extends Generics.BaseTypes, U> = {
     type: T
@@ -118,7 +123,17 @@ export namespace V3 {
             [K in keyof T]: V3.GenericStruct<T[K]>
         }
     }
+
     export type ObjectStruct<T extends {}> = BaseStruct<'object', T> & ObjectTree<T>
+
+    export type ClassInstanceRef<T extends {}, ClassNameStr = string> = {
+        constructor: ConstructorSignature<T>
+        className: ClassNameStr
+    }
+
+    export type ClassInstanceStruct<T extends {}, ClassNameStr = string> = BaseStruct<'object', T> &
+        ObjectTree<{}> &
+        ClassInstanceRef<T, ClassNameStr>
 
     export type ArrayEntries<U> = {
         entries: V3.GenericStruct<U>
@@ -203,7 +218,7 @@ export namespace V3 {
         : T extends (infer U)[]
         ? ArrayStruct<U>
         : T extends {}
-        ? ObjectStruct<T> | RecordStruct<keyof T, T[keyof T]>
+        ? ObjectStruct<T> | RecordStruct<keyof T, T[keyof T]> | ClassInstanceStruct<T>
         : never
 
     export type StructType =
@@ -222,6 +237,7 @@ export namespace V3 {
         | ObjectStruct<any>
         | ArrayStruct<any>
         | RecordStruct
+        | ClassInstanceStruct<any>
 
     export type FromStruct<T extends Struct<any>> = T extends Struct<infer U> ? U : never
     export type FromUnionStruct<T extends UnionStruct<any>> = T extends UnionStruct<infer U>
@@ -236,6 +252,9 @@ export namespace V3 {
     >
         ? Record<K, T>
         : never
+
+    export type FromClassInstanceStruct<T extends ClassInstanceStruct<any>> =
+        T extends ClassInstanceStruct<infer U> ? U : never
 }
 
 export namespace V2 {
@@ -465,30 +484,27 @@ export namespace V1 {
         : never
 }
 
-export type PrimitiveStruct<T = Generics.PrimitiveType> = V2.PrimitiveStruct<T>
-export type AnyStruct = V2.AnyStruct
-export type UndefinedStruct = V2.UndefinedStruct
-export type NullStruct = V2.NullStruct
-export type BooleanStruct<T extends boolean = boolean> = V2.BooleanStruct<T>
-export type BigIntStruct<T extends bigint = bigint> = V2.BigIntStruct<T>
-export type NumberStruct<T extends number = number> = V2.NumberStruct<T>
-export type StringStruct<T extends string = string> = V2.StringStruct<T>
-export type SymbolStruct = V2.SymbolStruct
-export type EnumStruct<T extends Generics.PrimitiveType> = V2.EnumStruct<T>
-export type UnionStruct<
-    T1 extends Generics.PrimitiveType = Generics.PrimitiveType,
-    T2 extends Generics.PrimitiveType = Generics.PrimitiveType
-> = V2.UnionStruct<T1, T2>
-export type IntersectionStruct<
-    T1 extends Generics.PrimitiveType = Generics.PrimitiveType,
-    T2 extends Generics.PrimitiveType = Generics.PrimitiveType
-> = V2.IntersectionStruct<T1, T2>
-export type ArrayStruct<U> = V2.ArrayStruct<U>
-export type ObjectStruct<T> = V2.ObjectStruct<T>
+export type PrimitiveStruct<T extends Generics.PrimitiveType = Generics.PrimitiveType> = Prettify<
+    Omit<V3.PrimitiveStruct, 'schema'> & { schema: TypeGuard<T> }
+>
+export type AnyStruct = V3.AnyStruct
+export type UndefinedStruct = V3.UndefinedStruct
+export type NullStruct = V3.NullStruct
+export type BooleanStruct = V3.BooleanStruct
+export type BigIntStruct = V3.BigIntStruct
+export type NumberStruct = V3.NumberStruct
+export type StringStruct = V3.StringStruct
+export type SymbolStruct = V3.SymbolStruct
+export type EnumStruct<T extends Generics.PrimitiveType> = V3.EnumStruct<T>
+
+export type UnionStruct<Types extends any[]> = V3.UnionStruct<Types>
+export type IntersectionStruct<Types extends any[]> = V3.IntersectionStruct<Types>
+export type ArrayStruct<U> = V3.ArrayStruct<U>
+export type ObjectStruct<T extends {}> = V3.ObjectStruct<T>
 
 export type GenericStruct<
     T = any,
     UnionOrIntersection extends 'union' | 'intersection' | true | false = true
-> = V2.GenericStruct<T, UnionOrIntersection>
-export type Struct<T = any> = V2.Struct<T>
-export type StructType = V2.StructType
+> = V3.GenericStruct<T, UnionOrIntersection>
+export type Struct<T = any> = V3.Struct<T>
+export type StructType = V3.StructType

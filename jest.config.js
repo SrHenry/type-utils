@@ -11,4 +11,8 @@ module.exports = {
         '/src/test',
         // /^(?:(?!\.(spec|test)\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)).)*$/.source,
     ],
+    transform: {
+        '^.+\\.[tj]sx?$': 'ts-jest',
+    },
+    transformIgnorePatterns: ['node_modules/(?!(uuid)/)'],
 }

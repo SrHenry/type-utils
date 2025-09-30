@@ -6,7 +6,7 @@ import { nonZero } from '../rules/Number'
 import { nonEmpty } from '../rules/String'
 import { and, array, boolean, number, object, or, string, symbol } from '../schema'
 import { SchemaValidator } from '../SchemaValidator'
-import { ValidationErrors } from '../ValidationError'
+import { ValidationErrors } from '../ValidationErrors'
 
 describe('SchemaValidator', () => {
     it('should validate a primitive value', () => {

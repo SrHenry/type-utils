@@ -1,4 +1,4 @@
-import { repeat } from '../../helpers'
+import { repeat } from '../../helpers/repeat'
 import { NumberRules } from '../rules/Number'
 import { number } from '../schema/number'
 

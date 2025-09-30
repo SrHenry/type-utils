@@ -1,6 +1,6 @@
 import type { Custom as CustomRule, Default as DefaultRules, Rule } from '../../rules/types'
 
-import { AND } from '../../../helpers'
+import { AND } from '../../../helpers/logic'
 import { getRule } from '../../rules/helpers/getRule'
 import { isCustomHandler } from '../../rules/helpers/isCustomHandler'
 import { isRule } from '../../rules/helpers/isRule'

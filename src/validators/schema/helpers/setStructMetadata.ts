@@ -3,7 +3,7 @@ import type { TypeGuard } from '../../../TypeGuards/types'
 import type { TypeFromArray } from '../../../types'
 import type { V3 } from '../types'
 
-import { setMetadata } from '../../../TypeGuards/helpers'
+import { setMetadata } from '../../../TypeGuards/helpers/setMetadata'
 import { __metadata__ } from './constants'
 
 export function setStructMetadata<TSource>(
@@ -30,6 +30,10 @@ export function setStructMetadata<TSource>(
 export function setStructMetadata<TStruct extends V3.RecordStruct<any, any>>(
     struct: TStruct,
     guard: TypeGuard<V3.FromRecordStruct<TStruct>>
+): typeof guard
+export function setStructMetadata<TStruct extends V3.ClassInstanceStruct<any>>(
+    struct: TStruct,
+    guard: TypeGuard<V3.FromClassInstanceStruct<TStruct>>
 ): typeof guard
 export function setStructMetadata<TKey extends keyof any, TValue>(
     struct: V3.RecordStruct<TKey, TValue>,
