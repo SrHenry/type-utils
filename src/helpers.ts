@@ -1,5 +1,8 @@
 import { Func } from './types/Func'
 
+export { range } from './helpers/range'
+export { replaceSchemaTree } from './helpers/replaceSchemaTree'
+
 export const sleep = (milliseconds: number, onfulfilled?: () => any) => {
     return new Promise<void>(resolve => setTimeout(() => resolve(), milliseconds)).then(onfulfilled)
 }
