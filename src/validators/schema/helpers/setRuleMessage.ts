@@ -1,5 +1,5 @@
 import type { TypeGuard } from '../../../TypeGuards/types'
-import type { Default as DefaultRules } from '../../rules/types'
+import type { Custom as CustomRules, Default as DefaultRules } from '../../rules/types'
 
 import { setMessage } from '../../../TypeGuards/helpers'
 import { getRule } from '../../rules/helpers/getRule'
@@ -9,9 +9,13 @@ export function setRuleMessage<T>(prepend: string, guard: TypeGuard<T>): typeof 
 export function setRuleMessage<T>(
     prepend: string,
     guard: TypeGuard<T>,
-    rules: DefaultRules[]
+    rules: Array<DefaultRules | CustomRules>
 ): typeof guard
-export function setRuleMessage<T>(prepend: string, guard: TypeGuard<T>, rules?: DefaultRules[]) {
+export function setRuleMessage<T>(
+    prepend: string,
+    guard: TypeGuard<T>,
+    rules?: Array<DefaultRules | CustomRules>
+) {
     const message = getRuleMessages(rules ?? []).join(' & ')
 
     if (getRule('String.nonEmpty')(message)) return setMessage(`${prepend} & ${message}`, guard)

@@ -1,9 +1,9 @@
-import type { Default as DefaultRules } from '../../rules/types'
+import type { Custom as CustomRules, Default as DefaultRules } from '../../rules/types'
 
 import { getMessageFormator } from '../../../TypeGuards/helpers/getMessageFormator'
-import { getRule } from '../../rules/helpers/getRule'
+import { mapDefaultOrCustomRules } from './mappers/mapDefaultOrCustomRules'
 
-export const getRuleMessages = (rules: DefaultRules[]) =>
+export const getRuleMessages = (rules: Array<DefaultRules | CustomRules>) =>
     rules
-        .map(([rule, args]) => ({ rule: getRule(rule), args }))
+        .map(mapDefaultOrCustomRules)
         .map(({ rule, args }) => `${getMessageFormator(rule)(...args)}`)
