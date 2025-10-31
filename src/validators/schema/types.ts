@@ -163,6 +163,35 @@ export namespace V3 {
     > &
         RecordMetadata<Record<K, T>>
 
+    export type TupleMetadata<T extends readonly [...any]> = {
+        elements: TupleToStructMap<T>
+    }
+
+    export type TupleToTypeGuardMap<T extends readonly [...any]> = T extends readonly [
+        infer T0,
+        ...infer TRest
+    ]
+        ? readonly [TypeGuard<T0>, ...TupleToTypeGuardMap<TRest>]
+        : T
+
+    export type TupleToStructMap<T extends readonly [...any]> = T extends readonly [
+        infer T0,
+        ...infer TRest
+    ]
+        ? readonly [V3.GenericStruct<T0>, ...TupleToStructMap<TRest>]
+        : T
+
+    export type TypeGuardTupleUnwrap<T extends readonly [...any]> = T extends readonly [
+        infer T0,
+        ...infer TRest
+    ]
+        ? T0 extends TypeGuard<infer U>
+            ? [U, ...TypeGuardTupleUnwrap<TRest>]
+            : [T0, ...TypeGuardTupleUnwrap<TRest>]
+        : T
+
+    export type TupleStruct<T extends readonly [...any]> = BaseStruct<'tuple', T> & TupleMetadata<T>
+
     export type GenericStruct<
         T = any,
         UnionOrIntersection extends 'union' | 'intersection' | true | false = true
@@ -225,6 +254,8 @@ export namespace V3 {
                     : IsExactExtension<T, symbol> extends true
                     ? SymbolStruct
                     : never)
+        : T extends readonly [...any]
+        ? TupleStruct<T>
         : T extends (infer U)[]
         ? ArrayStruct<U>
         : T extends {}
@@ -248,6 +279,7 @@ export namespace V3 {
         | ArrayStruct<any>
         | RecordStruct
         | ClassInstanceStruct<any>
+        | TupleStruct<any[]>
 
     export type FromStruct<T extends Struct<any>> = T extends Struct<infer U> ? U : never
     export type FromUnionStruct<T extends UnionStruct<any>> = T extends UnionStruct<infer U>
@@ -265,6 +297,10 @@ export namespace V3 {
 
     export type FromClassInstanceStruct<T extends ClassInstanceStruct<any>> =
         T extends ClassInstanceStruct<infer U> ? U : never
+
+    export type FromTupleStruct<T extends TupleStruct<any>> = T extends TupleStruct<infer U>
+        ? U
+        : never
 }
 
 export namespace V2 {
@@ -509,6 +545,7 @@ export type EnumStruct<T extends Generics.PrimitiveType> = V3.EnumStruct<T>
 
 export type UnionStruct<Types extends any[]> = V3.UnionStruct<Types>
 export type IntersectionStruct<Types extends any[]> = V3.IntersectionStruct<Types>
+export type TupleStruct<Types extends readonly any[]> = V3.TupleStruct<Types>
 export type ArrayStruct<U> = V3.ArrayStruct<U>
 export type ObjectStruct<T extends {}> = V3.ObjectStruct<T>
 

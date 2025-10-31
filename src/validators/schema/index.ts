@@ -21,6 +21,7 @@ export { primitive } from './primitive'
 export { record } from './record'
 export { string } from './string'
 export { symbol } from './symbol'
+export { tuple } from './tuple'
 export { useSchema } from './useSchema'
 export { getStructMetadata, setStructMetadata }
 
@@ -40,6 +41,7 @@ import { primitive } from './primitive'
 import { record } from './record'
 import { string } from './string'
 import { symbol } from './symbol'
+import { tuple } from './tuple'
 import { useSchema } from './useSchema'
 
 export const Schema = {
@@ -58,6 +60,7 @@ export const Schema = {
     primitive,
     string,
     symbol,
+    tuple,
     useSchema,
     optionalize,
     optionalizeOverloadFactory,

@@ -17,6 +17,8 @@ export namespace Generics {
         'primitive',
         'union',
         'intersection',
+        'record',
+        'tuple',
         'any',
     ] as const
 
@@ -30,6 +32,7 @@ export namespace Generics {
         | 'union'
         | 'intersection'
         | 'record'
+        | 'tuple'
         | 'any'
 
     export declare interface GenericObject<T = any> {

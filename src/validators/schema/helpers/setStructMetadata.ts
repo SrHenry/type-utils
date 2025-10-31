@@ -39,6 +39,10 @@ export function setStructMetadata<TKey extends keyof any, TValue>(
     struct: V3.RecordStruct<TKey, TValue>,
     guard: TypeGuard<Record<TKey, TValue>>
 ): typeof guard
+export function setStructMetadata<TStruct extends V3.TupleStruct<any[]>>(
+    struct: TStruct,
+    guard: TypeGuard<V3.FromTupleStruct<TStruct>>
+): typeof guard
 export function setStructMetadata<TStruct extends V3.UnionStruct<any[]>>(
     struct: TStruct,
     guard: TypeGuard<V3.FromUnionStruct<TStruct>>
