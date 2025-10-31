@@ -1,7 +1,11 @@
 import type Generics from '../../Generics'
 import type { ConstructorSignature, GetTypeGuard, TypeGuard } from '../../TypeGuards/types'
 import type { Spread } from '../../types'
+import type { ArrayRule } from '../rules/Array'
+import type { NumberRule } from '../rules/Number'
 import type { RecordRule } from '../rules/Record'
+import type { StringRule } from '../rules/String'
+import type { All as AllRules, RuleStruct } from '../rules/types'
 import type { TypeGuardFactory, TypeGuardFactoryType } from './helpers/optional/types'
 
 export type Optionalize<T> = {
@@ -55,10 +59,14 @@ export namespace V3 {
     export type UndefinedStruct = BaseStruct<'undefined', undefined>
     export type NullStruct = BaseStruct<'null', null>
     export type BooleanStruct = BaseStruct<'boolean', boolean>
-    export type NumberStruct = BaseStruct<'number', number>
-    export type BigIntStruct = BaseStruct<'bigint', bigint>
-    export type StringStruct = BaseStruct<'string', string>
+    export type NumberStruct = BaseStruct<'number', number> & WithRulesStruct<NumberRule>
+    export type BigIntStruct = BaseStruct<'bigint', bigint> & WithRulesStruct<NumberRule>
+    export type StringStruct = BaseStruct<'string', string> & WithRulesStruct<StringRule>
     export type SymbolStruct = BaseStruct<'symbol', symbol>
+
+    export type WithRulesStruct<Rule extends AllRules<any[], string, any>> = {
+        rules: RuleStruct<Rule>[]
+    }
 
     export type MapToStructs<Types extends any[]> = Types extends []
         ? []
@@ -139,7 +147,9 @@ export namespace V3 {
         entries: V3.GenericStruct<U>
     }
 
-    export type ArrayStruct<U> = BaseStruct<'object', U[]> & ArrayEntries<U>
+    export type ArrayStruct<U> = BaseStruct<'object', U[]> &
+        ArrayEntries<U> &
+        WithRulesStruct<ArrayRule>
 
     export type RecordMetadata<T extends {}> = {
         keyMetadata: V3.GenericStruct<keyof T>

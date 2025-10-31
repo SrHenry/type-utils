@@ -5,6 +5,7 @@ import { template as ruleTemplate } from '../rules/common'
 import { type StringRule, StringRules } from '../rules/String'
 
 import { branchIfOptional } from './helpers/branchIfOptional'
+import { getRuleStructMetadata } from './helpers/getRuleStructMetadata'
 import { isFollowingRules } from './helpers/isFollowingRules'
 import { optionalizeOverloadFactory } from './helpers/optional'
 import { setRuleMessage } from './helpers/setRuleMessage'
@@ -38,7 +39,12 @@ function _fn(rules: Partial<Rules> | StringRule[] | string | RegExp = []): TypeG
             typeof arg === 'string' && arg === rules
 
         return setStructMetadata(
-            { type: 'string', schema: guard, optional: false },
+            {
+                type: 'string',
+                schema: guard,
+                optional: false,
+                rules: [],
+            },
             setMessage(`string & ${exactFormator(rules)}`, guard)
         )
     }
@@ -49,7 +55,12 @@ function _fn(rules: Partial<Rules> | StringRule[] | string | RegExp = []): TypeG
             typeof arg === 'string' && isFollowingRules(arg, rules_arr)
 
         return setStructMetadata(
-            { type: 'string', schema: guard, optional: false },
+            {
+                type: 'string',
+                schema: guard,
+                optional: false,
+                rules: rules_arr.map(getRuleStructMetadata<StringRule>),
+            },
             setRuleMessage('string', guard, rules_arr)
         )
     }
@@ -60,7 +71,12 @@ function _fn(rules: Partial<Rules> | StringRule[] | string | RegExp = []): TypeG
             (typeof arg === 'string' && isFollowingRules(arg, rules as StringRule[]))
 
         return setStructMetadata(
-            { type: 'string', schema: guard, optional: false },
+            {
+                type: 'string',
+                schema: guard,
+                optional: false,
+                rules: rules.map(getRuleStructMetadata<StringRule>),
+            },
             setRuleMessage('string', guard, rules)
         )
     }

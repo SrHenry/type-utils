@@ -2,6 +2,7 @@ import type { TypeGuard } from '../../TypeGuards/types'
 import { type NumberRule, NumberRules } from '../rules/Number'
 
 import { branchIfOptional } from './helpers/branchIfOptional'
+import { getRuleStructMetadata } from './helpers/getRuleStructMetadata'
 import { isFollowingRules } from './helpers/isFollowingRules'
 import { optionalizeOverloadFactory } from './helpers/optional'
 import { setRuleMessage } from './helpers/setRuleMessage'
@@ -27,7 +28,12 @@ function _fn(rules: Partial<Rules> | NumberRule[] = []): TypeGuard<number> {
             (typeof arg === 'number' && isFollowingRules(arg, rules as NumberRule[]))
 
         return setStructMetadata(
-            { type: 'number', schema: guard, optional: false },
+            {
+                type: 'number',
+                schema: guard,
+                optional: false,
+                rules: rules.map(getRuleStructMetadata<NumberRule>),
+            },
             setRuleMessage('number', guard, rules)
         )
     }

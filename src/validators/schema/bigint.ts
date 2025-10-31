@@ -6,6 +6,7 @@ import { isFollowingRules } from './helpers/isFollowingRules'
 import { setRuleMessage } from './helpers/setRuleMessage'
 import { setStructMetadata } from './helpers/setStructMetadata'
 
+import { getRuleStructMetadata } from './helpers/getRuleStructMetadata'
 import { optionalizeOverloadFactory } from './helpers/optional'
 
 type Rules = {
@@ -27,7 +28,12 @@ function _fn(rules: Partial<Rules> | NumberRule[] = []): TypeGuard<bigint> {
             (typeof arg === 'bigint' && isFollowingRules(arg, rules as NumberRule[]))
 
         return setStructMetadata(
-            { type: 'bigint', schema: guard, optional: false },
+            {
+                type: 'bigint',
+                schema: guard,
+                optional: false,
+                rules: rules.map(getRuleStructMetadata<NumberRule>),
+            },
             setRuleMessage('bigint', guard, rules)
         )
     }
