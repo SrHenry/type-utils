@@ -15,4 +15,5 @@ module.exports = {
         '^.+\\.[tj]sx?$': 'ts-jest',
     },
     transformIgnorePatterns: ['node_modules/(?!(uuid)/)'],
+    setupFilesAfterEnv: ['<rootDir>/src/jest.setup.ts'],
 }

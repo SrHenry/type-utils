@@ -3,6 +3,7 @@ import type { ArrayRule } from './../Array'
 import type { NumberRule } from './../Number'
 import type { RecordRule } from './../Record'
 import type { StringRule } from './../String'
+import type { RuleTuple } from './RuleTuple'
 
 export type * from './RuleFactory'
 export type * from './RuleTuple'
@@ -49,3 +50,20 @@ export type CreateRuleArgs<
 }
 
 export type NoArgs = []
+
+export type RuleStruct<Rule> = Rule extends RuleTuple<infer RuleName>
+    ? {
+          type: 'default'
+
+          rule: RuleName
+          args: Rule[1]
+      }
+    : Rule extends Custom<[...infer Args], infer RuleName, infer Subject>
+    ? {
+          type: 'custom'
+
+          rule: RuleName
+          args: Args
+          handler: CustomHandler<Args, Subject>
+      }
+    : never

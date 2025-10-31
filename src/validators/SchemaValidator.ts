@@ -1,7 +1,6 @@
-import type Generics from '../Generics'
 import type { GetTypeGuard, MessageFormator, TypeGuard } from '../TypeGuards/types'
 import type { Merge } from '../types'
-import type { ArrayStruct, BaseStruct } from './schema'
+import type { ArrayStruct, GenericStruct } from './schema/types'
 import type { ValidatorMessageMap } from './types'
 
 import { AutoBind } from '../helpers/decorators/AutoBind'
@@ -444,7 +443,7 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
         } else if ('entries' in metadata)
             __SchemaValidator.setValidatorMessage(
                 message,
-                (metadata.entries as BaseStruct<Generics.BaseTypes, any>).schema
+                (metadata.entries as GenericStruct<any>).schema
             )
         else throw new Error('Invalid metadata for object')
 

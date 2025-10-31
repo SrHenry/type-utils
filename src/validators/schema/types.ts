@@ -1,7 +1,11 @@
 import type Generics from '../../Generics'
 import type { ConstructorSignature, GetTypeGuard, TypeGuard } from '../../TypeGuards/types'
 import type { Spread } from '../../types'
+import type { ArrayRule } from '../rules/Array'
+import type { NumberRule } from '../rules/Number'
 import type { RecordRule } from '../rules/Record'
+import type { StringRule } from '../rules/String'
+import type { All as AllRules, RuleStruct } from '../rules/types'
 import type { TypeGuardFactory, TypeGuardFactoryType } from './helpers/optional/types'
 
 export type Optionalize<T> = {
@@ -40,7 +44,7 @@ export type GetStruct<TFrom extends TypeGuard | TypeGuardFactory> = TFrom extend
     ? TypeGuardFactoryType<TFrom>
     : never
 
-export type BaseStruct<T extends Generics.BaseTypes, U> = {
+export type BaseStruct<T extends Generics.BaseTypes | 'custom', U> = {
     type: T
     schema: TypeGuard<U>
     optional: boolean
@@ -55,16 +59,20 @@ export namespace V3 {
     export type UndefinedStruct = BaseStruct<'undefined', undefined>
     export type NullStruct = BaseStruct<'null', null>
     export type BooleanStruct = BaseStruct<'boolean', boolean>
-    export type NumberStruct = BaseStruct<'number', number>
-    export type BigIntStruct = BaseStruct<'bigint', bigint>
-    export type StringStruct = BaseStruct<'string', string>
+    export type NumberStruct = BaseStruct<'number', number> & WithRulesStruct<NumberRule>
+    export type BigIntStruct = BaseStruct<'bigint', bigint> & WithRulesStruct<NumberRule>
+    export type StringStruct = BaseStruct<'string', string> & WithRulesStruct<StringRule>
     export type SymbolStruct = BaseStruct<'symbol', symbol>
+
+    export type WithRulesStruct<Rule extends AllRules<any[], string, any>> = {
+        rules: RuleStruct<Rule>[]
+    }
 
     export type MapToStructs<Types extends any[]> = Types extends []
         ? []
         : Types extends [infer T0, ...infer TRest]
-        ? [GenericStruct<T0>, ...MapToStructs<TRest>]
-        : GenericStruct<any>[]
+        ? [GenericStruct<T0> | CustomStruct<T0>, ...MapToStructs<TRest>]
+        : (GenericStruct<any> | CustomStruct<any>)[]
 
     export type TUnion<Types extends any[]> = Types extends []
         ? never
@@ -139,7 +147,9 @@ export namespace V3 {
         entries: V3.GenericStruct<U>
     }
 
-    export type ArrayStruct<U> = BaseStruct<'object', U[]> & ArrayEntries<U>
+    export type ArrayStruct<U> = BaseStruct<'object', U[]> &
+        ArrayEntries<U> &
+        WithRulesStruct<ArrayRule>
 
     export type RecordMetadata<T extends {}> = {
         keyMetadata: V3.GenericStruct<keyof T>
@@ -153,6 +163,44 @@ export namespace V3 {
     > &
         RecordMetadata<Record<K, T>>
 
+    export type TupleMetadata<T extends readonly [...any]> = {
+        elements: TupleToStructMap<T>
+    }
+
+    export type TupleToTypeGuardMap<T extends readonly [...any]> = T extends readonly [
+        infer T0,
+        ...infer TRest
+    ]
+        ? readonly [TypeGuard<T0>, ...TupleToTypeGuardMap<TRest>]
+        : T
+
+    export type TupleToStructMap<T extends readonly [...any]> = T extends readonly [
+        infer T0,
+        ...infer TRest
+    ]
+        ? readonly [V3.GenericStruct<T0>, ...TupleToStructMap<TRest>]
+        : T
+
+    export type TypeGuardTupleUnwrap<T extends readonly [...any]> = T extends readonly [
+        infer T0,
+        ...infer TRest
+    ]
+        ? T0 extends TypeGuard<infer U>
+            ? [U, ...TypeGuardTupleUnwrap<TRest>]
+            : [T0, ...TypeGuardTupleUnwrap<TRest>]
+        : T
+
+    export type TupleStruct<T extends readonly [...any]> = BaseStruct<'tuple', T> & TupleMetadata<T>
+
+    export type CustomStruct<T> = Prettify<
+        BaseStruct<'custom', T> & {
+            /** kind of the custom struct's value mapped */
+            kind?: string
+            /** context metadata for the custom struct */
+            context?: Record<string, any> | null
+        }
+    >
+
     export type GenericStruct<
         T = any,
         UnionOrIntersection extends 'union' | 'intersection' | true | false = true
@@ -160,6 +208,7 @@ export namespace V3 {
         ? AnyStruct & { schema: TypeGuard<T> }
         :
               | Struct<T>
+              | CustomStruct<T>
               | (UnionOrIntersection extends false
                     ? never
                     : UnionOrIntersection extends 'union'
@@ -215,6 +264,8 @@ export namespace V3 {
                     : IsExactExtension<T, symbol> extends true
                     ? SymbolStruct
                     : never)
+        : T extends readonly [...any]
+        ? TupleStruct<T>
         : T extends (infer U)[]
         ? ArrayStruct<U>
         : T extends {}
@@ -238,6 +289,7 @@ export namespace V3 {
         | ArrayStruct<any>
         | RecordStruct
         | ClassInstanceStruct<any>
+        | TupleStruct<any[]>
 
     export type FromStruct<T extends Struct<any>> = T extends Struct<infer U> ? U : never
     export type FromUnionStruct<T extends UnionStruct<any>> = T extends UnionStruct<infer U>
@@ -255,6 +307,10 @@ export namespace V3 {
 
     export type FromClassInstanceStruct<T extends ClassInstanceStruct<any>> =
         T extends ClassInstanceStruct<infer U> ? U : never
+
+    export type FromTupleStruct<T extends TupleStruct<any>> = T extends TupleStruct<infer U>
+        ? U
+        : never
 }
 
 export namespace V2 {
@@ -499,8 +555,15 @@ export type EnumStruct<T extends Generics.PrimitiveType> = V3.EnumStruct<T>
 
 export type UnionStruct<Types extends any[]> = V3.UnionStruct<Types>
 export type IntersectionStruct<Types extends any[]> = V3.IntersectionStruct<Types>
+export type TupleStruct<Types extends readonly any[]> = V3.TupleStruct<Types>
 export type ArrayStruct<U> = V3.ArrayStruct<U>
 export type ObjectStruct<T extends {}> = V3.ObjectStruct<T>
+export type RecordStruct<K extends keyof any = string, T = any> = V3.RecordStruct<K, T>
+export type ClassInstanceStruct<T extends {}, ClassNameStr = string> = V3.ClassInstanceStruct<
+    T,
+    ClassNameStr
+>
+export type CustomStruct<T> = V3.CustomStruct<T>
 
 export type GenericStruct<
     T = any,

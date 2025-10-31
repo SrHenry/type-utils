@@ -12,6 +12,7 @@ import { isFollowingRules } from './helpers/isFollowingRules'
 import { setRuleMessage } from './helpers/setRuleMessage'
 import { setStructMetadata } from './helpers/setStructMetadata'
 
+import { getRuleStructMetadata } from './helpers/getRuleStructMetadata'
 import { optionalizeOverloadFactory } from './helpers/optional'
 import { object } from './object'
 
@@ -45,6 +46,7 @@ function _fn<T>(
                 schema: guard,
                 optional: false,
                 entries: getStructMetadata(_schema) as V3.GenericStruct<T>,
+                rules: [],
             } as V3.ArrayStruct<T>,
             setRuleMessage(`Array<${getMessage(_schema)}>`, guard)
         )
@@ -60,6 +62,7 @@ function _fn<T>(
             schema: guard,
             optional: false,
             entries: getStructMetadata(_schema) as V3.GenericStruct<T>,
+            rules: rules.map(getRuleStructMetadata<ArrayRule>),
         },
         setRuleMessage(`Array<${getMessage(_schema)}>`, guard, rules)
     )

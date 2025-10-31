@@ -4,7 +4,6 @@ import { isAsyncFunction } from '../../isAsyncFunction'
     () => {
         it('should return true if value is an async function', () => {
             const run = (input: any) => {
-                console.log({ input, typeof: typeof input, constructor: input.constructor })
                 return isAsyncFunction(input)
             }
 
