@@ -1,6 +1,6 @@
 import type { Rule } from '../types'
 
-import { is } from '../../../TypeGuards/helpers'
+import { is } from '../../../TypeGuards/helpers/is'
 import { bindings, keys } from '../constants'
 
 export function getRule<T extends keyof keys>(name: T): bindings[keys[T]]

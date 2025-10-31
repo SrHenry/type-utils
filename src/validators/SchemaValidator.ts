@@ -1,7 +1,7 @@
 import type Generics from '../Generics'
 import type { GetTypeGuard, MessageFormator, TypeGuard } from '../TypeGuards/types'
 import type { Merge } from '../types'
-import type { ArrayStruct, BaseStruct } from './schema'
+import type { ArrayStruct, BaseStruct } from './schema/types'
 import type { ValidatorMessageMap } from './types'
 
 import { AutoBind } from '../helpers/decorators/AutoBind'

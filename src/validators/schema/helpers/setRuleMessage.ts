@@ -1,7 +1,7 @@
 import type { TypeGuard } from '../../../TypeGuards/types'
 import type { Custom as CustomRules, Default as DefaultRules } from '../../rules/types'
 
-import { setMessage } from '../../../TypeGuards/helpers'
+import { setMessage } from '../../../TypeGuards/helpers/setMessage'
 import { getRule } from '../../rules/helpers/getRule'
 import { getRuleMessages } from './getRuleMessages'
 
