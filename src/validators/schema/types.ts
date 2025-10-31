@@ -44,7 +44,7 @@ export type GetStruct<TFrom extends TypeGuard | TypeGuardFactory> = TFrom extend
     ? TypeGuardFactoryType<TFrom>
     : never
 
-export type BaseStruct<T extends Generics.BaseTypes, U> = {
+export type BaseStruct<T extends Generics.BaseTypes | 'custom', U> = {
     type: T
     schema: TypeGuard<U>
     optional: boolean
@@ -71,8 +71,8 @@ export namespace V3 {
     export type MapToStructs<Types extends any[]> = Types extends []
         ? []
         : Types extends [infer T0, ...infer TRest]
-        ? [GenericStruct<T0>, ...MapToStructs<TRest>]
-        : GenericStruct<any>[]
+        ? [GenericStruct<T0> | CustomStruct<T0>, ...MapToStructs<TRest>]
+        : (GenericStruct<any> | CustomStruct<any>)[]
 
     export type TUnion<Types extends any[]> = Types extends []
         ? never
@@ -192,6 +192,15 @@ export namespace V3 {
 
     export type TupleStruct<T extends readonly [...any]> = BaseStruct<'tuple', T> & TupleMetadata<T>
 
+    export type CustomStruct<T> = Prettify<
+        BaseStruct<'custom', T> & {
+            /** kind of the custom struct's value mapped */
+            kind?: string
+            /** context metadata for the custom struct */
+            context?: Record<string, any> | null
+        }
+    >
+
     export type GenericStruct<
         T = any,
         UnionOrIntersection extends 'union' | 'intersection' | true | false = true
@@ -199,6 +208,7 @@ export namespace V3 {
         ? AnyStruct & { schema: TypeGuard<T> }
         :
               | Struct<T>
+              | CustomStruct<T>
               | (UnionOrIntersection extends false
                     ? never
                     : UnionOrIntersection extends 'union'
@@ -548,6 +558,12 @@ export type IntersectionStruct<Types extends any[]> = V3.IntersectionStruct<Type
 export type TupleStruct<Types extends readonly any[]> = V3.TupleStruct<Types>
 export type ArrayStruct<U> = V3.ArrayStruct<U>
 export type ObjectStruct<T extends {}> = V3.ObjectStruct<T>
+export type RecordStruct<K extends keyof any = string, T = any> = V3.RecordStruct<K, T>
+export type ClassInstanceStruct<T extends {}, ClassNameStr = string> = V3.ClassInstanceStruct<
+    T,
+    ClassNameStr
+>
+export type CustomStruct<T> = V3.CustomStruct<T>
 
 export type GenericStruct<
     T = any,
