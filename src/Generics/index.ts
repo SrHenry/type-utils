@@ -102,11 +102,15 @@ export namespace Generics {
     export declare type SafeJSON<T> = OmitNever<NeveredType<T>>
     export type ExtractFunctions<T> = FunctionProperties<T>
 
-    export type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (
+    export type IsUnion<T> = [T] extends [UnionToIntersection<T>] ? false : true
+
+    export type UnionToIntersection<T> = (T extends any ? (x: T) => void : never) extends (
         x: infer R
-    ) => any
+    ) => void
         ? R
         : never
+
+    export type InferReadonlyTuple<T> = T extends readonly [...infer Elements] ? Elements : never
 
     export function safeJSON<T = GenericObject>(obj: T): SafeJSON<T> {
         return JSON.parse(JSON.stringify(obj))
