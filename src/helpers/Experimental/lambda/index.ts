@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { TypeGuard } from '../../../TypeGuards/types'
+import type { GetTypeGuard, TypeGuard } from '../../../TypeGuards/types'
 import type { AsLambda, Lambda, LambdaTypeGuard } from '../../../types/Lambda'
 
 import { curry } from '../curry'
@@ -37,7 +37,9 @@ function addSignature<TFunc extends (...args: any) => any>(fn: TFunc): AsLambda<
     }) as unknown as AsLambda<TFunc>
 }
 
-export function lambda<T>(guard: TypeGuard<T>): LambdaTypeGuard<T>
+export function lambda<TGuard extends TypeGuard<any>>(
+    guard: TGuard
+): LambdaTypeGuard<GetTypeGuard<TGuard>>
 export function lambda<TFunc extends (...args: any) => any>(lambda: TFunc): AsLambda<TFunc>
 export function lambda(lambda: Function): Lambda<any[], any>
 

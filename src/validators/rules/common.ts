@@ -43,6 +43,7 @@ export const equals = (a: any, b: any, deepObject: boolean): boolean => {
         })
         .every(bool => bool)
 }
+
 /**
  * Counts the number of occurrences of an element in an array.
  *
