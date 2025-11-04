@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid'
 
-import { lambda } from '../Experimental'
+import { lambda } from '../Experimental/lambda/'
 // import { enpipe, pipe, pipeline } from '../Experimental/pipeline'
 import { createPipeline } from '../Experimental/pipeline/createPipeline'
 import { enpipe } from '../Experimental/pipeline/enpipe'
@@ -236,6 +236,49 @@ describe('enpipe', () => {
         expect(db['users']![0]!['name']).toBe('Marcus')
         expect(db['users']![0]!['email']).toBe('example@email.com')
     })
+
+    it('should enpipe multiple values in pipeline callback factory function', async () => {
+        const db = {
+            users: [] as Record<string, any>[],
+            posts: [] as Record<string, any>[],
+        } as Record<string, Record<string, any>[]>
+
+        // const addPost = addPostFactory(db)
+        // const addUser = addUserFactory(db)
+
+        const newUser = { name: 'Marcus', email: 'example@email.com' }
+        const newPost = { title: 'Hello World', content: 'Lorem ipsum dolor sit amet' }
+
+        const addPostCurried = (post: Record<string, any>) => (id: string) =>
+            createPipeline(addPostFactory)
+                .pipe(enpipe(db))
+                .pipe(enpipe(id, post))
+                .pipeAsync(
+                    r =>
+                        new Promise<boolean>(resolve =>
+                            setTimeout(() => resolve(r), Math.random() * 1000)
+                        )
+                )
+
+        await createPipeline(addUserFactory)
+            .pipe(enpipe(db))
+            .pipe(enpipe(newUser))
+            .pipeAsync(id => (expect(typeof id).toBe('string'), id))
+            .pipeAsync(enpipe(addPostCurried, newPost))
+            .pipeAsync(result => (expect(result).toBe(true), result))
+
+        expect(db['users']).toBeDefined()
+        expect(db['users']).toHaveLength(1)
+
+        expect(db['posts']).toBeDefined()
+        expect(db['posts']).toHaveLength(1)
+
+        expect(db['users']![0]!['name']).toBe(newUser.name)
+        expect(db['users']![0]!['email']).toBe(newUser.email)
+        expect(db['users']![0]!['id']).toBe(db['posts']![0]!['user_id'])
+        expect(db['posts']![0]!['title']).toBe(newPost.title)
+        expect(db['posts']![0]!['content']).toBe(newPost.content)
+    })
 })
 
 describe('pipeAsync', () => {
@@ -260,5 +303,30 @@ describe('pipeAsync', () => {
             .catch((error: Error) => error.message)
 
         expect(result2).toBe('error')
+    })
+})
+
+describe('createPipeline', () => {
+    it('should create a pipeline', () => {
+        const atob = (s: string) =>
+            Buffer.from(s, 'base64').toString() as string & { __tag: 'atob' }
+        const split =
+            (sep: string = ' ') =>
+            (str: string) =>
+                str.split(sep)
+
+        const pipeline = createPipeline(atob)
+            .pipe(enpipe('aGVsbG8gd29ybGQ='))
+            .pipe(split())
+            .depipe()
+
+        expect(pipeline).toEqual(['hello', 'world'])
+
+        const pipeline2 = createPipeline(atob)
+            .pipe(enpipe('aGVsbG8gd29ybGQ='))
+            .pipe(enpipe(split, ' '))
+            .depipe()
+
+        expect(pipeline2).toEqual(['hello', 'world'])
     })
 })
