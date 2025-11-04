@@ -56,11 +56,12 @@ describe('pipe', () => {
         const insertUser = addUserFactory(db)
         const insertPost = addPostFactory(db)
 
-        const result = await pipe({ name: 'Marcus', email: 'example@email.com' })
+        const newUser = { name: 'Marcus', email: 'example@email.com' }
+        const newPost = { title: 'Hello World', content: 'Lorem ipsum dolor sit amet' }
+
+        const result = await pipe(newUser)
             .pipe(insertUser)
-            .pipeAsync(id =>
-                insertPost(id, { title: 'Hello World', content: 'Lorem ipsum dolor sit amet' })
-            )
+            .pipeAsync(id => insertPost(id, newPost))
             .depipe()
 
         expect(result).toBe(true)
@@ -84,7 +85,7 @@ describe('pipe', () => {
                 log.push('getFromDb')
                 setTimeout(() => {
                     log.push('getFromDb.resolve')
-                    resolve(db)
+                    resolve({ ...db })
                 }, 100)
             })
         const updateDb = (data: Record<string, any>) =>
@@ -98,16 +99,17 @@ describe('pipe', () => {
                 }, 350)
             })
 
-        const result = await createPipeline()
-            .pipe(getFromDb)
-            .pipeAsync(db => {
+        const updateDbPipeline = (updateFn: (db: Record<string, any>) => Record<string, any>) =>
+            createPipeline().pipe(getFromDb).pipeAsync(updateFn).pipeAsync(updateDb).depipe()
+
+        const updateFoo = () =>
+            updateDbPipeline(db => {
                 log.push('edit')
 
                 db['foo'] = 'baz'
                 return db
             })
-            .pipe(updateDb)
-            .depipe()
+        const result = await updateFoo()
 
         expect(result).toBe(true)
         expect(db).toEqual({
@@ -116,6 +118,47 @@ describe('pipe', () => {
             handsome: true,
         })
         expect(log).toEqual([
+            'getFromDb',
+            'getFromDb.resolve',
+            'edit',
+            'updateDb',
+            'updateDb.resolve',
+        ])
+
+        const updateHandsome = () =>
+            updateDbPipeline(db => {
+                log.push('edit')
+                db['handsome'] = false
+                return db
+            })
+
+        expect(db).toEqual({
+            foo: 'baz',
+            hello: 'world',
+            handsome: true,
+        })
+        expect(log).toEqual([
+            'getFromDb',
+            'getFromDb.resolve',
+            'edit',
+            'updateDb',
+            'updateDb.resolve',
+        ])
+
+        const result2 = await updateHandsome()
+
+        expect(result2).toBe(true)
+        expect(db).toEqual({
+            foo: 'baz',
+            hello: 'world',
+            handsome: false,
+        })
+        expect(log).toEqual([
+            'getFromDb',
+            'getFromDb.resolve',
+            'edit',
+            'updateDb',
+            'updateDb.resolve',
             'getFromDb',
             'getFromDb.resolve',
             'edit',
@@ -149,7 +192,10 @@ describe('enpipe', () => {
 
         const len = <T = any>(s: string | ArrayLike<T>) => s.length
         const addPostCurried = (post: Record<string, any>) => (id: string) =>
-            pipe(addPostFactory).pipe(enpipe(db)).pipe(lambda).invoke(id, post)
+            pipe(addPostFactory)
+                .pipe(enpipe(db))
+                .pipe(fn => lambda(fn))
+                .invoke(id, post)
 
         const result = await pipe(addUserFactory)
             .pipe(enpipe(db))
