@@ -19,7 +19,10 @@ export namespace internal {
         readonly pipeAsync: AsyncPipe<Awaited<T>>
     }
 
-    export interface BaseAsyncPipable<T> extends BasePipable<T>, HasPipeAsync<T> {}
+    export interface BaseAsyncPipable<T>
+        extends HasPipe<T>,
+            HasPipeAsync<T>,
+            HasDepipe<Promise<Awaited<T>>> {}
 
     export interface HasPipe<T> {
         readonly pipe: Pipe<T>
