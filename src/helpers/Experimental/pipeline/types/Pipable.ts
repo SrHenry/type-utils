@@ -13,7 +13,7 @@ export namespace internal {
     export type AsyncPipe<T> = <U>(
         this: any,
         fn: Func1<Awaited<T>, U>
-    ) => Promise<U> & Pipable<Promise<U>>
+    ) => Promise<Awaited<U>> & Pipable<Promise<Awaited<U>>>
 
     export interface HasPipeAsync<T> {
         readonly pipeAsync: AsyncPipe<Awaited<T>>
