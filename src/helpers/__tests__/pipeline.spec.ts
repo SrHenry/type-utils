@@ -237,3 +237,28 @@ describe('enpipe', () => {
         expect(db['users']![0]!['email']).toBe('example@email.com')
     })
 })
+
+describe('pipeAsync', () => {
+    it('should propagate errors from each pipe', async () => {
+        const result = await pipe(Promise.resolve('foo'))
+            .pipeAsync(arg => [arg] as const)
+            .pipeAsync(([arg]) => {
+                if (arg === 'foo') throw new Error('error')
+
+                return 'bar'
+            })
+            .depipe()
+            .catch((error: Error) => error.message)
+
+        expect(result).toBe('error')
+
+        const result2 = await pipe(Promise.resolve('foo'))
+            .pipeAsync(arg => [arg] as const)
+            .pipeAsync(async ([_]) => {
+                return new Promise<string>((_, reject) => reject(new Error('error')))
+            })
+            .catch((error: Error) => error.message)
+
+        expect(result2).toBe('error')
+    })
+})
