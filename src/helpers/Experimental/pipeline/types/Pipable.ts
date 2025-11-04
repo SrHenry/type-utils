@@ -1,4 +1,4 @@
-import type { Func1 } from '../../../../types/Func'
+import type { Func, Func1 } from '../../../../types/Func'
 import type { Unpipable } from './Unpipable'
 
 import { HasDepipe } from './interfaces/HasDepipe'
@@ -31,6 +31,11 @@ export namespace internal {
     export type Pipe<T> = <U>(
         this: any,
         fn: Func1<T, U>
+    ) => U extends Unpipable ? U : U & Pipable<U>
+
+    export type Enpipe<T extends [...any]> = <U>(
+        this: any,
+        fn: Func<T, U>
     ) => U extends Unpipable ? U : U & Pipable<U>
 
     export interface BasePipable<T> extends HasPipe<T>, HasDepipe<T> {}
