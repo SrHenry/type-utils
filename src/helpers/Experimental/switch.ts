@@ -1,29 +1,20 @@
-import type { TypeGuard } from '../../TypeGuards/types'
 import type { Func0, Func1 } from '../../types/Func'
 import type { Lambda, Lambda0 } from '../../types/Lambda'
 import type { Predicate } from '../../types/Predicate'
 import { lambda } from './lambda'
 
 interface ICase<TSwitchArg, TSwitchResultAggregate = never> extends CallableFunction {
-    <TMatch extends TSwitchArg, TResult>(match: TMatch, result: Func0<TResult>): Lambda0<
-        TSwitchResultAggregate | TResult
-    > &
-        ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
     <TMatch extends TSwitchArg, TResult>(
-        predicate: Predicate<TMatch>,
-        result: Func0<TResult>
+        predicate: Predicate<TSwitchArg, TMatch>,
+        resolver: Func1<TSwitchArg, TResult>
     ): Lambda0<TSwitchResultAggregate | TResult> &
         ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
     <TMatch extends TSwitchArg, TResult>(
-        predicate: TypeGuard<TMatch>,
-        result: Func1<TMatch, TResult>
+        predicate: Predicate<TSwitchArg, TMatch>,
+        result: TResult
     ): Lambda0<TSwitchResultAggregate | TResult> &
         ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(predicate: Predicate<TMatch>, result: TResult): Lambda0<
-        TSwitchResultAggregate | TResult
-    > &
-        ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(predicate: TypeGuard<TMatch>, result: TResult): Lambda0<
+    <TMatch extends TSwitchArg, TResult>(match: TMatch, resolver: Func1<TMatch, TResult>): Lambda0<
         TSwitchResultAggregate | TResult
     > &
         ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
@@ -34,27 +25,17 @@ interface ICase<TSwitchArg, TSwitchResultAggregate = never> extends CallableFunc
 }
 
 interface IStaticCase<TSwitchArg, TSwitchResultAggregate = never> extends CallableFunction {
-    <TMatch extends TSwitchArg, TResult>(match: TMatch, result: Func0<TResult>): Lambda<
-        [arg: TSwitchArg],
-        TSwitchResultAggregate | TResult
-    > &
-        IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
     <TMatch extends TSwitchArg, TResult>(
-        predicate: Predicate<TMatch>,
-        result: Func0<TResult>
+        predicate: Predicate<TSwitchArg, TMatch>,
+        resolver: Func1<TMatch, TResult>
     ): Lambda<[arg: TSwitchArg], TSwitchResultAggregate | TResult> &
         IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
     <TMatch extends TSwitchArg, TResult>(
-        predicate: TypeGuard<TMatch>,
-        result: Func1<TMatch, TResult>
+        predicate: Predicate<TSwitchArg, TMatch>,
+        result: TResult
     ): Lambda<[arg: TSwitchArg], TSwitchResultAggregate | TResult> &
         IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(predicate: Predicate<TMatch>, result: TResult): Lambda<
-        [arg: TSwitchArg],
-        TSwitchResultAggregate | TResult
-    > &
-        IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(predicate: TypeGuard<TMatch>, result: TResult): Lambda<
+    <TMatch extends TSwitchArg, TResult>(match: TMatch, resolver: Func1<TMatch, TResult>): Lambda<
         [arg: TSwitchArg],
         TSwitchResultAggregate | TResult
     > &
@@ -162,7 +143,7 @@ function __switch__(
  * Creates a switch expression for the given type argument
  * @param arg
  */
-export function $switch<TArg>(): StaticSwitch<TArg>
+export function $switch<TArg = unknown>(): StaticSwitch<TArg>
 /**
  * Creates a switch expression for the given argument
  * @param arg

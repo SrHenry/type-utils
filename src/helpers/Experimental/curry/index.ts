@@ -2,8 +2,8 @@ import type { Func } from '../../../types/Func'
 import type { Curried, Lambda } from '../../../types/Lambda'
 
 import { isLambda } from '../lambda/helpers'
-import { __curried__, __partialApply__, NO_ARG } from './constants'
-import { isCurried } from './helpers'
+import { __curried__, __length__, __partialApply__, NO_ARG } from './constants'
+import { getParametersLength, isCurried } from './helpers'
 
 export * from './helpers'
 
@@ -33,6 +33,26 @@ function addPartialApplySignature(fn: CallableFunction) {
     }) as unknown as Lambda
 }
 
+function addCustomLength(fn: CallableFunction): Lambda
+
+/**
+ * @param fn
+ * @param length if negative number is passed, its ammount will be subtracted to the given function length
+ */
+function addCustomLength(fn: CallableFunction, length: number): Lambda
+
+function addCustomLength(fn: CallableFunction, length: number | null = null) {
+    if (length === null) length = fn.length
+    else if (length < 0) length += fn.length
+
+    return Object.defineProperty(fn, __length__, {
+        enumerable: false,
+        configurable: false,
+        writable: true,
+        value: length,
+    }) as unknown as Lambda
+}
+
 export function curry<TFunc extends Func<any[], any>>(fn: TFunc): Curried<TFunc, false>
 export function curry<TFunc extends Func<any[], any>>(
     fn: TFunc,
@@ -52,13 +72,21 @@ export function curry<TFunc extends Func<any[], any>, partialApply extends boole
  */
 export function curry(fn: CallableFunction, partialApply: boolean, args: any[]): CallableFunction
 
-export function curry(fn: CallableFunction, partialApply: boolean = false, args: any[] = []) {
+export function curry(
+    this: any,
+    fn: CallableFunction,
+    partialApply: boolean = false,
+    args: any[] = []
+) {
     if (isCurried(fn)) return fn
 
-    if (fn.length < 2) return fn
+    // const paramsLength = getParametersLength(fn) ?? this?.length ?? fn.length
+    const paramsLength = getParametersLength(fn) ?? fn.length
+
+    if (paramsLength < 2) return fn
 
     if (!partialApply) {
-        if (args.length >= fn.length) return fn(...args)
+        if (args.length >= paramsLength) return fn(...args)
 
         function curried(arg: any = NO_ARG) {
             if (arg === NO_ARG) return curried
@@ -68,20 +96,24 @@ export function curry(fn: CallableFunction, partialApply: boolean = false, args:
 
         if (isLambda(fn)) addInvoke(curried)
 
-        return addSignature(curried)
+        addSignature(curried)
+        addCustomLength(curried, paramsLength - args.length)
+
+        return curried
     }
 
-    function curriedPartialApply(...args: any[]) {
-        if (args.length >= fn.length) return fn(...args)
+    function curriedPartialApply(...innerArgs: any[]) {
+        if (innerArgs.length >= paramsLength) return fn(...innerArgs)
 
-        function partialApply(...args2: any[]) {
-            return curriedPartialApply(...args.concat(args2))
+        function partialApply(...deepArgs: any[]) {
+            return curriedPartialApply(...innerArgs, ...deepArgs)
         }
 
         if (isLambda(fn)) addInvoke(partialApply)
 
         addSignature(partialApply)
         addPartialApplySignature(partialApply)
+        addCustomLength(partialApply, paramsLength - innerArgs.length)
 
         return partialApply
     }
@@ -90,6 +122,7 @@ export function curry(fn: CallableFunction, partialApply: boolean = false, args:
 
     addSignature(curriedPartialApply)
     addPartialApplySignature(curriedPartialApply)
+    addCustomLength(curriedPartialApply, paramsLength - args.length)
 
-    return curriedPartialApply
+    return curriedPartialApply(...args)
 }

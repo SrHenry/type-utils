@@ -1,6 +1,13 @@
 import { Generics } from '../Generics'
 import type { GetTypeGuard } from '../TypeGuards/types'
 
+export * from './Action'
+export * from './Async'
+export * from './Func'
+export * from './Predicate'
+export * from './Result'
+export * from './Tuple'
+
 export * from './GetOptional'
 export * from './GetRequired'
 export {

@@ -65,6 +65,12 @@ export function pipeline<RValue extends {}, Arg>(
                 rvalue = arg0.then(r => cb.apply(this, [r]))
                 rvalue = addPipeAsync(rvalue)
             } else {
+                if (typeof cb.apply !== 'function') {
+                    if (process.env['DEBUG']) console.warn({ cb, apply: cb.apply })
+
+                    throw new TypeError('callback must be a callable function or async function')
+                }
+
                 rvalue = cb.apply(this, [arg0])
                 if (rvalue === null || rvalue === undefined) return rvalue
                 if (rvalue instanceof Promise) rvalue = addPipeAsync(rvalue)

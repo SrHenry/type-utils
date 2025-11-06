@@ -11,5 +11,6 @@ export function createPipeline(this: unknown, ...args: [Func1<any, any>?, ...any
     if (args.length === 0) return pipeline()
 
     const [cb] = args
+
     return pipeline((o: Func1<unknown, unknown>) => o)(cb!)
 }
