@@ -2,6 +2,7 @@ import { v4 as uuid } from 'uuid'
 
 import { lambda } from '../Experimental/lambda/'
 // import { enpipe, pipe, pipeline } from '../Experimental/pipeline'
+import { getParametersLength } from '../Experimental/curry/helpers'
 import { createPipeline } from '../Experimental/pipeline/createPipeline'
 import { enpipe } from '../Experimental/pipeline/enpipe'
 import { pipe } from '../Experimental/pipeline/pipe'
@@ -278,6 +279,38 @@ describe('enpipe', () => {
         expect(db['users']![0]!['id']).toBe(db['posts']![0]!['user_id'])
         expect(db['posts']![0]!['title']).toBe(newPost.title)
         expect(db['posts']![0]!['content']).toBe(newPost.content)
+
+        const underparameterizedPipelineCallback = pipe(3)
+            .pipe(enpipe((a: number, b: number, c: number) => a + b + c, 1))
+            .depipe()
+
+        const overparameterizedPipelineCallback = pipe(
+            enpipe((a: any, b: any, c: any) => a + b - c, 1, 2, 3, 4, 5)
+        ).depipe()
+
+        expect(typeof underparameterizedPipelineCallback).toBe('function')
+        expect(getParametersLength(underparameterizedPipelineCallback)).toBe(1)
+        expect(underparameterizedPipelineCallback(6)).toBe(10)
+
+        expect(typeof overparameterizedPipelineCallback).toBe('number')
+        expect(overparameterizedPipelineCallback).toBe(0)
+
+        const underparameterizedPipelineCallback__2 = pipe(
+            enpipe((a: number, b: number, c: number) => a + b + c, 1)
+        )
+
+        expect(typeof underparameterizedPipelineCallback__2).toBe('function')
+        expect(getParametersLength(underparameterizedPipelineCallback__2)).toBe(2)
+
+        const underparameterizedPipelineCallback__3 = underparameterizedPipelineCallback__2.pipe(
+            enpipe(2)
+        )
+
+        expect(typeof underparameterizedPipelineCallback__3).toBe('function')
+        expect(getParametersLength(underparameterizedPipelineCallback__3)).toBe(1)
+
+        expect(underparameterizedPipelineCallback__3(3)).toBe(6)
+        expect(underparameterizedPipelineCallback__3(7)).toBe(10)
     })
 })
 
@@ -324,6 +357,7 @@ describe('createPipeline', () => {
 
         const pipeline2 = createPipeline(atob)
             .pipe(enpipe('aGVsbG8gd29ybGQ='))
+            // .pipe(_ => (console.warn({ _ }), _))
             .pipe(enpipe(split, ' '))
             .depipe()
 
