@@ -72,6 +72,42 @@
             "types": "./types/index.d.ts",
             "default": "./dist/index.js"
         },
+        "./experimental": {
+            "types": "./types/Experimental.d.ts",
+            "default": "./dist/Experimental.js"
+        },
+        "./helpers": {
+            "types": "./types/helpers/index.d.ts",
+            "default": "./dist/helpers/index.js"
+        },
+        "./types": {
+            "types": "./types/types/index.d.ts",
+            "default": "./dist/types/index.js"
+        },
+        "./schemas": {
+            "types": "./types/schemas/index.d.ts",
+            "default": "./dist/schemas/index.js"
+        },
+        "./rules": {
+            "types": "./types/rules/index.d.ts",
+            "default": "./dist/rules/index.js"
+        },
+        "./rules/array": {
+            "types": "./types/rules/array/index.d.ts",
+            "default": "./dist/rules/array/index.js"
+        },
+        "./rules/number": {
+            "types": "./types/rules/number/index.d.ts",
+            "default": "./dist/rules/number/index.js"
+        },
+        "./rules/record": {
+            "types": "./types/rules/record/index.d.ts",
+            "default": "./dist/rules/record/index.js"
+        },
+        "./rules/string": {
+            "types": "./types/rules/string/index.d.ts",
+            "default": "./dist/rules/string/index.js"
+        },
         "./*": "./dist/*",
         "./package.json": "./package.json"
     }

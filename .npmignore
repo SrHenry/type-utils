@@ -13,6 +13,7 @@ coverage
 docs
 docs/**
 node_modules
+tsconfig.json
 yarn-error.log
 
 **/test/*
