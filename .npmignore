@@ -1,22 +1,44 @@
-.vscode
+!.env.example
+.env
+.env.*
+.github
 .history
-node_modules
+.jest.*
+.markdownlint.*
+.prettierrc.*
+.typedoc.*
+.madge
+.vscode
+coverage
 docs
 docs/**
-.env
+node_modules
+yarn-error.log
+
+**/test/*
+**/tests/*
+**/__test__/*
+**/__tests__/*
 **/*.draft.*
 **/*.draft
+**/*.spec.*
 
+./src/jest.setup.ts
+./src/jest.setup.ts.map
 ./src/test/rules-test.spec.ts
 ./src/test/rules-test.spec.ts.map
 ./src/test/rules-test.*.spec.ts
 ./src/test/rules-test.*.spec.ts.map
 
+./dist/jest.setup.js
+./dist/jest.setup.js.map
 ./dist/test/rules-test.spec.js
 ./dist/test/rules-test.spec.js.map
 ./dist/test/rules-test.*.spec.js
 ./dist/test/rules-test.*.spec.js.map
 
+./types/jest.setup.d.ts
+./types/jest.setup.d.ts.map
 ./types/test/rules-test.spec.d.ts
 ./types/test/rules-test.spec.d.ts.map
 ./types/test/rules-test.*.spec.d.ts
