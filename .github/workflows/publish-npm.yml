@@ -1,0 +1,44 @@
+name: Publish to NPM (via Release)
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  id-token: write # Required for npm OIDC publishing
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+          # This enables npm's OIDC token exchange
+          always-auth: true
+
+      # Yarn 1.x comes preinstalled with Node, but we lock it to your version.
+      - name: Ensure Yarn 1.x
+        run: yarn --version
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build project
+        run: yarn build:clean
+
+      - name: Run tests
+        run: yarn test
+
+      - name: Check circular dependencies
+        run: yarn circular-dependencies
+
+      - name: Publish to npm
+        run: npm publish --provenance
