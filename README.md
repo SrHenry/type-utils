@@ -49,10 +49,12 @@
       - [`String.url`](#stringurl)
       - [`String.email`](#stringemail)
       - [`Record.nonEmpty`](#recordnonempty)
+      - [`Schema.use`](#schemause)
     - [Available validations](#available-validations)
       - [`is`](#is)
       - [`ensureInterface`](#ensureinterface)
       - [`Experimental.validate`](#experimentalvalidate)
+    - [Util types](#util-types)
   - [Experimental Features](#experimental-features)
     - [Deep validation](#deep-validation)
     - [Lambda](#lambda)
@@ -204,12 +206,20 @@ const objectHasFoo = object({ foo: isAny }) //it checks if is object and if has 
 
 > Since [`v0.5.0`](https://github.com/SrHenry/type-utils/releases/tag/v0.5.0), this method was removed, but also embeded in all exported schemas.
 
+> Since [`v0.6.0`](https://github.com/SrHenry/type-utils/releases/tag/v0.6.0), this method was replaced to be a property in the returned type guard instead of a property of the schema.
+
 It represents a optional value to typescript's type infers and runtime validation. You can access this schema by acessing the `.optional` property in the desired optional schema:
 
 ```typescript
-import { object, string } from '@srhenry/type-utils'
+import { object, string, number } from '@srhenry/type-utils'
 
-const objectMaybeHasFoo = object({ foo: string.optional() }) //it checks if is object and if has `foo`. if it has `foo` then check if it is string or undefined, if it hasn't then pass anyway as it is optional property
+const objectMaybeHasFoo = object({
+    foo: string().optional(),
+    bar: number().optional()
+})
+// it checks if is object and if has `foo`.
+// if it has `foo` then check if it is string or undefined,
+// if it hasn't then pass anyway as it is optional property.
 ```
 
 ### Schema helpers
@@ -256,8 +266,9 @@ const isFooArray = array(useSchema(hasFoo))
 It constraints a number to be different from 0.
 
 ```typescript
-import { number, NumberRules } from '@srhenry/type-utils'
-const isNonZeroNumber = number([NumberRules.nonZero()])
+import { number } from '@srhenry/type-utils'
+
+const isNonZeroNumber = number().nonZero()
 ```
 
 #### [`Number.max`](https://srhenry.github.io/type-utils/variables/NumberRules.html#max)
@@ -265,9 +276,9 @@ const isNonZeroNumber = number([NumberRules.nonZero()])
 It constraints a number to be lesser than a given number.
 
 ```typescript
-import { number, NumberRules } from '@srhenry/type-utils'
+import { number } from '@srhenry/type-utils'
 
-const isNonZeroNumber = number([NumberRules.max(255)])
+const isNonZeroNumber = number().max(255)
 ```
 
 #### [`Number.min`](https://srhenry.github.io/type-utils/variables/NumberRules.html#min)
@@ -275,9 +286,9 @@ const isNonZeroNumber = number([NumberRules.max(255)])
 It constraints a number to be greater than a given number.
 
 ```typescript
-import { number, NumberRules } from '@srhenry/type-utils'
-// or
-const isNonZeroNumber = number([NumberRulesmin(1)])
+import { number } from '@srhenry/type-utils'
+
+const isNonZeroNumber = number().min(1)
 ```
 
 #### [`Array.max`](https://srhenry.github.io/type-utils/variables/ArrayRules.html#max)
@@ -285,9 +296,9 @@ const isNonZeroNumber = number([NumberRulesmin(1)])
 It constraints an array's size to be lesser than a given number.
 
 ```typescript
-import { array, any, ArrayRules } from '@srhenry/type-utils'
+import { array, any } from '@srhenry/type-utils'
 
-const isArray = array([max(25)], any())
+const isArray = array(any()).max(25)
 ```
 
 #### [`Array.min`](https://srhenry.github.io/type-utils/variables/ArrayRules.html#min)
@@ -295,9 +306,9 @@ const isArray = array([max(25)], any())
 It constraints an array's size to be greater than a given number.
 
 ```typescript
-import { array, any, ArrayRules } from '@srhenry/type-utils'
+import { array, any } from '@srhenry/type-utils'
 
-const isArray = array([ArrayRules.min(1)], any())
+const isArray = array(any()).min(2)
 ```
 
 #### [`Array.unique`](https://srhenry.github.io/type-utils/variables/ArrayRules.html#unique)
@@ -305,9 +316,9 @@ const isArray = array([ArrayRules.min(1)], any())
 It constraints an array to contain only distinct values, failling if a duplicate is found.
 
 ```typescript
-import { array, string, ArrayRules } from '@srhenry/type-utils'
+import { array, string } from '@srhenry/type-utils'
 
-const isArray = array([Rules.ArrayRules.unique()], string())
+const isArray = array(string()).unique()
 ```
 
 #### [`String.max`](https://srhenry.github.io/type-utils/variables/StringRules.html#max)
@@ -315,9 +326,9 @@ const isArray = array([Rules.ArrayRules.unique()], string())
 It constraints a string's size to be lesser than a given number.
 
 ```typescript
-import { string, StringRules } from '@srhenry/type-utils'
+import { string } from '@srhenry/type-utils'
 
-const isString = string([StringRules.max(60)])
+const isString = string().max(60)
 ```
 
 #### [`String.min`](https://srhenry.github.io/type-utils/variables/StringRules.html#min)
@@ -325,9 +336,9 @@ const isString = string([StringRules.max(60)])
 It constraints a string's size to be greater than a given number.
 
 ```typescript
-import { string, StringRules } from '@srhenry/type-utils'
+import { string } from '@srhenry/type-utils'
 
-const isString = string([StringRules.min(60)])
+const isString = string().min(10)
 ```
 
 #### [`String.regex`](https://srhenry.github.io/type-utils/variables/StringRules.html#regex)
@@ -335,9 +346,11 @@ const isString = string([StringRules.min(60)])
 It constraints a string to match a given pattern (regular expression).
 
 ```typescript
-import { string, StringRules } from '@srhenry/type-utils'
+import { string } from '@srhenry/type-utils'
 
-const isNumericString = string([StringRules.regex(/[0-9]+/)])
+const isNumericString = string(/[0-9]+/)
+// or using fluent pattern:
+const isNumericString2 = string().regex(/[0-9]+/)
 ```
 
 #### [`String.nonEmpty`](https://srhenry.github.io/type-utils/variables/StringRules.html#nonEmpty)
@@ -345,9 +358,9 @@ const isNumericString = string([StringRules.regex(/[0-9]+/)])
 It constraints a string's size to be greater than 0.
 
 ```typescript
-import { string, StringRules } from '@srhenry/type-utils'
+import { string } from '@srhenry/type-utils'
 
-const isString = string([StringRules.nonEmpty()])
+const isString = string().nonEmpty()
 ```
 
 #### [`String.url`](https://srhenry.github.io/type-utils/variables/StringRules.html#url)
@@ -355,9 +368,9 @@ const isString = string([StringRules.nonEmpty()])
 It constraints a string to be a valid url representation.
 
 ```typescript
-import { string, StringRules } from '@srhenry/type-utils'
+import { string } from '@srhenry/type-utils'
 
-const isStringUrl = string([StringRules.url()])
+const isStringUrl = string().url()
 ```
 
 #### [`String.email`](https://srhenry.github.io/type-utils/variables/StringRules.html#email)
@@ -365,9 +378,9 @@ const isStringUrl = string([StringRules.url()])
 It constraints a string to be a valid email representation.
 
 ```typescript
-import { string, StringRules } from '@srhenry/type-utils'
+import { string } from '@srhenry/type-utils'
 
-const isStringEmail = string([StringRules.email()])
+const isStringEmail = string().email()
 ```
 
 #### [`Record.nonEmpty`](https://srhenry.github.io/type-utils/variables/RecordRules.html#nonEmpty)
@@ -375,17 +388,33 @@ const isStringEmail = string([StringRules.email()])
 It constrains a record to not be empty.
 
 ```typescript
-import { record, RecordRules } from '@srhenry/type-utils'
+import { record } from '@srhenry/type-utils'
 
 
-const isNonEmptyRecord = record([RecordRules.nonEmpty()])
+const isNonEmptyRecord = record().nonEmpty()
+```
+
+#### `Schema.use`
+
+> Since [`v0.6.0`](https://github.com/SrHenry/type-utils/releases/tag/v0.6.0)
+
+It allows you to create custom validation rules to be used in schemas.
+
+```typescript
+import { string, createRule } from '@srhenry/type-utils'
+
+const StringNumber = createRule({
+    name: "Custom.StringNumber",
+    message: "number",
+    handler: (value: string) => () => !Number.isNaN(Number(value)),
+});
+
+const isStringNumber = string().use(StringNumber())
 ```
 
 ### Available validations
 
 #### [`is`](https://srhenry.github.io/type-utils/functions/is.html)
-
-)
 
 It checks a given value against a given schema or validator and return true if schema matches the value, otherwise return false.
 
@@ -463,13 +492,122 @@ if (hasFoo(obj)) {
 }
 ```
 
+### `Util Types`
+
+#### [`Fn`](https://srhenry.github.io/type-utils/types/Fn.html)
+
+It represents a synchronous function type.
+It has two type parameters: the first is a tuple representing the function parameters types, and the second is the return type of the function.
+
+```typescript
+import type { Fn } from '@srhenry/type-utils'
+
+declare const fn: Fn<[number, number], number> // fn: (arg_0: number, arg_1: number) => number
+```
+
+#### [`AsyncFn`](https://srhenry.github.io/type-utils/types/AsyncFn.html)
+
+It represents an asynchronous function type.
+It has two type parameters: the first is a tuple representing the function parameters types, and the second is the resolved return type of the function.
+
+```typescript
+import type { AsyncFn } from '@srhenry/type-utils'
+
+declare const fn: AsyncFn<[number, number], number> // fn: (arg_0: number, arg_1: number) => Promise<number>
+```
+
+#### [`Action`](https://srhenry.github.io/type-utils/types/Action.html)
+
+It represents a synchronous function type that does not return any value (void).
+It has one type parameter: a tuple representing the function parameters type.
+
+```typescript
+import type { Action } from '@srhenry/type-utils'
+
+declare const fn: Action<[string]> // fn: (arg_0: string) => void
+```
+
+#### [`Predicate`](https://srhenry.github.io/type-utils/types/Predicate.html)
+
+It represents a predicate function type.
+It has one type parameter: a tuple representing the function parameters type.
+
+```typescript
+import type { Predicate } from '@srhenry/type-utils'
+
+declare const fn: Predicate<[any]> // fn: (arg_0: any) => boolean
+```
+
+#### [`Result`](https://srhenry.github.io/type-utils/types/Result.html)
+
+It represents an result type tuple.
+It has two type parameters: the first is the success type, and the second is the failure type (optional, default `Error`).
+
+```typescript
+import type { Result } from '@srhenry/type-utils'
+
+declare const res1: Result<number> // res1: [null, number] | [Error, null]
+declare const res2: Result<string, TypeError> // res2: [null, string] | [TypeError, null]
+```
+
+#### [`AsyncResult`](https://srhenry.github.io/type-utils/types/AsyncResult.html)
+
+It represents an asynchronous result type tuple.
+It has two type parameters: the first is the success type, and the second is the failure type (optional, default `Error`).
+
+```typescript
+import type { AsyncResult } from '@srhenry/type-utils'
+
+declare const res1: AsyncResult<number> // res1: [null, number] | [Error, null]
+declare const res2: AsyncResult<string, TypeError> // res2: [null, string] | [TypeError, null]
+```
+
+#### [`TupleSlice`](https://srhenry.github.io/type-utils/types/TupleSlice.html)
+
+It slices a tuple type.
+It has three type parameters: the first is the tuple type to be sliced, the second is the start index (inclusive), and the third is the end index (exclusive, optional, default to tuple length).
+
+```typescript
+import type { TupleSlice } from '@srhenry/type-utils'
+
+declare const res1: TupleSlice<[number, string, boolean], 1> // res1: [string, boolean]
+declare const res2: TupleSlice<[number, string, boolean], 1, 2> // res2: [string]
+```
+
+#### [`Param`](https://srhenry.github.io/type-utils/types/Param.html)
+
+It extracts the type of a function parameter by its index.
+It has two type parameters: the first is the function type, and the second is the parameter index.
+
+```typescript
+import type { Param } from '@srhenry/type-utils'
+
+declare const res1: Param<(a: number, b: string) => void, 0> // res1: number
+declare const res2: Param<(a: number, b: string) => void, 1> // res2: string
+```
+
+#### [`Infer`](https://srhenry.github.io/type-utils/types/Infer.html)
+
+It infers the type from a type guard function.
+It has one type parameter: the type guard function type.
+
+```typescript
+import { type Infer, array } from '@srhenry/type-utils'
+
+declare const isArray = array()
+
+declare const res1: Infer<(a: unknown) => a is number> // res1: number
+declare const res2: Infer<(a: unknown) => a is string[]> // res2: string[]
+declare const res3: Infer<typeof isArray> // res3: any[]
+```
+
 ## Experimental Features
 
 ### [Deep validation](https://srhenry.github.io/type-utils/variables/Experimental.Validator.html)
 
 This is intended for partial assertions in schemas, fetching all violations against the schema, like other specialized tools does (yup, joi, etc). Common use cases are in form validations and payload validations, in order to give feedback of where the data is wrong by schema.
 
-```ts
+```typescript
 import {
     Experimental,
     object,
@@ -484,8 +622,8 @@ const { setValidatorMessage } = helpers
 /** A sample schema */
 const schema = object({
     name: string(),
-    email:string([StringRules.email()]),
-    password: string.optional([StringRules.min(6)]),
+    email:string().email(),
+    password: string().min(6).optional(),
 })
 
 // Set custom messages for validator errors:
@@ -537,7 +675,7 @@ if (data instanceof ValidationErrors) {
 
 This was inspired in C# Lambdas, equivalent to arrow functions in Javascript/Typescript, but this helper adds `invoke()` method to a function instance. useful to improve readability when you have a function that returns another and you wanna call 'em all in a row, using fluent pattern.
 
-```ts
+```typescript
 import { Experimental } from '@srhenry/type-utils'
 
 const { lambda } = Experimental
@@ -571,7 +709,7 @@ console.log(
 
 This does type-wisely curries a function or lambda, in two flavors: allowing or not partial param applying (default is not allowed). The process of currying a function is traditionally a techique that allows you to call the refered function passing one parameter at a time, returning another function to further apply remaining parameters, then returning whatever the original function returns after all parameters were given to curried function. In Javascript this techinque usually allows partial apply, and in that way you can pass more than one parameter at a time, and everything else remains equal to the traditional currying.
 
-```ts
+```typescript
 import { Experimental } from '@srhenry/type-utils'
 
 const { lambda, curry } = Experimental
@@ -607,7 +745,7 @@ console.log(
 
 This is a fluent API to create sync/async function pipelines. Inspired in FP pipe operator while it does not comes to Javascript/Typescript yet. It allows only single param functions, piping the return as the parameter to the next function in pipeline.
 
-```ts
+```typescript
 import { Experimental } from '@srhenry/type-utils'
 
 const { pipe, enpipe, lambda } = Experimental
@@ -673,7 +811,7 @@ This helper enables you to build switch expressions as it is not available in Ja
 
 #### [Reusable switcher](https://srhenry.github.io/type-utils/functions/Experimental._switch.html#switch)
 
-```ts
+```typescript
 const switcher = $switch()
     .case(4, 'four')
     .case(3, 'three')
@@ -688,7 +826,7 @@ console.log(switcher.invoke(10)) // none of the above
 
 #### [Stored switcher](https://srhenry.github.io/type-utils/functions/Experimental._switch.html#switch-1)
 
-```ts
+```typescript
 const switcher = $switch(5)
     .case(4, 'four')
     .case(3, 'three')
@@ -704,7 +842,7 @@ console.log(switcher(3)) // none of the above
 
 #### [more complex matching logic / runtime branch evaluation](https://srhenry.github.io/type-utils/functions/Experimental._switch.html)
 
-```ts
+```typescript
 const switcher = $switch<number>()
     .case(
         n => n % 2 === 0,
