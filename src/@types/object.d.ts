@@ -63,3 +63,9 @@ declare type TypeOfTag =
 declare type Prettify<T> = {
     [K in keyof T]: T[K]
 } & {}
+
+type Replace<TOrigin extends {}, TReplace extends Partial<Record<keyof TOrigin, any>>> = Prettify<
+    Omit<TOrigin, keyof TReplace> & {
+        [K in keyof TReplace]: TReplace[K]
+    }
+>

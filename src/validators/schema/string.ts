@@ -1,10 +1,13 @@
 import type { TypeGuard } from '../../TypeGuards/types'
+import type { Custom } from '../rules/types'
+import type { StringSchema } from './types/StringSchema'
 
 import { setMessage } from '../../TypeGuards/helpers/setMessage'
 import { template as ruleTemplate } from '../rules/common'
+import { useCustomRules } from '../rules/helpers/useCustomRules'
 import { type StringRule, StringRules } from '../rules/String'
-
 import { branchIfOptional } from './helpers/branchIfOptional'
+import { copyStructMetadata } from './helpers/copyStructMetadata'
 import { getRuleStructMetadata } from './helpers/getRuleStructMetadata'
 import { isFollowingRules } from './helpers/isFollowingRules'
 import { optionalizeOverloadFactory } from './helpers/optional'
@@ -102,4 +105,65 @@ type OptionalizedString = {
     (regex: RegExp): TypeGuard<string>
 }
 
-export const string = optionalizeOverloadFactory(_fn).optionalize<OptionalizedString>()
+export const _string = optionalizeOverloadFactory(_fn).optionalize<OptionalizedString>()
+
+export const string = ((matcher?: string | RegExp) => {
+    const rules: StringRule[] = []
+    const customRules: Custom<any[], string, string>[] = []
+
+    const callStack: { [key: string]: boolean } = {}
+
+    const getGuard = () => {
+        const resolver = callStack['optional'] ? _string.optional : _string
+        let guard = resolver(rules)
+        {
+            // override guard with matcher
+            if (matcher) {
+                if (typeof matcher === 'string') {
+                    guard = resolver(matcher)
+                }
+                if (matcher instanceof RegExp) {
+                    guard = resolver(matcher)
+                }
+            }
+        }
+
+        return guard
+    }
+
+    const schema = (arg: unknown) => {
+        const guard = getGuard()
+
+        if (customRules.length > 0) {
+            return useCustomRules(guard, ...customRules)(arg)
+        }
+
+        return guard(arg)
+    }
+
+    const addCall = (fnName: string, _rules: unknown[] = []) => {
+        if (callStack[fnName]) throw new Error(`Cannot call ${fnName} more than once`)
+
+        if (fnName === 'use') {
+            customRules.push(...(_rules as Custom<any[], string, string>[]))
+        } else {
+            callStack[fnName] = true
+
+            if (fnName !== 'optional') rules.push(...(_rules as StringRule[]))
+        }
+
+        return copyStructMetadata(getGuard(), schema)
+    }
+
+    schema.optional = () => addCall('optional')
+    schema.min = (n: number) => addCall('min', [StringRules.min(n)])
+    schema.max = (n: number) => addCall('max', [StringRules.max(n)])
+    schema.regex = (regex: RegExp) => addCall('regex', [StringRules.regex(regex)])
+
+    schema.nonEmpty = () => addCall('nonEmpty', [StringRules.nonEmpty()])
+    schema.url = () => addCall('url', [StringRules.url()])
+    schema.email = () => addCall('email', [StringRules.email()])
+    schema.use = (...rules: Custom<any[], string, string>) => addCall('use', [...rules])
+
+    return copyStructMetadata(getGuard(), schema)
+}) as unknown as StringSchema

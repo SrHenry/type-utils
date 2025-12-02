@@ -1,19 +1,21 @@
 import type { TypeGuard } from '../../TypeGuards/types'
-import type { ArrayRule } from '../rules/Array'
+import { ArrayRules, type ArrayRule } from '../rules/Array'
+import type { Custom } from '../rules/types'
 import type { ValidatorMap } from '../types'
 import type { V3 } from './types'
+import type { ArraySchema } from './types/ArraySchema'
 
 import { getMessage } from '../../TypeGuards/helpers/getMessage'
+import { useCustomRules } from '../rules/helpers/useCustomRules'
 import { any } from './any'
-
 import { branchIfOptional } from './helpers/branchIfOptional'
+import { copyStructMetadata } from './helpers/copyStructMetadata'
+import { getRuleStructMetadata } from './helpers/getRuleStructMetadata'
 import { getStructMetadata } from './helpers/getStructMetadata'
 import { isFollowingRules } from './helpers/isFollowingRules'
+import { optionalizeOverloadFactory } from './helpers/optional'
 import { setRuleMessage } from './helpers/setRuleMessage'
 import { setStructMetadata } from './helpers/setStructMetadata'
-
-import { getRuleStructMetadata } from './helpers/getRuleStructMetadata'
-import { optionalizeOverloadFactory } from './helpers/optional'
 import { object } from './object'
 
 function _fn(): TypeGuard<any[]>
@@ -33,7 +35,7 @@ function _fn<T>(
     _schema: TypeGuard<T> = any()
 ): TypeGuard<T[]> {
     if (!!rules && typeof rules === 'object' && !Array.isArray(rules))
-        return array(object(rules) as unknown as TypeGuard<T>)
+        return _fn(object(rules) as unknown as TypeGuard<T>)
 
     if (!rules || typeof rules === 'function') {
         _schema = rules ?? _schema
@@ -77,4 +79,52 @@ type OptionalizedArray = CallableFunction & {
     <T>(tree: ValidatorMap<T>): TypeGuard<T[] | undefined>
 }
 
-export const array = optionalizeOverloadFactory(_fn).optionalize<OptionalizedArray>()
+export const _array = optionalizeOverloadFactory(_fn).optionalize<OptionalizedArray>()
+
+export const array: ArraySchema = ((tree_schema?: TypeGuard<any> | ValidatorMap<any>) => {
+    const rules: ArrayRule[] = []
+    const customRules: Custom<any[], string, any[]>[] = []
+    const callStack: { [key: string]: boolean } = {}
+
+    const getGuard = () => {
+        const resolver = callStack['optional'] ? _array.optional : _array
+        return tree_schema
+            ? typeof tree_schema === 'function'
+                ? resolver(rules, tree_schema)
+                : resolver(rules, object(tree_schema))
+            : resolver(rules)
+    }
+
+    const schema = (arg: unknown) => {
+        const guard = getGuard()
+
+        if (customRules.length > 0) {
+            return useCustomRules(guard, ...customRules)(arg)
+        }
+
+        return guard(arg)
+    }
+
+    const addCall = (fnName: string, _rules: unknown[] = []) => {
+        if (callStack[fnName]) throw new Error(`Cannot call ${fnName} more than once`)
+
+        if (fnName === 'use') {
+            customRules.push(...(_rules as Custom<any[], string, any[]>[]))
+        } else {
+            callStack[fnName] = true
+
+            if (fnName !== 'optional') rules.push(...(_rules as ArrayRule[]))
+        }
+
+        return copyStructMetadata(getGuard(), schema)
+    }
+
+    schema.optional = () => addCall('optional')
+    schema.unique = (deepObject: boolean = true) =>
+        addCall('unique', [ArrayRules.unique(deepObject)])
+    schema.min = (n: number) => addCall('min', [ArrayRules.min(n)])
+    schema.max = (n: number) => addCall('max', [ArrayRules.max(n)])
+    schema.use = (...rules: Custom<any[], string, any[]>) => addCall('use', [...rules])
+
+    return copyStructMetadata(getGuard(), schema)
+}) as unknown as ArraySchema

@@ -49,12 +49,5 @@
     "node_modules",
     "dist",
     "types",
-    "src/jest.setup.ts",
-    "src/**/test/**",
-    "src/**/tests/**",
-    "src/**/__tests__/**",
-    "src/**/__test__/**",
-    "src/**/*.spec.*",
-    "src/**/*.test.*"
   ]
 }
