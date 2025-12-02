@@ -1,6 +1,5 @@
 import { asTypeGuard } from '../TypeGuards/helpers/asTypeGuard'
-import { min as minLength } from '../validators/rules/Array'
-import { min } from '../validators/rules/Number'
+
 import { and } from '../validators/schema/and'
 import { array } from '../validators/schema/array'
 import { number } from '../validators/schema/number'
@@ -57,9 +56,9 @@ const arrayLike = () =>
     )
 
 /// param schemas (one for each signature):
-const is_n = tuple(number([min(1)]), nullParam())
-const is_min_max = and(tuple(number([min(1)]), number([min(2)])), maxGreaterThanMin())
-const is_from_Array = tuple(array<unknown>([minLength(1)]), nullParam())
+const is_n = tuple(number().min(1), nullParam())
+const is_min_max = and(tuple(number().min(1), number().min(2)), maxGreaterThanMin())
+const is_from_Array = tuple(array<unknown>().min(1), nullParam())
 const is_from_ArrayLike = tuple(arrayLike(), nullParam())
 
 /** Returns a random number between `0` and `n` */

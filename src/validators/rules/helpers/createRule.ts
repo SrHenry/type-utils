@@ -11,21 +11,6 @@ import type {
 import { getRuleSetterForCustomHandler } from './getRuleSetterForCustomHandler'
 
 export function createRule<
-    CustomRule extends Custom<any[], string, any>,
-    Message extends string = string,
-    Formator extends MessageFormator = MessageFormator,
-    RuleName extends string = GetCustomRuleName<CustomRule>,
-    Handler extends CustomHandler = GetCustomRuleHandler<CustomRule>
->({
-    name,
-    message,
-    messageFormator,
-    handler,
-}: CreateRuleArgs<RuleName, Handler, Message, Formator>): Factory<
-    Parameters<ReturnType<Handler>>,
-    CustomRule
->
-export function createRule<
     Handler extends CustomHandler,
     RName extends string = string,
     Message extends string = string,
@@ -39,6 +24,21 @@ export function createRule<
     Parameters<ReturnType<Handler>>,
     RName,
     Param0<Handler>
+>
+export function createRule<
+    CustomRule extends Custom<any[], string, any>,
+    Message extends string = string,
+    Formator extends MessageFormator = MessageFormator,
+    RuleName extends string = GetCustomRuleName<CustomRule>,
+    Handler extends CustomHandler = GetCustomRuleHandler<CustomRule>
+>({
+    name,
+    message,
+    messageFormator,
+    handler,
+}: CreateRuleArgs<RuleName, Handler, Message, Formator>): Factory<
+    Parameters<ReturnType<Handler>>,
+    CustomRule
 >
 
 export function createRule<

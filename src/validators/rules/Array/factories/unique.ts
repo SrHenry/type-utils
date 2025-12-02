@@ -8,5 +8,3 @@ export const unique: RuleFactory<'Array.unique', UniqueArgs> = (deepObject: bool
     keys['Array.unique'],
     [deepObject],
 ]
-
-unique()

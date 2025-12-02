@@ -1,14 +1,16 @@
 import type { TypeGuard } from '../../TypeGuards/types'
+import type { Custom } from '../rules/types'
 import type { V3 } from './types'
+import type { FluentSchema } from './types/FluentSchema'
 
 import { getMessage } from '../../TypeGuards/helpers/getMessage'
-
-import { getStructMetadata } from './helpers/getStructMetadata'
-import { setStructMetadata } from './helpers/setStructMetadata'
-
 import { isTypeGuard } from '../../TypeGuards/helpers/isTypeGuard'
 import { setMessage } from '../../TypeGuards/helpers/setMessage'
+import { useCustomRules } from '../rules/helpers/useCustomRules'
+import { copyStructMetadata } from './helpers/copyStructMetadata'
+import { getStructMetadata } from './helpers/getStructMetadata'
 import { optionalizeOverloadFactory } from './helpers/optional'
+import { setStructMetadata } from './helpers/setStructMetadata'
 
 const guardFactory =
     (schemas: TypeGuard<any>[]) =>
@@ -64,4 +66,54 @@ type OptionalizedTuple = CallableFunction & {
     >
 }
 
-export const tuple = optionalizeOverloadFactory(_fn).optionalize<OptionalizedTuple>()
+export const _tuple = optionalizeOverloadFactory(_fn).optionalize<OptionalizedTuple>()
+
+type TupleSchema = CallableFunction & {
+    <const T extends TypeGuard<any>[]>(schemas: T): FluentSchema<V3.TypeGuardTupleUnwrap<T>>
+    <const T extends TypeGuard<any>[]>(...schemas: T): FluentSchema<V3.TypeGuardTupleUnwrap<T>>
+}
+
+export const tuple: TupleSchema = ((
+    _schema?: TypeGuard<any> | TypeGuard<any>[],
+    ...rest: TypeGuard<any>[]
+) => {
+    const customRules: Custom<any[], string, [...any]>[] = []
+    const callStack: { [key: string]: boolean } = {}
+
+    const getGuard = () => {
+        const resolver = callStack['optional'] ? _tuple.optional : _tuple
+        return _schema
+            ? typeof _schema === 'function'
+                ? resolver([_schema, ...rest])
+                : resolver(_schema)
+            : resolver([])
+    }
+
+    const schema = (arg: unknown) => {
+        const guard = getGuard()
+
+        if (customRules.length > 0) {
+            return useCustomRules(guard as TypeGuard<[...any]>, ...customRules)(arg)
+        }
+
+        return guard(arg)
+    }
+
+    const addCall = (fnName: string, _rules: unknown[] = []) => {
+        if (callStack[fnName]) throw new Error(`Cannot call ${fnName} more than once`)
+
+        if (fnName === 'use') {
+            customRules.push(...(_rules as Custom<any[], string, [...any]>[]))
+        } else {
+            callStack[fnName] = true
+        }
+
+        return copyStructMetadata(getGuard() as TypeGuard<[...any]>, schema)
+    }
+
+    schema.optional = () => addCall('optional')
+
+    schema.use = (...rules: Custom<any[], string, [...any]>) => addCall('use', [...rules])
+
+    return copyStructMetadata(getGuard() as TypeGuard<[...any]>, schema)
+}) as unknown as TupleSchema

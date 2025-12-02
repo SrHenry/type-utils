@@ -2,8 +2,6 @@ import type { Generics } from '../Generics'
 import type { TypeGuard } from '../TypeGuards/types'
 import type { Sanitize } from '../validators/types'
 
-import { ArrayRules } from '../rules'
-import { regex } from '../rules/string'
 import { any, array, getStructMetadata, number, object, string } from '../schema'
 import { ensureInterface } from '../TypeGuards/helpers/ensureInterface'
 import { getMessage } from '../TypeGuards/helpers/getMessage'
@@ -13,9 +11,9 @@ import { setMetadata } from '../TypeGuards/helpers/setMetadata'
 import { TypeGuardError } from '../TypeGuards/TypeErrors'
 
 const schema = object({
-    ean: string([regex(/^[0-9]+$/)]),
-    sku: string([regex(/^LV[0-9]+EAN[0-9]+$/)]),
-    opc: number.optional(),
+    ean: string(/^[0-9]+$/),
+    sku: string(/^LV[0-9]+EAN[0-9]+$/),
+    opc: number().optional(),
 })
 
 const a = {
@@ -37,12 +35,12 @@ console.log(
     )
 )
 
-console.log('===', is(undefined, object.optional({})))
+console.log('===', is(undefined, object({}).optional()))
 
 console.log('a', is(a, schema))
 console.log('b', is(b, schema))
 
-console.log('__optional__' in number.optional())
+console.log('__optional__' in number().optional())
 
 const isTypeError = (_: unknown): _ is TypeGuardError<typeof c, typeof _schema> =>
     _ instanceof TypeGuardError && is(_, object({ checked: string() }))
@@ -59,7 +57,7 @@ try {
 }
 
 const c = '2897 '
-const _schema = string([regex(/^[0-9]+$/)])
+const _schema = string().regex(/^[0-9]+$/)
 
 console.log(c, is(c, _schema))
 
@@ -74,17 +72,14 @@ try {
     }
 }
 
+console.log('test unique array', is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], array(number()).unique(true)))
 console.log(
     'test unique array',
-    is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], array([ArrayRules.unique()], number()))
+    is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10], array(number()).unique(true))
 )
 console.log(
     'test unique array',
-    is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10], array([ArrayRules.unique()], number()))
-)
-console.log(
-    'test unique array',
-    is([{ a: 1 }, { b: { c: 0 } }, { a: 1, b: 0 }, { a: 2 }], array([ArrayRules.unique()]))
+    is([{ a: 1 }, { b: { c: 0 } }, { a: 1, b: 0 }, { a: 2 }], array().unique(true))
 )
 
 const __metadata__ = Symbol('__metadata__')
@@ -108,10 +103,10 @@ const EnvSchema = object({
     APP_PORT: number(),
 
     JWT_SECRET: string(),
-    JWT_EXPIRES_IN: number.optional(),
+    JWT_EXPIRES_IN: number().optional(),
 
     JWT_REFRESH_SECRET: string(),
-    JWT_REFRESH_EXPIRES_IN: number.optional(),
+    JWT_REFRESH_EXPIRES_IN: number().optional(),
 })
 
 const envSchemaMetadata = getStructMetadata(EnvSchema)
@@ -126,9 +121,9 @@ const envSchemaKeys = Object.keys(envSchemaTree) as (keyof typeof envSchemaTree)
 
 const preEnvSchema = object({
     ...envSchemaKeys
-        .map(key => ({ [key]: any.optional() }))
+        .map(key => ({ [key]: any().optional() }))
         .reduce((acc, item) => Object.assign(acc, item), {}),
-}) as TypeGuard<
+}) as unknown as TypeGuard<
     Sanitize<{
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [K in keyof typeof envSchemaTree]?: any

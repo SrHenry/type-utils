@@ -31,6 +31,7 @@ function optional<Args extends any[], T>(
     factory: TypeGuardFactory<Args, T>
 ): TypeGuardFactory<Args, T | undefined> {
     const type = typeof factory
+
     if (type !== 'function')
         throw new ValidationError({
             message: "Can't optionalize! Parameter must be a function",
