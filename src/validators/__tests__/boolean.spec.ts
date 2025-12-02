@@ -53,16 +53,16 @@ describe('boolean', () => {
     })
 
     it('should have an optional method embeded in the schema', () => {
-        expect(boolean).toHaveProperty('optional')
-        expect(typeof boolean.optional).toBe('function')
+        expect(boolean()).toHaveProperty('optional')
+        expect(typeof boolean().optional).toBe('function')
 
-        const schema = boolean.optional()
+        const schema = boolean().optional()
 
         expect(typeof schema).toBe('function')
     })
 
     it('should return true if value is boolean or undefined', () => {
-        const schema = boolean.optional()
+        const schema = boolean().optional()
 
         expect(schema(true)).toBe(true)
         expect(schema(false)).toBe(true)

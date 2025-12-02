@@ -1,4 +1,3 @@
-import { NumberRules } from '../rules/Number'
 import { bigint } from '../schema/bigint'
 
 describe('bigint', () => {
@@ -100,7 +99,7 @@ describe('bigint', () => {
     })
 
     it('should accept number rules and comply', () => {
-        const schema = bigint([NumberRules.min(1), NumberRules.max(Number.MAX_SAFE_INTEGER)])
+        const schema = bigint().min(1).max(Number.MAX_SAFE_INTEGER)
 
         expect(schema(BigInt(0))).toBe(false)
         expect(schema(BigInt(1))).toBe(true)
@@ -115,16 +114,16 @@ describe('bigint', () => {
     })
 
     it('should have an optional method embeded in the schema', () => {
-        expect(bigint).toHaveProperty('optional')
-        expect(typeof bigint.optional).toBe('function')
+        expect(bigint()).toHaveProperty('optional')
+        expect(typeof bigint().optional).toBe('function')
 
-        const schema = bigint.optional()
+        const schema = bigint().optional()
 
         expect(typeof schema).toBe('function')
     })
 
     it('should validate a bigint or undefined when optional schema', () => {
-        const schema = bigint.optional()
+        const schema = bigint().optional()
 
         expect(schema(BigInt(0))).toBe(true)
         expect(schema(BigInt(1))).toBe(true)
@@ -221,10 +220,7 @@ describe('bigint', () => {
     })
 
     it('should accept number rules and comply when optional schema', () => {
-        const schema = bigint.optional([
-            NumberRules.min(1),
-            NumberRules.max(Number.MAX_SAFE_INTEGER),
-        ])
+        const schema = bigint().optional().min(1).max(Number.MAX_SAFE_INTEGER)
 
         expect(schema(BigInt(0))).toBe(false)
         expect(schema(BigInt(1))).toBe(true)

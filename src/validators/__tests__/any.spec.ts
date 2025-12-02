@@ -51,16 +51,16 @@ describe('any', () => {
     })
 
     it('should have an optional method embeded in the schema', () => {
-        expect(any).toHaveProperty('optional')
-        expect(typeof any.optional).toBe('function')
+        expect(any()).toHaveProperty('optional')
+        expect(typeof any().optional).toBe('function')
 
-        const schema = any.optional()
+        const schema = any().optional()
 
         expect(typeof schema).toBe('function')
     })
 
     it('should validate any value when optional schema', () => {
-        const schema = any.optional()
+        const schema = any().optional()
 
         for (const value of values) expect(schema(value)).toBe(true)
     })

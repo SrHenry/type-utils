@@ -3,13 +3,10 @@ import type { TypeGuard } from '../TypeGuards/types'
 import { Generics } from '../Generics'
 import { createRule } from '../validators/rules/helpers/createRule'
 import { getRule } from '../validators/rules/helpers/getRule'
-import { useCustomRules } from '../validators/rules/helpers/useCustomRules'
 import { SchemaValidator as Validator } from '../validators/SchemaValidator'
 import { ValidationError } from '../validators/ValidationError'
 import { ValidationErrors } from '../validators/ValidationErrors'
 
-import { unique } from '../rules/array'
-import { min, nonEmpty } from '../rules/string'
 import { any, array, getStructMetadata, number, object, string } from '../schema'
 
 import { ensureInterface } from '../TypeGuards/helpers/ensureInterface'
@@ -21,7 +18,7 @@ import { isInstanceOf } from '../TypeGuards/helpers/isInstanceOf'
 import { setMetadata } from '../TypeGuards/helpers/setMetadata'
 import { setValidatorMessage } from '../TypeGuards/helpers/setValidatorMessage'
 import { TypeGuardError } from '../TypeGuards/TypeErrors'
-import { asEnum, asNull, or, StringRules, Validators } from '../validators'
+import { asEnum, asNull, or, Validators } from '../validators'
 import { hasOptionalFlag } from '../validators/schema/helpers/optionalFlag'
 
 function prettier(e: unknown): string {
@@ -43,7 +40,7 @@ const patterns = Object.freeze({
 const schema = object({
     ean: setValidatorMessage('EAN deve conter apenas números!', string(/^[0-9]+$/)),
     sku: setValidatorMessage('SKU inválido!', string(patterns.SKU)),
-    opc: number.optional(),
+    opc: number().optional(),
 })
 
 const a = {
@@ -65,12 +62,12 @@ console.log(
     )
 )
 
-console.log('===', is(undefined, object.optional({})))
+console.log('===', is(undefined, object({}).optional()))
 
 console.log('a', is(a, schema))
 console.log('b', is(b, schema))
 
-console.log(hasOptionalFlag(number.optional()))
+console.log(hasOptionalFlag(number().optional()))
 
 const isTypeError = (_: unknown): _ is TypeGuardError<typeof c, typeof _schema> =>
     _ instanceof TypeGuardError && is(_, object({ checked: string() }))
@@ -79,7 +76,6 @@ try {
     ensureInterface(b, schema)
 } catch (e: unknown) {
     if (e instanceof TypeGuardError) {
-        // console.error(`Error: ${e.message} of "${e.checked}" against "${e.against}"`)
         console.error(String(e))
     } else {
         console.error('(not type error)', e)
@@ -87,7 +83,6 @@ try {
 }
 
 const c = '2897 '
-// const _schema = string([regex(/^[0-9]+$/)])
 const _schema = string(/^[0-9]+$/)
 
 console.log(c, is(c, _schema))
@@ -96,25 +91,24 @@ try {
     ensureInterface(c, _schema)
 } catch (e: unknown) {
     if (is(e, isTypeError)) {
-        // console.error(`Error: ${e.message} of "${e.checked}" against "${e.against}"`)
         console.error(String(e))
     } else {
         console.error(e)
     }
 }
 
-console.log('test unique array', is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], array([unique()], number())))
+console.log('test unique array', is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], array(number()).unique(true)))
 console.log(
     'test unique array',
-    is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10], array([unique()], number()))
+    is([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10], array(number()).unique(true))
 )
 console.log(
     'test unique array',
-    is([{ a: 1 }, { b: { c: 0 } }, { a: 1, b: 0 }, { a: 2 }, { a: 1 }], array([unique()]))
+    is([{ a: 1 }, { b: { c: 0 } }, { a: 1, b: 0 }, { a: 2 }, { a: 1 }], array().unique(true))
 )
 console.log(
     'test unique array',
-    is([{ a: 1 }, { b: { c: 0 } }, { a: 1, b: 0 }, { a: 2 }, { a: 1 }], array([unique(false)]))
+    is([{ a: 1 }, { b: { c: 0 } }, { a: 1, b: 0 }, { a: 2 }, { a: 1 }], array().unique(false))
 )
 
 const __metadata__ = Symbol('__metadata__')
@@ -138,10 +132,10 @@ const EnvSchema = object({
     APP_PORT: number(),
 
     JWT_SECRET: string(),
-    JWT_EXPIRES_IN: number.optional(),
+    JWT_EXPIRES_IN: number().optional(),
 
     JWT_REFRESH_SECRET: string(),
-    JWT_REFRESH_EXPIRES_IN: number.optional(),
+    JWT_REFRESH_EXPIRES_IN: number().optional(),
 })
 
 const envSchemaMetadata = getStructMetadata(EnvSchema)
@@ -156,9 +150,9 @@ const envSchemaKeys = Object.keys(envSchemaTree) as (keyof typeof envSchemaTree)
 
 const preEnvSchema = object({
     ...envSchemaKeys
-        .map(key => ({ [key]: any.optional() }))
+        .map(key => ({ [key]: any().optional() }))
         .reduce((acc, item) => Object.assign(acc, item), {}),
-}) as TypeGuard<
+}) as unknown as TypeGuard<
     Validators.Sanitize<{
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [K in keyof typeof envSchemaTree]?: any
@@ -221,7 +215,7 @@ const NoNullishSKU = createRule({
         !getRule('String.regex').call(void 0, subject, patterns.NullSKU),
 })
 
-const isValidSKU = useCustomRules(string([nonEmpty(), min(15)]), SKU(), NoNullishSKU())
+const isValidSKU = string().nonEmpty().min(15).use(SKU()).use(NoNullishSKU())
 
 console.log()
 console.log('isValidSKU', isValidSKU)
@@ -238,11 +232,6 @@ console.log(getStructMetadata(array({ schema })))
 console.log('\n\n*************************************\n\n')
 console.log(object({ schema, array: array({ schema }) }))
 
-// const sku = new SchemaValidator(object({ schema, array: array({ schema }) })).validate({
-//     schema: a,
-//     array: [{ schema: a }, { schema: a }, { schema: b }],
-// })
-
 const sku = new Validator(
     object({ schema, object: object({ array: array({ schema }) }) }),
     false
@@ -250,12 +239,6 @@ const sku = new Validator(
     schema: b,
     object: { array: [{ schema: a }, { schema: b }, { schema: a }] },
 })
-// const sku = new SchemaValidator(object({ a: object({ b: object({ schema }) }) })).validate({
-//     a: { b: { schema: b } },
-// })
-// const sku = new SchemaValidator(array(object({ schema }))).validate([{ schema: b }])
-
-// SchemaValidator.validate({}, schema, true)
 
 if (sku instanceof ValidationError) {
     console.error('An error has been found')
@@ -274,7 +257,6 @@ if (sku instanceof ValidationError) {
 ) {
     const [...errors] = sku
     console.error('Many errors has been found!')
-    // errors.forEach(({ path, message }) => console.error('\n', `[${path}] - ${message}`, '\n'))
     console.error(prettier(errors))
 } else {
     console.log('SKU validated!', sku)
@@ -557,23 +539,16 @@ const createCPFRule = createRule({
     handler: (subject: string) => () => isCPF(subject),
 })
 const CPFRule = createCPFRule()
-const CPFSchema = useCustomRules(
-    string([
-        StringRules.nonEmpty(),
-        StringRules.min(11),
-        StringRules.max(14),
-        StringRules.regex(CPFFormat),
-    ]),
-    CPFRule
-)
+const CPFSchema = string().nonEmpty().min(11).max(14).regex(CPFFormat).use(CPFRule)
+
 const Roles = ['admin', 'user'] as const
 const ___schema = object({
     id: GuidSchema,
     nome: string(),
-    matricula: or.optional(string(), asNull()),
+    matricula: or(string(), asNull()).optional(),
     cpf: CPFSchema,
     email: string(),
-    telefone: or.optional(string(), asNull()),
+    telefone: or(string(), asNull()).optional(),
     secretaria: string(),
     lotacao: string(),
     roles: array(asEnum([...Roles])),
@@ -582,7 +557,7 @@ const ___schema = object({
 const GroupSchemaObject = {
     sid: string(),
     nome: string(),
-    descricao: or.optional(string(), asNull()),
+    descricao: or(string(), asNull()).optional(),
 }
 const GroupSchema = object(GroupSchemaObject)
 
@@ -597,10 +572,10 @@ const LDAPSchema = object({
 const ___full_schema = object({
     id: GuidSchema,
     nome: string(),
-    matricula: or.optional(string(), asNull()),
+    matricula: or(string(), asNull()).optional(),
     cpf: CPFSchema,
     email: string(),
-    telefone: or.optional(string(), asNull()),
+    telefone: or(string(), asNull()).optional(),
     secretaria: string(),
     lotacao: string(),
     roles: array(asEnum([...Roles])),
@@ -617,17 +592,7 @@ const JwtSchema = object({
 console.log(is(___a, ___schema))
 
 console.log(is('039.684.102-38', isCPF as any))
-console.log(
-    is(
-        '03968410238',
-        string([
-            StringRules.nonEmpty(),
-            StringRules.min(11),
-            StringRules.max(14),
-            StringRules.regex(CPFFormat),
-        ])
-    )
-)
+console.log(is('03968410238', string().nonEmpty().min(11).max(14).regex(CPFFormat)))
 console.log(is('03968410238', (a: any) => CPFRule[2](a)()))
 console.log(CPFSchema('03968410238'))
 console.log(CPFSchema('039.684.102-38'))
@@ -661,31 +626,3 @@ try {
         console.log(prettier(e.errors))
     }
 }
-
-// const ___ = object({
-//     a: string(),
-//     b: or.optional(
-//         asNull(),
-//         object({
-//             c: number(),
-//         })
-//     ),
-// })
-
-// type ___ = GetTypeGuard<typeof ___>
-
-// type aaaaaa = {
-//     a: number
-//     foo?: {
-//         bar: string
-//         baz: symbol | null
-//     }
-// }
-
-// const $$$ = object<aaaaaa>({
-//     a: number(),
-//     foo: object.optional({
-//         bar: string(),
-//         baz: or(asNull(), symbol()),
-//     }),
-// })
