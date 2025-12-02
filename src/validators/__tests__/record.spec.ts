@@ -1,4 +1,3 @@
-import { RecordRules } from '../rules/Record'
 import { boolean, number } from '../schema'
 import { any } from '../schema/any'
 import { record } from '../schema/record'
@@ -11,17 +10,11 @@ describe('record', () => {
         expect(schema({ foo: 'bar' })).toBe(true)
         expect(schema({ foo: 123 })).toBe(true)
 
-        const schema2 = record({ nonEmpty: true })
+        const schema2 = record().nonEmpty()
 
         expect(schema2({})).toBe(false)
         expect(schema2({ foo: 'bar' })).toBe(true)
         expect(schema2({ foo: 123 })).toBe(true)
-
-        const schema3 = record([RecordRules.nonEmpty()])
-
-        expect(schema3({})).toBe(false)
-        expect(schema3({ foo: 'bar' })).toBe(true)
-        expect(schema3({ foo: 123 })).toBe(true)
     })
 
     it('should validate a record with string keys and any values', () => {
@@ -96,42 +89,36 @@ describe('record', () => {
     })
 
     it('should have an optional method embeded in the schema', () => {
-        expect(record).toHaveProperty('optional')
-        expect(typeof record.optional).toBe('function')
+        expect(record()).toHaveProperty('optional')
+        expect(typeof record().optional).toBe('function')
 
-        const schema = record.optional()
+        const schema = record().optional()
 
         expect(typeof schema).toBe('function')
     })
 
     it('should validate undefined when optional schema', () => {
-        const schema = record.optional()
+        const schema = record().optional()
 
         expect(schema(undefined)).toBe(true)
     })
 
     it('should validate an empty record when optional schema', () => {
-        const schema = record.optional()
+        const schema = record().optional()
 
         expect(schema({})).toBe(true)
         expect(schema({ foo: 'bar' })).toBe(true)
         expect(schema({ foo: 123 })).toBe(true)
 
-        const schema2 = record.optional({ nonEmpty: true })
+        const schema2 = record().optional().nonEmpty()
 
         expect(schema2({})).toBe(false)
         expect(schema2({ foo: 'bar' })).toBe(true)
         expect(schema2({ foo: 123 })).toBe(true)
-
-        const schema3 = record.optional([RecordRules.nonEmpty()])
-
-        expect(schema3({})).toBe(false)
-        expect(schema3({ foo: 'bar' })).toBe(true)
-        expect(schema3({ foo: 123 })).toBe(true)
     })
 
     it('should validate a record with string keys and any values when optional schema', () => {
-        const schema = record.optional(string(), any())
+        const schema = record(string(), any()).optional()
 
         expect(schema({})).toBe(true)
         expect(schema({ foo: 'bar' })).toBe(true)
@@ -140,7 +127,7 @@ describe('record', () => {
         expect(schema({ foo: null })).toBe(true)
         expect(schema({ foo: undefined })).toBe(true)
 
-        const schema2 = record.optional()
+        const schema2 = record().optional()
 
         expect(schema2({})).toBe(true)
         expect(schema2({ foo: 'bar' })).toBe(true)
@@ -151,7 +138,7 @@ describe('record', () => {
     })
 
     it('should validate a record with string keys and string values when optional schema', () => {
-        const schema = record.optional(string(), string())
+        const schema = record(string(), string()).optional()
 
         expect(schema({})).toBe(true)
         expect(schema({ foo: 'bar' })).toBe(true)
@@ -168,7 +155,7 @@ describe('record', () => {
     })
 
     it('should validate a record with string keys and number values when optional schema', () => {
-        const schema = record.optional(string(), number())
+        const schema = record(string(), number()).optional()
 
         expect(schema({})).toBe(true)
         expect(schema({ foo: 'bar' })).toBe(false)
@@ -185,7 +172,7 @@ describe('record', () => {
     })
 
     it('should validate a record with string keys and boolean values when optional schema', () => {
-        const schema = record.optional(string(), boolean())
+        const schema = record(string(), boolean()).optional()
 
         expect(schema({})).toBe(true)
         expect(schema({ foo: 'bar' })).toBe(false)

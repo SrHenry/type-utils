@@ -1,18 +1,19 @@
 import type { TypeGuard } from '../../TypeGuards/types'
-import { type RecordRule, RecordRules } from '../rules/Record'
+import type { Custom } from '../rules/types'
 import type { V3 } from './types'
+import type { RecordSchema } from './types/RecordSchema'
 
 import { getMessage } from '../../TypeGuards/helpers/getMessage'
-import { StringRules } from '../rules'
+import { useCustomRules } from '../rules/helpers/useCustomRules'
+import { type RecordRule, RecordRules } from '../rules/Record'
 import { any } from './any'
-
 import { branchIfOptional } from './helpers/branchIfOptional'
+import { copyStructMetadata } from './helpers/copyStructMetadata'
 import { getStructMetadata } from './helpers/getStructMetadata'
 import { isFollowingRules } from './helpers/isFollowingRules'
+import { optionalizeOverloadFactory } from './helpers/optional'
 import { setRuleMessage } from './helpers/setRuleMessage'
 import { setStructMetadata } from './helpers/setStructMetadata'
-
-import { optionalizeOverloadFactory } from './helpers/optional'
 import { string } from './string'
 
 const NULL = Symbol('NULL')
@@ -32,7 +33,7 @@ const isPartialRulesObject = (arg: unknown): arg is Partial<Rules> => {
 }
 
 const defaults = {
-    keyGuard: string([StringRules.nonEmpty()]),
+    keyGuard: string().nonEmpty(),
     valueGuard: any(),
     rules: [] as any[],
 } as const
@@ -155,4 +156,53 @@ type OptionalizedRecord = {
     ): TypeGuard<undefined | Record<K, T>>
 }
 
-export const record = optionalizeOverloadFactory(_fn).optionalize<OptionalizedRecord>()
+export const _record = optionalizeOverloadFactory(_fn).optionalize<OptionalizedRecord>()
+
+export const record: RecordSchema = ((
+    keyGuard?: TypeGuard<keyof any>,
+    valueGuard?: TypeGuard<any>
+) => {
+    const rules: RecordRule[] = []
+    const customRules: Custom<any[], string, Record<keyof any, any>>[] = []
+    const callStack: { [key: string]: boolean } = {}
+
+    const getGuard = () => {
+        const resolver = callStack['optional'] ? _record.optional : _record
+        return typeof keyGuard === 'function'
+            ? typeof valueGuard === 'function'
+                ? resolver(keyGuard, valueGuard)
+                : resolver(keyGuard, defaults.valueGuard)
+            : resolver(rules)
+    }
+
+    const schema = (arg: unknown) => {
+        const guard = getGuard()
+
+        if (customRules.length > 0) {
+            return useCustomRules(guard, ...customRules)(arg)
+        }
+
+        return guard(arg)
+    }
+
+    const addCall = (fnName: string, _rules: unknown[] = []) => {
+        if (callStack[fnName]) throw new Error(`Cannot call ${fnName} more than once`)
+
+        if (fnName === 'use') {
+            customRules.push(...(_rules as Custom<any[], string, Record<keyof any, any>>[]))
+        } else {
+            callStack[fnName] = true
+
+            if (fnName !== 'optional') rules.push(...(_rules as RecordRule[]))
+        }
+
+        return copyStructMetadata(getGuard(), schema)
+    }
+
+    schema.optional = () => addCall('optional')
+    schema.nonEmpty = () => addCall('nonEmpty', [RecordRules.nonEmpty()])
+    schema.use = (...rules: Custom<any[], string, Record<keyof any, any>>) =>
+        addCall('use', [...rules])
+
+    return copyStructMetadata(getGuard(), schema)
+}) as unknown as RecordSchema

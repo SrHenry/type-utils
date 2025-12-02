@@ -2,8 +2,6 @@ import type { TypeGuard } from '../../TypeGuards/types'
 
 import { asTypeGuard } from '../../TypeGuards/helpers/asTypeGuard'
 import { isInstanceOf } from '../../TypeGuards/helpers/isInstanceOf'
-import { nonZero } from '../rules/Number'
-import { nonEmpty } from '../rules/String'
 import { and, array, boolean, number, object, or, string, symbol } from '../schema'
 import { SchemaValidator } from '../SchemaValidator'
 import { ValidationErrors } from '../ValidationErrors'
@@ -11,10 +9,10 @@ import { ValidationErrors } from '../ValidationErrors'
 describe('SchemaValidator', () => {
     it('should validate a primitive value', () => {
         expect(SchemaValidator.validate(20, number())).toBe(20)
-        expect(() => SchemaValidator.validate(0, number([nonZero()]))).toThrow(ValidationErrors)
+        expect(() => SchemaValidator.validate(0, number().nonZero())).toThrow(ValidationErrors)
 
         expect(SchemaValidator.validate('foo', string())).toBe('foo')
-        expect(() => SchemaValidator.validate('', string([nonEmpty()]))).toThrow(ValidationErrors)
+        expect(() => SchemaValidator.validate('', string().nonEmpty())).toThrow(ValidationErrors)
 
         expect(SchemaValidator.validate(true, boolean())).toBe(true)
         expect(() => SchemaValidator.validate(undefined, boolean())).toThrow(ValidationErrors)
@@ -146,13 +144,13 @@ describe('SchemaValidator', () => {
             a: number(),
             b: string(),
             c: boolean(),
-            d: number.optional(),
-            e: string.optional(),
-            f: boolean.optional(),
-            g: object.optional({
+            d: number().optional(),
+            e: string().optional(),
+            f: boolean().optional(),
+            g: object({
                 foo: array(number()),
                 bar: string(),
-            }),
+            }).optional(),
         })
 
         SchemaValidator.setValidatorMessage(
