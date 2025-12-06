@@ -1,12 +1,12 @@
-import type Generics from '../../Generics'
-import type { ConstructorSignature, GetTypeGuard, TypeGuard } from '../../TypeGuards/types'
-import type { Spread } from '../../types'
-import type { ArrayRule } from '../rules/Array'
-import type { NumberRule } from '../rules/Number'
-import type { RecordRule } from '../rules/Record'
-import type { StringRule } from '../rules/String'
-import type { All as AllRules, RuleStruct } from '../rules/types'
-import type { TypeGuardFactory, TypeGuardFactoryType } from './helpers/optional/types'
+import type Generics from '../../../Generics'
+import type { ConstructorSignature, GetTypeGuard, TypeGuard } from '../../../TypeGuards/types'
+import type { Spread } from '../../../types'
+import type { ArrayRule } from '../../rules/Array'
+import type { NumberRule } from '../../rules/Number'
+import type { RecordRule } from '../../rules/Record'
+import type { StringRule } from '../../rules/String'
+import type { All as AllRules, RuleStruct } from '../../rules/types'
+import type { TypeGuardFactory, TypeGuardFactoryType } from '../helpers/optional/types'
 
 export type Optionalize<T> = {
     [K in keyof T]: T[K] extends () => TypeGuard<any | any[]>
