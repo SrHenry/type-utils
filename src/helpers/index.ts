@@ -23,4 +23,7 @@ export { sleep } from './sleep'
 export * from './logic/index'
 export * as gates from './logic/index'
 
+export * from './mappers'
+export * as mappers from './mappers'
+
 export * as decorators from './decorators/index'
