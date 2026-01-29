@@ -1,5 +1,6 @@
-import { boolean, number } from '../schema'
 import { any } from '../schema/any'
+import { boolean } from '../schema/boolean'
+import { number } from '../schema/number'
 import { record } from '../schema/record'
 import { string } from '../schema/string'
 

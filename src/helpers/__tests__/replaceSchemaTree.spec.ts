@@ -20,8 +20,7 @@ describe('replaceSchemaTree', () => {
         }
 
         interface ReplacedSchema
-            extends Omit<OriginalSchema, keyof ReplacedSchemaDiff>,
-                ReplacedSchemaDiff {}
+            extends Omit<OriginalSchema, keyof ReplacedSchemaDiff>, ReplacedSchemaDiff {}
 
         const originalSchema = object<OriginalSchema>({
             name: string(),
@@ -36,8 +35,8 @@ describe('replaceSchemaTree', () => {
         const replacedSchema = replaceSchemaTree(originalSchema, replacementTree)
 
         const [{ tree: originalTree }, { tree: replacedTree }] = [
-            getStructMetadata(originalSchema) as V3.ObjectStruct<OriginalSchema>,
-            getStructMetadata(replacedSchema) as V3.ObjectStruct<ReplacedSchema>,
+            getStructMetadata(originalSchema) as unknown as V3.ObjectStruct<OriginalSchema>,
+            getStructMetadata(replacedSchema) as unknown as V3.ObjectStruct<ReplacedSchema>,
         ]
 
         // Assert that the replaced schema has the expected structure

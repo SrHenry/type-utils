@@ -26,9 +26,7 @@ export function isFollowingRules(arg: unknown, rules: unknown[]): boolean {
         ...rules
             .filter(isRule)
             .filter(isRequired)
-            .map(r => {
-                const [rule, args, handler] = r
-
+            .map(([rule, args, handler]) => {
                 if (isCustomHandler(handler)) return handler(arg).call(null, ...args)
 
                 return getRule<DefaultRules[0], Rule>(rule as DefaultRules[0]).call(

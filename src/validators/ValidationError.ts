@@ -3,13 +3,14 @@ import type { TypeGuard } from '../TypeGuards/types'
 import { TypeGuardError } from '../TypeGuards/TypeErrors'
 import { getValidatorMessageFormator } from '../TypeGuards/helpers/getValidatorMessageFormator'
 import { setValidatorMessageFormator } from '../TypeGuards/helpers/setValidatorMessageFormator'
+import { NonEnumerableProperty } from '../helpers/decorators/stage-2'
 
 export type ValidationArgs<
     Value,
     Schema,
     Name extends string = string,
     Parent = any,
-    Context extends {} | null = null
+    Context extends {} | null = null,
 > = {
     value: Value
     schema: TypeGuard<Schema>
@@ -22,14 +23,18 @@ export type ValidationArgs<
 const defaultMessageFormator = (path: string, message: string) => `[${path}] - ${message}`
 
 export class ValidationError<
-    Value,
-    Schema,
+    Value = unknown,
+    Schema = unknown,
     Path extends string = string,
     Parent = any,
-    Context extends {} = any
+    Context extends {} = any,
 > extends TypeGuardError<Value, TypeGuard<Schema>> {
+    @NonEnumerableProperty()
     private Path?: Path
+
+    @NonEnumerableProperty()
     private Parent?: Parent
+
     public readonly context: Context | null = null
 
     constructor({
@@ -60,8 +65,8 @@ export class ValidationError<
 
     public override toJSON() {
         return {
-            ...this,
             ...super.toJSON(),
+
             path: this.path,
             parent: this.parent,
         }
