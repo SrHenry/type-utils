@@ -10,13 +10,16 @@ import { pipe } from '../../helpers/Experimental/pipeline/pipe'
 import { getMessage } from '../../TypeGuards/helpers/getMessage'
 import { BaseValidator } from '../BaseValidator'
 import { useCustomRules } from '../rules/helpers/useCustomRules'
+import { SchemaValidator } from '../SchemaValidator'
 import { branchIfOptional } from './helpers/branchIfOptional'
 import { copyStructMetadata } from './helpers/copyStructMetadata'
+import { getRuleStructMetadata } from './helpers/getRuleStructMetadata'
 import { getStructMetadata } from './helpers/getStructMetadata'
 import { optionalizeOverloadFactory } from './helpers/optional'
 import { hasOptionalFlag } from './helpers/optionalFlag'
 import { setRuleMessage } from './helpers/setRuleMessage'
 import { setStructMetadata } from './helpers/setStructMetadata'
+import { validateCustomRules } from './helpers/validateCustomRules'
 
 function _fn<T extends {}>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
 // function _fn<T extends ValidatorMap<any>>(tree: T): TypeGuard<GetTypeFromValidatorMap<T>>
@@ -31,7 +34,7 @@ function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, an
             tree !== null && typeof arg === 'object'
 
         return setStructMetadata(
-            { type: 'object', schema: guard, optional: false, tree: {} },
+            { type: 'object', schema: guard, optional: false, tree: {}, rules: [] },
             setRuleMessage('object', guard)
         )
     }
@@ -57,37 +60,24 @@ function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, an
         .pipe(inner => `{${inner}}`)
         .depipe()
 
-    // const message =
-    //     '{ ' +
-    //     Object.entries(tree)
-    //         .map(
-    //             ([k, v]) =>
-    //                 `${String(k)}${optional.some(key => key === k) ? '?' : ''}: ${getMessage(v)}`
-    //         )
-    //         .join(', ') +
-    //     ' }'
-
-    const metadata = {
+    const metadata: V3.ObjectStruct<T> = {
         type: 'object' as const,
         schema: guard,
         optional: false,
-        // // ObjectConstructor interface is weird, it requires a length property if you annotate entries method overload
-        // tree: Object.entries<TypeGuard<Sanitize<T>[keyof Sanitize<T>]>>(
-        //     tree as unknown as ValidatorMap<Sanitize<T>> & { length: number }
-        // )
-        // .map(([k, v]) => ({ [k]: getStructMetadata(v) }))
-        // .reduce((acc, item) => Object.assign(acc, item), {}),
         tree: Object.entries(tree)
-            .map(([k, v]) => ({ [k]: getStructMetadata(v) }))
-            .reduce((acc, item) => Object.assign(acc, item), {}),
-    } as V3.ObjectStruct<T>
+            .map(([k, v]) => ({ [k]: getStructMetadata(v) as V3.StructType }))
+            .reduce(
+                (acc, item) => Object.assign(acc, item),
+                {} as { [K in keyof T]: V3.GenericStruct<T[K]> | V3.StructType }
+            ),
+        rules: [],
+    }
 
     return setStructMetadata<T>(metadata, setRuleMessage(message, guard))
 }
 
 type OptionalizedObject = {
     <T extends {}>(tree: ValidatorMap<T>): TypeGuard<undefined | Sanitize<T>>
-    // <T extends ValidatorMap<any>>(tree: T): TypeGuard<undefined|GetTypeFromValidatorMap<T>>
 
     (): TypeGuard<undefined | Record<any, any>>
     (tree: {}): TypeGuard<undefined | {}>
@@ -121,21 +111,43 @@ export const object: ObjectSchema = ((tree?: ValidatorMap<any>) => {
         return guard(arg)
     }
 
-    const addCall = (fnName: string, _rules: unknown[] = []) => {
+    const addCall = (
+        fnName: string,
+        _rules: unknown[] = [],
+        { throwOnError = true }: Record<string, any> = {}
+    ) => {
         if (callStack[fnName]) throw new Error(`Cannot call ${fnName} more than once`)
 
+        if (fnName === 'validator') {
+            const validator = (arg: unknown) =>
+                SchemaValidator.validate(arg, schema as unknown as TypeGuard<any>, throwOnError)
+
+            Object.assign(validator, {
+                validate: validator,
+            })
+
+            return copyStructMetadata(getGuard(), validator, {
+                rules: customRules.map(getRuleStructMetadata<Custom<any[], string, object>>),
+            })
+        }
+
         if (fnName === 'use') {
+            validateCustomRules(_rules)
             customRules.push(...(_rules as Custom<any[], string, object>[]))
         } else {
             callStack[fnName] = true
         }
 
-        return copyStructMetadata(getGuard(), schema)
+        return copyStructMetadata(getGuard(), schema, {
+            rules: customRules.map(getRuleStructMetadata<Custom<any[], string, object>>),
+        })
     }
 
     schema.optional = () => addCall('optional')
-
+    schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, object>) => addCall('use', [...rules])
 
-    return copyStructMetadata(getGuard(), schema)
+    return copyStructMetadata(getGuard(), schema, {
+        rules: customRules.map(getRuleStructMetadata<Custom<any[], string, object>>),
+    })
 }) as unknown as ObjectSchema

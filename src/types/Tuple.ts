@@ -29,12 +29,12 @@ export namespace TupleTools {
     export type TupleSplit<
         T,
         N extends number,
-        O extends readonly any[] = readonly []
+        O extends readonly any[] = readonly [],
     > = O['length'] extends N
         ? [O, T]
         : T extends readonly [infer F, ...infer R]
-        ? TupleSplit<readonly [...R], N, readonly [...O, F]>
-        : [O, T]
+          ? TupleSplit<readonly [...R], N, readonly [...O, F]>
+          : [O, T]
 
     export type TakeFirst<T extends readonly any[], N extends number> = TupleSplit<T, N>[0]
 
@@ -48,36 +48,42 @@ export namespace TupleTools {
     // Add type
     export type Add<A extends number, B extends number> = [
         ...CreateTuple<A>,
-        ...CreateTuple<B>
+        ...CreateTuple<B>,
     ]['length']
 
     // Subtract type
-    export type Subtract<A extends number, B extends number> = CreateTuple<A> extends [
-        ...CreateTuple<B>,
-        ...infer Rest
-    ]
-        ? Rest['length']
-        : never
+    export type Subtract<A extends number, B extends number> =
+        CreateTuple<A> extends [...CreateTuple<B>, ...infer Rest] ? Rest['length'] : never
 
     export type FlipSign<T extends number> = `${T}` extends `-${infer U extends number}` // If T is a negative number
         ? U // Remove the '-' sign
         : T extends 0 // Handle the special case of 0
-        ? 0
-        : `-${T}` extends `${infer U extends number}` // If T is a positive number
-        ? U // Add a '-' sign (TypeScript infers this as a negative literal)
-        : never // Should not happen for valid numbers
+          ? 0
+          : `-${T}` extends `${infer U extends number}` // If T is a positive number
+            ? U // Add a '-' sign (TypeScript infers this as a negative literal)
+            : never // Should not happen for valid numbers
 
-    export type ParseNegativeIndex<
-        T extends readonly any[],
-        N extends number
-    > = IsNegative<N> extends true ? Subtract<T['length'], FlipSign<N>> : N
+    export type ParseNegativeIndex<T extends readonly any[], N extends number> =
+        IsNegative<N> extends true ? Subtract<T['length'], FlipSign<N>> : N
 }
 
 export type TupleSlice<
     T extends readonly any[],
     S extends number,
-    E extends number = T['length']
+    E extends number = T['length'],
 > = TupleTools.SkipFirst<
     TupleTools.TakeFirst<T, TupleTools.ParseNegativeIndex<T, E>>,
     TupleTools.ParseNegativeIndex<T, S>
 >
+
+export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+    k: infer I
+) => void
+    ? I
+    : never
+export type LastInUnion<U> =
+    UnionToIntersection<U extends any ? (x: U) => 0 : never> extends (x: infer L) => 0 ? L : never
+
+export type UnionToTuple<T, Last = LastInUnion<T>> = [T] extends [never]
+    ? []
+    : [...UnionToTuple<Exclude<T, Last>>, Last]

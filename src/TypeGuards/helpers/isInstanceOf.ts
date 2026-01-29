@@ -27,6 +27,7 @@ export function isInstanceOf<Instance, Constructor extends ConstructorSignature>
                 constructor: <Constructor>value_or_type,
                 className: (<Constructor>value_or_type).name,
                 schema: guard,
+                rules: [],
             },
             guard
         )

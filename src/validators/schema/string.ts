@@ -6,6 +6,7 @@ import { setMessage } from '../../TypeGuards/helpers/setMessage'
 import { template as ruleTemplate } from '../rules/common'
 import { useCustomRules } from '../rules/helpers/useCustomRules'
 import { type StringRule, StringRules } from '../rules/String'
+import { SchemaValidator } from '../SchemaValidator'
 import { branchIfOptional } from './helpers/branchIfOptional'
 import { copyStructMetadata } from './helpers/copyStructMetadata'
 import { getRuleStructMetadata } from './helpers/getRuleStructMetadata'
@@ -13,6 +14,7 @@ import { isFollowingRules } from './helpers/isFollowingRules'
 import { optionalizeOverloadFactory } from './helpers/optional'
 import { setRuleMessage } from './helpers/setRuleMessage'
 import { setStructMetadata } from './helpers/setStructMetadata'
+import { validateCustomRules } from './helpers/validateCustomRules'
 
 type Rules = {
     min: number | bigint
@@ -39,6 +41,7 @@ function _fn(rules: Partial<Rules> | StringRule[] | string | RegExp = []): TypeG
             // typeof arg === 'string' && isFollowingRules<ExactRule<string>>(arg, [exact(rules as string)])
             // typeof arg === 'string' && useCustomRules(guard, exact(rules))
             // typeof arg === 'string' && isExactString(arg, rules)
+
             typeof arg === 'string' && arg === rules
 
         return setStructMetadata(
@@ -46,6 +49,9 @@ function _fn(rules: Partial<Rules> | StringRule[] | string | RegExp = []): TypeG
                 type: 'string',
                 schema: guard,
                 optional: false,
+                // rules: [StringRules.regex(RegExp(`^${rules}$`, 'g'))].map(
+                //     getRuleStructMetadata<StringRule>
+                // ),
                 rules: [],
             },
             setMessage(`string & ${exactFormator(rules)}`, guard)
@@ -141,10 +147,28 @@ export const string = ((matcher?: string | RegExp) => {
         return guard(arg)
     }
 
-    const addCall = (fnName: string, _rules: unknown[] = []) => {
+    const addCall = (
+        fnName: string,
+        _rules: unknown[] = [],
+        { throwOnError = true }: Record<string, any> = {}
+    ) => {
         if (callStack[fnName]) throw new Error(`Cannot call ${fnName} more than once`)
 
+        if (fnName === 'validator') {
+            const validator = (arg: unknown) =>
+                SchemaValidator.validate(arg, schema as unknown as TypeGuard<any>, throwOnError)
+
+            Object.assign(validator, {
+                validate: validator,
+            })
+
+            return copyStructMetadata(getGuard(), validator, {
+                rules: customRules.map(getRuleStructMetadata<Custom<any[], string, string>>),
+            })
+        }
+
         if (fnName === 'use') {
+            validateCustomRules(_rules)
             customRules.push(...(_rules as Custom<any[], string, string>[]))
         } else {
             callStack[fnName] = true
@@ -152,7 +176,9 @@ export const string = ((matcher?: string | RegExp) => {
             if (fnName !== 'optional') rules.push(...(_rules as StringRule[]))
         }
 
-        return copyStructMetadata(getGuard(), schema)
+        return copyStructMetadata(getGuard(), schema, {
+            rules: customRules.map(getRuleStructMetadata<Custom<any[], string, string>>),
+        })
     }
 
     schema.optional = () => addCall('optional')
@@ -163,7 +189,10 @@ export const string = ((matcher?: string | RegExp) => {
     schema.nonEmpty = () => addCall('nonEmpty', [StringRules.nonEmpty()])
     schema.url = () => addCall('url', [StringRules.url()])
     schema.email = () => addCall('email', [StringRules.email()])
+    schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, string>) => addCall('use', [...rules])
 
-    return copyStructMetadata(getGuard(), schema)
+    return copyStructMetadata(getGuard(), schema, {
+        rules: customRules.map(getRuleStructMetadata<Custom<any[], string, string>>),
+    })
 }) as unknown as StringSchema

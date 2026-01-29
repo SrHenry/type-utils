@@ -3,6 +3,7 @@ import type { Custom } from '../types'
 
 import { getMessage } from '../../../TypeGuards/helpers/getMessage'
 import { isTypeGuard } from '../../../TypeGuards/helpers/isTypeGuard'
+import { getRuleStructMetadata } from '../../schema/helpers/getRuleStructMetadata'
 import { getStructMetadata } from '../../schema/helpers/getStructMetadata'
 import { isFollowingRules } from '../../schema/helpers/isFollowingRules'
 import { setRuleMessage } from '../../schema/helpers/setRuleMessage'
@@ -75,6 +76,9 @@ export function useCustomRules<T, U extends Custom<any[], string, any>>(
     const metadata = getStructMetadata(guard)
     const message = getMessage(guard)
     const prepend = message.trim().length > 0 ? `${message} & ` : ''
+
+    if (Array.isArray(metadata.rules) && metadata.rules.length > 0)
+        for (const struct of rules.map(getRuleStructMetadata<Custom>)) metadata.rules.push(struct)
 
     return setRuleMessage(
         `${prepend}${getCustomRuleMessages(rules).join(' & ')}`,
