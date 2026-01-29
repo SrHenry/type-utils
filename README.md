@@ -53,7 +53,6 @@
     - [Available validations](#available-validations)
       - [`is`](#is)
       - [`ensureInterface`](#ensureinterface)
-      - [`Experimental.validate`](#experimentalvalidate)
     - [Util types](#util-types)
       - [`Fn`](#fn)
       - [`AsyncFn`](#asyncfn)
@@ -65,7 +64,6 @@
       - [`Param`](#param)
       - [`Infer`](#infer)
   - [Experimental Features](#experimental-features)
-    - [Deep validation](#deep-validation)
     - [Lambda](#lambda)
     - [Function/Lambda Currying](#functionlambda-currying)
     - [Pipelines/Pipes](#pipelinespipes)
@@ -421,6 +419,30 @@ const StringNumber = createRule({
 const isStringNumber = string().use(StringNumber())
 ```
 
+#### `Schema.validator`
+
+> Since [`v0.6.1`](https://github.com/SrHenry/type-utils/releases/tag/v0.6.1)
+
+It allows you to get a validator instance to validate a value against the schema.
+
+```typescript
+import { string, or, object, createInlineRule, createRule } from '@srhenry/type-utils'
+
+const StringNumber = createRule({
+    name: "Custom.StringNumber",
+    message: "number",
+    handler: (value: string) => () => !Number.isNaN(Number(value)),
+});
+
+const isStringNumberOrObject = or(
+    string()
+        .use(createInlineRule("Custom.StringNumber", (value: string) => !Number.isNaN(Number(value)))),
+    object({
+        foo: string().use(StringNumber()),
+        bar: string().optional()
+    }));
+```
+
 ### Available validations
 
 #### [`is`](https://srhenry.github.io/type-utils/functions/is.html)
@@ -453,37 +475,6 @@ const { foo, bar } = ensureInterface(value, object({
 
 console.log('foo', foo) // foo
 console.log('bar', bar) // bar
-```
-
-#### [`Experimental.validate`](https://srhenry.github.io/type-utils/variables/Experimental.validate.html)
-
-It validates a value against a given schema and throws or returns the list of mismatches against schema.
-
-```typescript
-import { string, number, object, Experimental } from "@srhenry/type-utils"
-
-const { validate } = Experimental
-
-declare const value: unknown // Mocking external/unknown data
-
-const schema = object({
-    foo: string(),
-    bar: number(),
-})
-
-try {
-  const validatedValue = validate(value, schema)
-
-  // do something...
-} catch (e) {
-  if (e instanceof Experimental.ValidationErrors) {
-    // error collection is iterable:
-    for (const { parent, path, message, checked, against, context } of e) {
-      console.log(parent, path, message, checked, against, context)
-      // do something...
-    }
-  }
-}
 ```
 
 ***NOTE:** You can use schema directly to validate a value.*
@@ -611,74 +602,6 @@ declare const res3: Infer<typeof isArray> // res3: any[]
 ```
 
 ## Experimental Features
-
-### [Deep validation](https://srhenry.github.io/type-utils/variables/Experimental.Validator.html)
-
-This is intended for partial assertions in schemas, fetching all violations against the schema, like other specialized tools does (yup, joi, etc). Common use cases are in form validations and payload validations, in order to give feedback of where the data is wrong by schema.
-
-```typescript
-import {
-    Experimental,
-    object,
-    string,
-    StringRules,
-    helpers,
-} from '@srhenry/type-utils'
-
-const { ValidationErrors, Validator } = Experimental
-const { setValidatorMessage } = helpers
-
-/** A sample schema */
-const schema = object({
-    name: string(),
-    email:string().email(),
-    password: string().min(6).optional(),
-})
-
-// Set custom messages for validator errors:
-Validator.setValidatorMessage({
-    name: "name is required"
-    email: "email is required"
-}, schema)
-
-/** An API request payload or else */
-const payload = {
-    name: 'Foo',
-    email: '',
-    password: '1234',
-}
-
-// throwable flow:
-try {
-    const data = Validator.validate(payload, schema)
-    //...
-} catch (e) {
-    if (e instanceof ValidationErrors) {
-        // generic function representing some error handling for presenting to requester:
-        respondWith({
-            errors: e.errors.map(({ path, message }) = ({
-                // something like '$', '$.name', '$.email' or '$.password':
-                path: path.replace('$', 'payload'),
-                message,
-            })),
-        })
-        // procedural handling (ValidationErrors is iterable):
-        for (const { parent, path, message, checked, against } of e) {
-            //...
-        }
-    }
-}
-
-// not throwable flow (set throw flag to false):
-const data = validate(payload, schema, false)
-if (data instanceof ValidationErrors) {
-    // handle error(s)...
-} else {
-    //use schema shaped data...
-}
-```
-
----
 
 ### [Lambda](https://srhenry.github.io/type-utils/functions/Experimental.lambda.html)
 
