@@ -2,6 +2,7 @@ import type { TypeGuard } from '../../TypeGuards/types'
 import type { Custom } from '../rules/types'
 import type { NumberSchema } from './types/NumberSchema'
 
+import { SchemaValidator } from '../SchemaValidator'
 import { type NumberRule, NumberRules } from '../rules/Number'
 import { useCustomRules } from '../rules/helpers/useCustomRules'
 import { branchIfOptional } from './helpers/branchIfOptional'
@@ -11,6 +12,7 @@ import { isFollowingRules } from './helpers/isFollowingRules'
 import { optionalizeOverloadFactory } from './helpers/optional'
 import { setRuleMessage } from './helpers/setRuleMessage'
 import { setStructMetadata } from './helpers/setStructMetadata'
+import { validateCustomRules } from './helpers/validateCustomRules'
 
 type Rules = {
     min: number
@@ -64,7 +66,7 @@ export const _number = optionalizeOverloadFactory(_fn).optionalize<OptionalizedN
 
 export const number: NumberSchema = (() => {
     const rules: NumberRule[] = []
-    const customRules: Custom<any[], string, string>[] = []
+    const customRules: Custom<any[], string, number>[] = []
     const callStack: { [key: string]: boolean } = {}
 
     const getGuard = () => {
@@ -82,25 +84,48 @@ export const number: NumberSchema = (() => {
         return guard(arg)
     }
 
-    const addCall = (fnName: string, _rules: unknown[] = []) => {
+    const addCall = (
+        fnName: string,
+        _rules: unknown[] = [],
+        { throwOnError = true }: Record<string, any> = {}
+    ) => {
         if (callStack[fnName]) throw new Error(`Cannot call ${fnName} more than once`)
 
+        if (fnName === 'validator') {
+            const validator = (arg: unknown) =>
+                SchemaValidator.validate(arg, schema as unknown as TypeGuard<any>, throwOnError)
+
+            Object.assign(validator, {
+                validate: validator,
+            })
+
+            return copyStructMetadata(getGuard(), validator, {
+                rules: customRules.map(getRuleStructMetadata<Custom<any[], string, any>>),
+            })
+        }
+
         if (fnName === 'use') {
-            customRules.push(...(_rules as Custom<any[], string, string>[]))
+            validateCustomRules(_rules)
+            customRules.push(...(_rules as Custom<any[], string, number>[]))
         } else {
             callStack[fnName] = true
 
             if (fnName !== 'optional') rules.push(...(_rules as NumberRule[]))
         }
 
-        return copyStructMetadata(getGuard(), schema)
+        return copyStructMetadata(getGuard(), schema, {
+            rules: customRules.map(getRuleStructMetadata<Custom<any[], string, number>>),
+        })
     }
 
     schema.optional = () => addCall('optional')
     schema.nonZero = () => addCall('nonZero', [NumberRules.nonZero()])
     schema.max = (n: number) => addCall('max', [NumberRules.max(n)])
     schema.min = (n: number) => addCall('min', [NumberRules.min(n)])
-    schema.use = (...rules: Custom<any[], string, string>) => addCall('use', [...rules])
+    schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
+    schema.use = (...rules: Custom<any[], string, number>) => addCall('use', [...rules])
 
-    return copyStructMetadata(getGuard(), schema)
+    return copyStructMetadata(getGuard(), schema, {
+        rules: customRules.map(getRuleStructMetadata<Custom<any[], string, number>>),
+    })
 }) as unknown as NumberSchema

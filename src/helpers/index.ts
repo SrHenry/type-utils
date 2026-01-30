@@ -1,7 +1,14 @@
 export { arrayToObject } from './arrayToObject'
+export { createDefaultGenerator } from './createDefaultGenerator'
+export { deepMerge } from './deepMerge'
 export { getDateTimeStringAsDB } from './getDateTimeStringAsDB'
+export { getIterableObjectOrDefault } from './getIterableObjectOrDefault'
+export { isAsyncDisposable } from './isAsyncDisposable'
 export { isAsyncFunction } from './isAsyncFunction'
+export { isAsyncIterable } from './isAsyncIterable'
+export { isDisposable } from './isDisposable'
 export { isFunction } from './isFunction'
+export { isIterable } from './isIterable'
 export { isPromise } from './isPromise'
 export { omit } from './omit'
 export { pickRandom } from './pickRandom'
@@ -15,3 +22,8 @@ export { sleep } from './sleep'
 
 export * from './logic/index'
 export * as gates from './logic/index'
+
+export * from './mappers'
+export * as mappers from './mappers'
+
+export * as decorators from './decorators/index'

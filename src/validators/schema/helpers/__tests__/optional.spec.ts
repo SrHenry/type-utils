@@ -1,5 +1,7 @@
 import type { TypeGuard } from '../../../../TypeGuards/types'
-import { number, object, string } from '../../../schema'
+import { number } from '../../../schema/number'
+import { object } from '../../../schema/object'
+import { string } from '../../../schema/string'
 import { optionalize, optionalizeOverloadFactory } from '../optional'
 
 describe('optionalize', () => {

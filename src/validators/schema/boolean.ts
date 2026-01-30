@@ -3,18 +3,21 @@ import type { Custom } from '../rules/types'
 import type { FluentSchema } from './types/FluentSchema'
 
 import { useCustomRules } from '../rules/helpers/useCustomRules'
+import { SchemaValidator } from '../SchemaValidator'
 import { branchIfOptional } from './helpers/branchIfOptional'
 import { copyStructMetadata } from './helpers/copyStructMetadata'
+import { getRuleStructMetadata } from './helpers/getRuleStructMetadata'
 import { optionalize } from './helpers/optional'
 import { setRuleMessage } from './helpers/setRuleMessage'
 import { setStructMetadata } from './helpers/setStructMetadata'
+import { validateCustomRules } from './helpers/validateCustomRules'
 
 function _fn(): TypeGuard<boolean> {
     const guard = (arg: unknown): arg is boolean =>
         branchIfOptional(arg, []) || typeof arg === 'boolean'
 
     return setStructMetadata(
-        { type: 'boolean', schema: guard, optional: false },
+        { type: 'boolean', schema: guard, optional: false, rules: [] },
         setRuleMessage('boolean', guard)
     )
 }
@@ -44,21 +47,43 @@ export const boolean: BooleanSchema = (() => {
         return guard(arg)
     }
 
-    const addCall = (fnName: string, _rules: unknown[] = []) => {
+    const addCall = (
+        fnName: string,
+        _rules: unknown[] = [],
+        { throwOnError = true }: Record<string, any> = {}
+    ) => {
         if (callStack[fnName]) throw new Error(`Cannot call ${fnName} more than once`)
 
+        if (fnName === 'validator') {
+            const validator = (arg: unknown) =>
+                SchemaValidator.validate(arg, schema as unknown as TypeGuard<any>, throwOnError)
+
+            Object.assign(validator, {
+                validate: validator,
+            })
+
+            return copyStructMetadata(getGuard(), validator, {
+                rules: customRules.map(getRuleStructMetadata<Custom<any[], string, any>>),
+            })
+        }
+
         if (fnName === 'use') {
+            validateCustomRules(_rules)
             customRules.push(...(_rules as Custom<any[], string, boolean>[]))
         } else {
             callStack[fnName] = true
         }
 
-        return copyStructMetadata(getGuard(), schema)
+        return copyStructMetadata(getGuard(), schema, {
+            rules: customRules.map(getRuleStructMetadata<Custom<any[], string, boolean>>),
+        })
     }
 
     schema.optional = () => addCall('optional')
-
+    schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, boolean>) => addCall('use', [...rules])
 
-    return copyStructMetadata(getGuard(), schema)
+    return copyStructMetadata(getGuard(), schema, {
+        rules: customRules.map(getRuleStructMetadata<Custom<any[], string, boolean>>),
+    })
 }) as unknown as BooleanSchema

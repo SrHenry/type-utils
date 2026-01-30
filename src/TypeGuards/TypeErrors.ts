@@ -1,9 +1,25 @@
-export class TypeGuardError<Type, TypeGuard> extends Error {
-    private __checked: Type
-    private __against?: TypeGuard
+import { NonEnumerableProperty } from '../helpers/decorators/stage-2'
 
-    constructor(message: string, checked: Type, against?: TypeGuard) {
-        super(message)
+const NO_CAUSE = Symbol('TypeGuardError::NO_CAUSE')
+
+export class TypeGuardError<Type, TypeGuard> extends Error {
+    @NonEnumerableProperty()
+    private readonly __checked: Type
+    @NonEnumerableProperty()
+    private readonly __against?: TypeGuard
+
+    constructor(message: string, checked: Type)
+    constructor(message: string, checked: Type, against: TypeGuard)
+    constructor(message: string, checked: Type, against: TypeGuard, cause: Error['cause'])
+
+    constructor(
+        message: string,
+        checked: Type,
+        against?: TypeGuard,
+        cause: Error['cause'] = NO_CAUSE
+    ) {
+        super(message, cause === NO_CAUSE ? undefined : { cause })
+
         this.__checked = checked
         this.__against = against
     }
@@ -18,10 +34,14 @@ export class TypeGuardError<Type, TypeGuard> extends Error {
 
     public toJSON() {
         return {
-            ...this,
+            name: this.name,
+            message: this.message,
+
+            ...('stack' in this ? { stack: this.stack } : {}),
+            ...('cause' in this ? { cause: this.cause } : {}),
+
             checked: this.checked,
             against: this.against,
         }
     }
 }
-
