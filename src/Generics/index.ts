@@ -22,6 +22,9 @@ export namespace Generics {
         'any',
     ] as const
 
+    export const PropertyKeyTypes = ['string', 'number', 'symbol'] as const
+    export declare type PropertyKeyTypes = (typeof PropertyKeyTypes)[number] & PropertyKey
+
     export declare type TypeOfTag = (typeof TypeOfTag)[number]
 
     export declare type BaseTypes =
@@ -51,18 +54,18 @@ export namespace Generics {
     export declare type GetPrimitiveTag<T extends PrimitiveType> = T extends string
         ? 'string'
         : T extends number
-        ? 'number'
-        : T extends bigint
-        ? 'bigint'
-        : T extends boolean
-        ? 'boolean'
-        : T extends symbol
-        ? 'symbol'
-        : T extends null
-        ? 'null'
-        : T extends undefined
-        ? 'undefined'
-        : never
+          ? 'number'
+          : T extends bigint
+            ? 'bigint'
+            : T extends boolean
+              ? 'boolean'
+              : T extends symbol
+                ? 'symbol'
+                : T extends null
+                  ? 'null'
+                  : T extends undefined
+                    ? 'undefined'
+                    : never
     export declare type FinalType = FinalType[] | PrimitiveType
     export declare type IsFunction<T> = T extends Function ? T : never
     export declare type IsNotFunction<T> = T extends Function ? never : T
@@ -80,8 +83,8 @@ export namespace Generics {
     export declare type SafeProperty<T> = T extends FinalType
         ? T
         : T extends IsNotFunction<T>
-        ? SafeJSON<T>
-        : never
+          ? SafeJSON<T>
+          : never
 
     declare type _NestedObjects<T> = {
         [P in keyof T]: T[P] extends object ? P : never
@@ -111,6 +114,19 @@ export namespace Generics {
         x: infer R
     ) => void
         ? R
+        : never
+
+    export type LastInUnion<U> =
+        UnionToIntersection<U extends unknown ? (x: U) => 0 : never> extends (x: infer L) => 0
+            ? L
+            : never
+
+    export type UnionToTuple<T, Last = LastInUnion<T>> = [T] extends [never]
+        ? []
+        : [Last, ...UnionToTuple<Exclude<T, Last>>]
+
+    export type WrapInObject<T, PropName extends string> = T extends any
+        ? { [K in PropName]: T }
         : never
 
     export type InferReadonlyTuple<T> = T extends readonly [...infer Elements] ? Elements : never

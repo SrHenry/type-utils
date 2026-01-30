@@ -2,6 +2,7 @@ import Generics from '../../../Generics'
 import { isTypeGuard } from '../../../TypeGuards/helpers'
 import { TypeGuard } from '../../../TypeGuards/types'
 import { GenericStruct } from '../types'
+import { isRuleStruct } from './isRuleStruct'
 
 export function isStruct(struct: unknown): struct is GenericStruct<any>
 export function isStruct<T, IsGeneric extends true | false = true>(
@@ -13,9 +14,16 @@ export function isStruct(struct: unknown, schema?: TypeGuard): struct is Generic
 
 export function isStruct(struct: unknown, schema?: TypeGuard): struct is GenericStruct<any> {
     if (!struct || typeof struct !== 'object') return false
-    if (!('type' in struct) || !Generics.BaseTypes.includes((struct as any)?.type)) return false
-    if (!('optional' in struct) || typeof (struct as any)?.optional !== 'boolean') return false
-    if (!('schema' in struct) || !isTypeGuard((struct as any).schema)) return false
+    if (
+        !('type' in struct) ||
+        typeof struct.type !== 'string' ||
+        !([...Generics.BaseTypes, 'custom'] as readonly string[]).includes(struct.type)
+    )
+        return false
+    if (!('optional' in struct) || typeof struct.optional !== 'boolean') return false
+    if (!('schema' in struct) || !isTypeGuard(struct.schema)) return false
+    if (!('rules' in struct) || !Array.isArray(struct.rules) || !struct.rules.every(isRuleStruct))
+        return false
     if (!!schema && (struct as any).schema !== schema) return false
 
     return true

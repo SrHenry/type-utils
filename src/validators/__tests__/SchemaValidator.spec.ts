@@ -2,9 +2,22 @@ import type { TypeGuard } from '../../TypeGuards/types'
 
 import { asTypeGuard } from '../../TypeGuards/helpers/asTypeGuard'
 import { isInstanceOf } from '../../TypeGuards/helpers/isInstanceOf'
-import { and, array, boolean, number, object, or, string, symbol } from '../schema'
+import { createRule } from '../rules/helpers/createRule'
+import { and } from '../schema/and'
+import { array } from '../schema/array'
+import { boolean } from '../schema/boolean'
+import { number } from '../schema/number'
+import { object } from '../schema/object'
+import { or } from '../schema/or'
+import { string } from '../schema/string'
+import { symbol } from '../schema/symbol'
+import { useSchema } from '../schema/useSchema'
+// import { and, array, boolean, number, object, or, string, symbol, useSchema } from '../schema'
+
 import { SchemaValidator } from '../SchemaValidator'
 import { ValidationErrors } from '../ValidationErrors'
+import { createInlineRule } from '../rules/helpers/createInlineRule'
+import { createRuleHandler } from '../rules/helpers/createRuleHandler'
 
 describe('SchemaValidator', () => {
     it('should validate a primitive value', () => {
@@ -33,16 +46,49 @@ describe('SchemaValidator', () => {
         expect(SchemaValidator.validate(value2, schema)).toBe(value2)
         expect(() => SchemaValidator.validate(value3, schema)).toThrow(ValidationErrors)
 
-        const schema2 = or(
-            schema,
-            and(
-                string(),
-                asTypeGuard((s: string) => s.length > 5)
+        const hasUpperCaseRuleHandler = createRuleHandler((subject: string) => {
+            return /[A-Z]/g.test(subject)
+        })
+
+        const HasUpperCaseRule = createRule({
+            name: '[test]::Custom.String.HasUpperCase',
+            message: 'String must have at least one uppercase letter',
+            messageFormator: (arg: string) =>
+                `${arg ?? 'string'} must have at least one uppercase letter`,
+            handler: hasUpperCaseRuleHandler,
+        })
+
+        const StringLongerThanFiveCharsHasUpperCaseSchema = () =>
+            useSchema(asTypeGuard((s: string) => s.length > 5, { rules: [] })).use(
+                HasUpperCaseRule()
             )
-        )
+
+        const schema2 = or(schema, and(string(), StringLongerThanFiveCharsHasUpperCaseSchema()))
+
+        // expect(getMessage(getStructMetadata(schema2).schema)).toBe('')
 
         expect(SchemaValidator.validate("I'm a string", schema2)).toBe("I'm a string")
         expect(() => SchemaValidator.validate(value3, schema2)).toThrow(ValidationErrors)
+        expect(SchemaValidator.validate(value1, schema2, false)).toBe(value1)
+        expect(SchemaValidator.validate(value2, schema2)).toBe(value2)
+
+        expect(() => SchemaValidator.validate(value3, schema2)).toThrow(ValidationErrors)
+        expect(SchemaValidator.validate(value3, schema2, false)).toHaveProperty('errors')
+        expect(
+            (SchemaValidator.validate(value3, schema2, false) as ValidationErrors).errors.some(
+                e => e.message === 'Value does not match any of the union types' //&& e.path === '$'
+            )
+        ).toBe(true)
+
+        expect(() => SchemaValidator.validate('foobar', schema2)).toThrow(ValidationErrors)
+
+        const schema3 = or(number().nonZero(), string().nonEmpty().max(5))
+
+        expect(SchemaValidator.validate(1, schema3)).toBe(1)
+        expect(SchemaValidator.validate('foo', schema3)).toBe('foo')
+        expect(() => SchemaValidator.validate(0, schema3)).toThrow(ValidationErrors)
+        expect(() => SchemaValidator.validate('', schema3)).toThrow(ValidationErrors)
+        expect(() => SchemaValidator.validate('foobar', schema3)).toThrow(ValidationErrors)
     })
 
     const value1 = {
@@ -94,6 +140,16 @@ describe('SchemaValidator', () => {
                 )
             )
         ).not.toThrow(ValidationErrors)
+        expect(() =>
+            SchemaValidator.validate(
+                SchemaValidator.validate(value3, schema1, false),
+                useSchema(isInstanceOf(ValidationErrors)).use(
+                    createInlineRule<ValidationErrors>(
+                        ({ errors }) => errors.length === 1 && errors[0]!.path === '$.a'
+                    )
+                )
+            )
+        ).not.toThrow(ValidationErrors)
     })
     it('should validate using a schema with a custom message', () => {
         SchemaValidator.setValidatorMessage(
@@ -107,10 +163,12 @@ describe('SchemaValidator', () => {
 
         const validatedValue3 = and(
             isInstanceOf(ValidationErrors),
-            (({ errors }: ValidationErrors) =>
-                errors.length === 1 &&
-                errors[0]!.path === '$.a' &&
-                errors[0]!.message === 'must be a number') as TypeGuard<ValidationErrors>
+            asTypeGuard<ValidationErrors>(
+                ({ errors }) =>
+                    errors.length === 1 &&
+                    errors[0]!.path === '$.a' &&
+                    errors[0]!.message === 'must be a number'
+            ) // as TypeGuard<ValidationErrors>
         )
         const validatedValues1324 = and(
             isInstanceOf(ValidationErrors),

@@ -18,6 +18,16 @@ export function setStructMetadata(
     struct: V3.PrimitiveStruct,
     guard: TypeGuard<Generics.PrimitiveType>
 ): typeof guard
+export function setStructMetadata(struct: V3.NullStruct, guard: TypeGuard<null>): typeof guard
+export function setStructMetadata(
+    struct: V3.UndefinedStruct,
+    guard: TypeGuard<undefined>
+): typeof guard
+export function setStructMetadata(struct: V3.StringStruct, guard: TypeGuard<string>): typeof guard
+export function setStructMetadata(struct: V3.NumberStruct, guard: TypeGuard<number>): typeof guard
+export function setStructMetadata(struct: V3.BigIntStruct, guard: TypeGuard<bigint>): typeof guard
+export function setStructMetadata(struct: V3.BooleanStruct, guard: TypeGuard<boolean>): typeof guard
+export function setStructMetadata(struct: V3.SymbolStruct, guard: TypeGuard<symbol>): typeof guard
 export function setStructMetadata<TSource extends {}>(
     struct: V3.ObjectStruct<TSource>,
     guard: TypeGuard<TSource>
@@ -51,13 +61,27 @@ export function setStructMetadata<TStruct extends V3.IntersectionStruct<any[]>>(
     struct: TStruct,
     guard: TypeGuard<V3.FromIntersectionStruct<TStruct>>
 ): typeof guard
-// export function enpipeSchemaStructIntoGuard<T>(
-//     struct: BaseStruct<Generics.BaseTypes, T>,
-//     guard: TypeGuard<T>
-// ): typeof guard
 
 export function setStructMetadata<T>(
-    struct: V3.GenericStruct<T> | V3.RecordStruct<any, any>,
+    struct:
+        | V3.PrimitiveStruct
+        | V3.NullStruct
+        | V3.UndefinedStruct
+        | V3.StringStruct
+        | V3.NumberStruct
+        | V3.BigIntStruct
+        | V3.BooleanStruct
+        | V3.SymbolStruct
+        | V3.ObjectStruct<any>
+        | V3.RecordStruct<any, any>
+        | V3.ArrayStruct<any>
+        | V3.TupleStruct<any>
+        | V3.UnionStruct<any>
+        | V3.IntersectionStruct<any>
+        | V3.ClassInstanceStruct<any>
+        | V3.EnumStruct<any>
+        | V3.AnyStruct
+        | V3.GenericStruct<T>,
     guard: TypeGuard<T>
 ): typeof guard {
     return setMetadata(__metadata__, struct, guard)

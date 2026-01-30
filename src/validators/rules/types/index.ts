@@ -8,7 +8,10 @@ import type { RuleTuple } from './RuleTuple'
 export type * from './RuleFactory'
 export type * from './RuleTuple'
 
-export type Rule<Arg = any, Args = any> = (arg: Arg, ...args: Args[]) => boolean
+export type Rule<Subject = any, Args extends any[] = any[]> = (
+    subject: Subject,
+    ...args: Args
+) => boolean
 
 export type CustomHandler<Args extends any[] = any[], Subject = any> = (
     subject: Subject

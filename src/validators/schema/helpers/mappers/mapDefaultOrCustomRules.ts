@@ -50,8 +50,8 @@ export function mapDefaultOrCustomRules(ruleTuple: DefaultRules | CustomRules): 
         return { rule: handler(void 0), args, type: 'custom' } as unknown as CustomMappedRule
     }
 
-    const [ruleName] = ruleTuple
-    return { rule: getRule(ruleName), args, type: 'default' } as DefaultMappedRule
+    const [ruleBinding] = ruleTuple
+    return { rule: getRule(ruleBinding), args, type: 'default' } as DefaultMappedRule
 }
 
 export default mapDefaultOrCustomRules

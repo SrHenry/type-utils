@@ -1,4 +1,5 @@
-import { TupleTools } from './Tuple'
+import type { Tag } from './Tag'
+import type { TupleTools } from './Tuple'
 
 export type NoParamsFunc<ReturnType = void> = Func<[], ReturnType>
 export type Func0<ReturnType = void> = NoParamsFunc<ReturnType>
@@ -137,6 +138,17 @@ export type AsyncFn<Params extends number | any[] = 0, ReturnType = void> = Para
     ? AsyncFn<TupleTools.CreateTuple<Params>, ReturnType>
     : Params extends [...any]
     ? (...args: Params) => Promise<ReturnType>
+    : never
+
+export type ThrowableFn<
+    TException extends Error,
+    Params extends number | [...any] = 0,
+    ReturnType = void
+> = Tag<Fn<Params, ReturnType>, 'throws', TException>
+
+export { ThrowableFn as ThrowFn }
+export type GetThrowableException<T> = T extends ThrowableFn<infer TException, any[], any>
+    ? TException
     : never
 
 export type Fn0<ReturnType = void> = () => ReturnType

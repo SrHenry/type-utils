@@ -66,8 +66,8 @@ describe('tuple', () => {
         const schema1: TypeGuard<Tuple> = tuple([string(), number()])
         const schema2: TypeGuard<Tuple> = tuple(string(), number())
 
-        const struct1 = getStructMetadata(schema1) as V3.TupleStruct<Tuple>
-        const struct2 = getStructMetadata(schema2) as V3.TupleStruct<Tuple>
+        const struct1 = getStructMetadata(schema1) as unknown as V3.TupleStruct<Tuple>
+        const struct2 = getStructMetadata(schema2) as unknown as V3.TupleStruct<Tuple>
 
         expect(struct1).toMatchStructure(struct2)
     })
