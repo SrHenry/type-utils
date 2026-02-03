@@ -41,9 +41,9 @@ export namespace TupleTools {
     export type SkipFirst<T extends readonly any[], N extends number> = TupleSplit<T, N>[1]
 
     // Utility type to create a tuple of a given length
-    export type CreateTuple<L extends number, T extends any[] = []> = T['length'] extends L
-        ? T
-        : CreateTuple<L, [...T, any]>
+    export type CreateTuple<L extends number, T = any, _ extends any[] = []> = _['length'] extends L
+        ? _
+        : CreateTuple<L, T, [..._, T]>
 
     // Add type
     export type Add<A extends number, B extends number> = [
@@ -65,16 +65,55 @@ export namespace TupleTools {
 
     export type ParseNegativeIndex<T extends readonly any[], N extends number> =
         IsNegative<N> extends true ? Subtract<T['length'], FlipSign<N>> : N
+
+    export type TupleSlice<
+        T extends readonly any[],
+        S extends number,
+        E extends number = T['length'],
+    > = TupleTools.SkipFirst<
+        TupleTools.TakeFirst<T, TupleTools.ParseNegativeIndex<T, E>>,
+        TupleTools.ParseNegativeIndex<T, S>
+    >
+
+    export type GreaterThanSize<T extends readonly any[], N extends number> = IsNegative<
+        Subtract<N, T['length']>
+    >
+
+    export type MergeTuples<T extends readonly (readonly any[])[]> = T[number] extends readonly []
+        ? []
+        : T extends readonly [
+                infer FirstTuple extends readonly any[],
+                ...infer RestTuples extends readonly (readonly any[])[],
+            ]
+          ? FirstTuple extends readonly [infer Head, ...infer Tail]
+              ? [
+                    [Head, ...ExtractHeads<RestTuples>],
+                    ...MergeTuples<[Tail, ...ExtractTails<RestTuples>]>,
+                ]
+              : []
+          : []
+
+    // Auxiliares para extrair os elementos da mesma posição nas outras tuplas
+    type ExtractHeads<T extends readonly (readonly any[])[]> = T extends readonly [
+        infer First extends readonly any[],
+        ...infer Rest extends readonly (readonly any[])[],
+    ]
+        ? [First[0], ...ExtractHeads<Rest>]
+        : []
+
+    type ExtractTails<T extends readonly (readonly any[])[]> = T extends readonly [
+        infer First extends readonly any[],
+        ...infer Rest extends readonly (readonly any[])[],
+    ]
+        ? [First extends readonly [any, ...infer T] ? T : [], ...ExtractTails<Rest>]
+        : []
 }
 
 export type TupleSlice<
     T extends readonly any[],
     S extends number,
     E extends number = T['length'],
-> = TupleTools.SkipFirst<
-    TupleTools.TakeFirst<T, TupleTools.ParseNegativeIndex<T, E>>,
-    TupleTools.ParseNegativeIndex<T, S>
->
+> = TupleTools.TupleSlice<T, S, E>
 
 export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
     k: infer I
@@ -87,3 +126,9 @@ export type LastInUnion<U> =
 export type UnionToTuple<T, Last = LastInUnion<T>> = [T] extends [never]
     ? []
     : [...UnionToTuple<Exclude<T, Last>>, Last]
+
+export type WrapTuple<T extends readonly any[], KName extends string = 'type'> = {
+    [K in keyof T]: { [P in KName]: T[K] }
+}
+
+export type TupleToUnion<T extends readonly any[]> = T[number] extends any ? T[number] : never
