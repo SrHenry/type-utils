@@ -14,13 +14,15 @@ interface ICase<TSwitchArg, TSwitchResultAggregate = never> extends CallableFunc
         result: TResult
     ): Lambda0<TSwitchResultAggregate | TResult> &
         ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(match: TMatch, resolver: Func1<TMatch, TResult>): Lambda0<
-        TSwitchResultAggregate | TResult
-    > &
+    <TMatch extends TSwitchArg, TResult>(
+        match: TMatch,
+        resolver: Func1<TMatch, TResult>
+    ): Lambda0<TSwitchResultAggregate | TResult> &
         ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(match: TMatch, result: TResult): Lambda0<
-        TSwitchResultAggregate | TResult
-    > &
+    <TMatch extends TSwitchArg, TResult>(
+        match: TMatch,
+        result: TResult
+    ): Lambda0<TSwitchResultAggregate | TResult> &
         ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
 }
 
@@ -35,15 +37,15 @@ interface IStaticCase<TSwitchArg, TSwitchResultAggregate = never> extends Callab
         result: TResult
     ): Lambda<[arg: TSwitchArg], TSwitchResultAggregate | TResult> &
         IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(match: TMatch, resolver: Func1<TMatch, TResult>): Lambda<
-        [arg: TSwitchArg],
-        TSwitchResultAggregate | TResult
-    > &
+    <TMatch extends TSwitchArg, TResult>(
+        match: TMatch,
+        resolver: Func1<TMatch, TResult>
+    ): Lambda<[arg: TSwitchArg], TSwitchResultAggregate | TResult> &
         IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(match: TMatch, result: TResult): Lambda<
-        [arg: TSwitchArg],
-        TSwitchResultAggregate | TResult
-    > &
+    <TMatch extends TSwitchArg, TResult>(
+        match: TMatch,
+        result: TResult
+    ): Lambda<[arg: TSwitchArg], TSwitchResultAggregate | TResult> &
         IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
 }
 
@@ -54,10 +56,9 @@ interface IDefault<TArg, TSwitchResultAggregate = never> extends CallableFunctio
 }
 
 interface IStaticDefault<TArg, TSwitchResultAggregate = never> extends CallableFunction {
-    <TDefault>(result: Func1<TArg, TDefault>): Lambda<
-        [arg: TArg],
-        TSwitchResultAggregate | TDefault
-    >
+    <TDefault>(
+        result: Func1<TArg, TDefault>
+    ): Lambda<[arg: TArg], TSwitchResultAggregate | TDefault>
     <TDefault>(result: Func0<TDefault>): Lambda<[arg: TArg], TSwitchResultAggregate | TDefault>
     <TDefault>(result: TDefault): Lambda<[arg: TArg], TSwitchResultAggregate | TDefault>
 }
@@ -140,18 +141,25 @@ function __switch__(
 }
 
 /**
+ * @deprecated since 0.6.2
+ *
  * Creates a switch expression for the given type argument
  * @param arg
  */
 export function $switch<TArg = unknown>(): StaticSwitch<TArg>
 /**
+ * @deprecated since 0.6.2
+ *
  * Creates a switch expression for the given argument
  * @param arg
  */
 export function $switch<TArg>(arg: TArg): Switch<TArg>
 
+/** @deprecated */
 export function $switch(arg: unknown = $$switch_no_initial_arg$$): unknown {
     return {
         case: (match: unknown, result: Func0<unknown>) => __switch__(arg, [match], [result]),
     }
 }
+
+$switch()

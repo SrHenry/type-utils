@@ -5,7 +5,17 @@ import { matcher } from './matcher'
 
 const NO_PARAM = Symbol('match::NO_PARAM')
 
+/**
+ * Create a new reusable pattern matcher object
+ *
+ * @returns {MatchBuilder} A new pattern matcher instance
+ */
 export function match<T = never>(): MatchBuilder<T>
+/**
+ * Create an inline pattern matcher object for a given value
+ *
+ * @returns {Match} A new pattern matcher instance
+ */
 export function match<T>(value: T): Match<T>
 
 export function match(value: unknown = NO_PARAM) {
