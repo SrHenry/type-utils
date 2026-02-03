@@ -492,6 +492,77 @@ if (hasFoo(obj)) {
 }
 ```
 
+### Match Pattern
+
+#### [`match()`](https://srhenry.github.io/type-utils/functions/match.html)
+
+Create a new reusable pattern matcher object or an inline pattern matcher object for a given value.
+
+Reusable matcher example:
+
+```typescript
+import { match, object, string, array, pick } from '@srhenry/type-utils'
+
+const matcher = match()
+    .with(object({ foo: string().min(3) }), obj => `Foo is valid: '${obj.foo}'`)
+    .with(string().nonEmpty(), str => `String is valid: '${str}'`)
+    .default(() => { throw new TypeError('😭') })
+
+matcher.exec('foo') //String is valid: 'foo'
+matcher.exec({ foo: 'bar' }) //Foo is valid: 'bar'
+matcher.exec({ foo: 'ba' }) //TypeError: 😭
+matcher.exec("") //TypeError: 😭
+```
+
+Inline matcher example:
+
+```typescript
+import { match, object, string, array, pick } from '@srhenry/type-utils'
+
+//API endpoint processing example:
+    const { data } = payload
+
+    const responses = await Promise.allSettled(
+        match(data)
+            .with(object({ events: array() }), ({ events }) => events.map(e =>
+                match(e)
+                    .with(
+                        object({ type: string("USER_EVENT"), uid: string() }),
+                        ({ type: _, uid, ...data }) => UserEvent.send({ from:uid, ...data }))
+                    .with(
+                        object({ type: string("SYSTEM_EVENT") }),
+                        ({ type: _, ...data }) => SystemEvent.process({ ...data }))
+                    .default(() => null)
+                    .exec()))
+            .default(() => [])
+            .exec()
+            .filter(Boolean))
+        .then(results =>
+            results.map(result => match(result)
+                .with(
+                    object({ status: string("fulfilled") }),
+                    ({ value }) => parseToResponse(value))
+                .with(
+                    object({ status: string("rejected") }), ({ reason }) => {
+                        log.error('Event processing failed:', reason)
+                        switch(reason.type) {
+                            case 'UserEventError':
+                                //specific handling for user event errors
+                                return UserEventError.from(reason)
+                                break;
+                            case 'SystemError':
+                                //specific handling for system event errors
+                                return SystemError.from(reason)
+                                break;
+
+                            default:
+                                return reason
+                        }})
+                .exec()))
+
+    return new JsonResponse({ success:true, event_responses: responses }) //formatted response
+```
+
 ### `Util Types`
 
 #### [`Fn`](https://srhenry.github.io/type-utils/types/Fn.html)
@@ -738,6 +809,10 @@ const result = await pipe(addUserFactory)
 ---
 
 ### [Switch Expression](https://srhenry.github.io/type-utils/functions/Experimental._switch.html)
+
+> [@deprecated](https://srhenry.github.io/type-utils/functions/Experimental._switch.html) since 0.6.2.
+>
+> Use the new [`match()`](#match) factory instead.
 
 This helper enables you to build switch expressions as it is not available in Javascript vanilla. Each branch allows you to define the matchers or values ahead of time with literal values or inline expressions, or define with callbacks to customize handling of each branch, making it a powerfull way to describe a complex switch without *if-else-if* language syntax. It defines a lambda as the switch runner, so you can define and run it in the row with more readability.
 

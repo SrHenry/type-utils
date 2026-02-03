@@ -1,6 +1,6 @@
 {
     "name": "@srhenry/type-utils",
-    "version": "0.6.1",
+    "version": "0.6.2",
     "description": "Type utilities for Typescript and also Javascript",
     "main": "dist/index.js",
     "types": "types/index.d.ts",
@@ -107,6 +107,10 @@
         "./rules/string": {
             "types": "./types/rules/string/index.d.ts",
             "default": "./dist/rules/string/index.js"
+        },
+        "./match": {
+            "types": "./types/match/index.d.ts",
+            "default": "./dist/match/index.js"
         },
         "./*": "./dist/*",
         "./package.json": "./package.json"

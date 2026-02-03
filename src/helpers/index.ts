@@ -19,6 +19,7 @@ export { repeat } from './repeat'
 export { replaceSchemaTree } from './replaceSchemaTree'
 export { round } from './round'
 export { sleep } from './sleep'
+export { $throw } from './throw'
 
 export * from './logic/index'
 export * as gates from './logic/index'
