@@ -108,6 +108,10 @@
             "types": "./types/rules/string/index.d.ts",
             "default": "./dist/rules/string/index.js"
         },
+        "./match": {
+            "types": "./types/match/index.d.ts",
+            "default": "./dist/match/index.js"
+        },
         "./*": "./dist/*",
         "./package.json": "./package.json"
     }
