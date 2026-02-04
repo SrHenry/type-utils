@@ -8,23 +8,19 @@ export type FluentOptionalSchema<
     T,
     TRules extends { [x: string]: Fn<any[], any> } = {},
     TCalledRules extends [...(keyof TRules)[]] = [],
+    TUsedCustomRules extends [...Custom<any[], string, T>[]] = [],
 > = TypeGuard<undefined | T> & {
     [K in Exclude<keyof TRules, TCalledRules[number]>]: Fn<
         Parameters<TRules[K]>,
-        FluentOptionalSchema<undefined | T, TRules, [...TCalledRules, K]>
+        FluentOptionalSchema<T, TRules, [...TCalledRules, K], TUsedCustomRules>
     >
 } & {
     use<Args extends [...any], RuleName extends string>(
         rule: Custom<Args, RuleName, T>
-    ): FluentOptionalSchema<T, TRules, TCalledRules>
-    use<
-        TCustomRules extends [
-            Custom<any[], string, undefined | T>,
-            ...Custom<any[], string, undefined | T>[],
-        ],
-    >(
+    ): FluentOptionalSchema<T, TRules, TCalledRules, [...TUsedCustomRules, typeof rule]>
+    use<TCustomRules extends [Custom<any[], string, T>, ...Custom<any[], string, T>[]]>(
         ...rules: TCustomRules
-    ): FluentOptionalSchema<undefined | T, TRules, TCalledRules>
+    ): FluentOptionalSchema<T, TRules, TCalledRules, [...TUsedCustomRules, ...typeof rules]>
 
     validator(): ThrowFn<ValidationErrors, [arg: unknown], undefined | T> & {
         validate: ThrowFn<ValidationErrors, [arg: unknown], undefined | T>
