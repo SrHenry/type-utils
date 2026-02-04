@@ -1,4 +1,4 @@
-import type { Expr, ExtractDefaultExpr, ExtractExpr, ExtractSpecificExprs } from './Expr'
+import type { Expr, ExtractDefaultExpr, ExtractSpecificExprs } from './Expr'
 import type { FilterUnion } from './FilterUnion'
 import type { Guard } from './Guard'
 import type { IsExhaustive } from './IsExhaustive'
@@ -25,6 +25,11 @@ export type ExecMatchBuilder<TExprs extends [...any[]], TPatterns extends [...an
     exec: ExecFn<TupleTools.MergeTuples<[TExprs, TPatterns]>>
 }
 
+// type a = ExecMatchBuilder<
+//     [(list: Iterable<unknown>) => unknown],
+//     [[(item: unknown) => unknown]]
+// >['exec']
+
 export type BaseMatchBuilder<
     TTarget,
     TExprs extends [...any[]],
@@ -39,16 +44,23 @@ export type BaseMatchBuilder<
         expression?: Expr<TExpr, ExtractPattern<P>>
     ): MatchBuilder<
         FilterUnion<TTarget, ExtractPattern<P>>,
-        [...TExprs, ExtractExpr<TExpr>],
+        // [...TExprs, ExtractExpr<TExpr>],
+        [...TExprs, TExpr],
         [...TPatterns, ExtractPattern<P>],
         HasDefault
     >
+
+    __exprs: [...TExprs]
+    __patterns: [...TPatterns]
 } & (HasDefault extends true
     ? {}
     : {
+          //   default<TExpr>(
+          //       expression: Expr<TExpr, TTarget>
+          //   ): MatchBuilder<never, [...TExprs, ExtractExpr<TExpr>], [...TPatterns, unknown], true>
           default<TExpr>(
               expression: Expr<TExpr, TTarget>
-          ): MatchBuilder<never, [...TExprs, ExtractExpr<TExpr>], [...TPatterns, unknown], true>
+          ): MatchBuilder<never, [...TExprs, TExpr], [...TPatterns, unknown], true>
       })
 export type MatchBuilder<
     TTarget = never,

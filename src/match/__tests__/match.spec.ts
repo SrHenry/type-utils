@@ -3,6 +3,10 @@ import { boolean } from '../../validators/schema/boolean'
 import { number } from '../../validators/schema/number'
 import { object } from '../../validators/schema/object'
 import { string } from '../../validators/schema/string'
+import { asTypeGuard } from '../../TypeGuards/helpers/asTypeGuard'
+import { tuple } from '../../validators/schema/tuple'
+import { useSchema } from '../../validators/schema/useSchema'
+import { isFunction } from '../../helpers/isFunction'
 
 import { match } from '../match'
 
@@ -141,5 +145,70 @@ describe('match', () => {
                 })
                 .exec('')
         ).toMatchStructure({ error: 'empty string' })
+    })
+
+    it('should match a pattern and map the result using the given mapper', () => {
+        type MapFuncGuards<TParams extends [...number[]]> = TParams extends [
+            infer T extends number,
+            ...infer Rest extends number[],
+        ]
+            ?
+                  | import('../../TypeGuards/types/index').TypeGuard<
+                        import('../../types/Func').Fn<
+                            import('../../types/Tuple').TupleTools.CreateTuple<T>,
+                            any
+                        >
+                    >
+                  | MapFuncGuards<Rest>
+            : never
+
+        function func<TParams extends [...any[]] = [], TReturn = any>(
+            argsLength: TParams['length']
+        ): import('../../TypeGuards/types/index').TypeGuard<
+            import('../../types/Func').Fn<TParams, TReturn>
+        >
+        function func<T extends number>(
+            params: T
+        ): import('../../TypeGuards/types/index').TypeGuard<
+            import('../../types/Func').Fn<
+                import('../../types/Tuple').TupleTools.CreateTuple<T>,
+                any
+            >
+        >
+        function func<T extends [...number[]]>(...params: T): MapFuncGuards<T>
+
+        function func(...params: number[]) {
+            return useSchema(
+                asTypeGuard<import('../../types/Func').Fn<any[], any>>(
+                    value => isFunction(value) && params.some(p => p === value.length),
+                    {
+                        kind: 'function',
+                        context: {
+                            acceptedParamLengths: params,
+                        },
+                    }
+                )
+            )
+        }
+
+        function forEach__signature_1<T>(
+            fn: import('../../types/Func').Fn<[item: T], unknown>
+        ): import('../../types/Func').Fn1<Iterable<T>, void> {
+            return (list: Iterable<T>) => {
+                for (const e of list) fn(e)
+            }
+        }
+
+        const aaa = match()
+            .with(tuple(func<[item: unknown], unknown>(1)), ([fn]) => forEach__signature_1(fn))
+            .default(null)
+
+        expect(aaa.exec([])).toBe(null)
+        expect(aaa.exec([() => {}])).toBe(null)
+        const res = aaa.exec([_item => 'foo'])
+
+        expect(res).toBeInstanceOf(Function)
+        expect(res.length).toBe(1)
+        expect(() => res([])).not.toThrow()
     })
 })

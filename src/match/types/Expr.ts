@@ -1,5 +1,5 @@
 export type Expr<T, TPattern = any> = T | ((value: TPattern) => T)
-export type ExtractExpr<T> = T extends (...args: any[]) => infer R ? R : T
+export type ExtractExpr<T> = T extends (value: any) => infer R ? R : T
 export type ExtractExprByPattern<T, P> = T extends readonly [infer L, ...infer R]
     ? L extends readonly [infer E, infer P2]
         ? (P2 extends P ? (P extends P2 ? E : never) : never) | ExtractExprByPattern<R, P>
