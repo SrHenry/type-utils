@@ -404,6 +404,7 @@ function validate<T, Name extends string, Parent>(
                         case 'string':
                         case 'number':
                         case 'symbol':
+                        case 'custom':
                             updateStructMetadata<string | number | symbol>(keyMetadata.schema, {
                                 rules: keyMetadata.rules as RuleStruct<CustomRules>[],
                             })
@@ -479,7 +480,9 @@ function validate<T, Name extends string, Parent>(
                                     })
 
                                     break
-                                case keyMetadata.type === 'string':
+                                case keyMetadata.type === 'string' ||
+                                    (keyMetadata.type === 'custom' &&
+                                        keyMetadata.kind === 'string'):
                                     Object.getOwnPropertyNames(arg).forEach(k => {
                                         const recordKeyValidationResult = validate.bind(
                                             mustNotThrow()

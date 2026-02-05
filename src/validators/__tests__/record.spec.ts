@@ -188,4 +188,16 @@ describe('record', () => {
         expect(schema({ foo: true, bar: null })).toBe(false)
         expect(schema({ foo: true, bar: undefined })).toBe(false)
     })
+
+    it('should validate a record using own validator', () => {
+        const schema = record()
+
+        expect(() =>
+            schema
+                .optional()
+                .validator(true)
+                .validate(void 0)
+        ).not.toThrow()
+        expect(() => schema.validator(true).validate({})).not.toThrow()
+    })
 })
