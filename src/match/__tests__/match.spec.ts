@@ -1,12 +1,12 @@
+import { isFunction } from '../../helpers/isFunction'
+import { asTypeGuard } from '../../TypeGuards/helpers/asTypeGuard'
 import { array } from '../../validators/schema/array'
 import { boolean } from '../../validators/schema/boolean'
 import { number } from '../../validators/schema/number'
 import { object } from '../../validators/schema/object'
 import { string } from '../../validators/schema/string'
-import { asTypeGuard } from '../../TypeGuards/helpers/asTypeGuard'
 import { tuple } from '../../validators/schema/tuple'
 import { useSchema } from '../../validators/schema/useSchema'
-import { isFunction } from '../../helpers/isFunction'
 
 import { match } from '../match'
 

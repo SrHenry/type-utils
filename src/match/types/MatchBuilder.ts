@@ -1,17 +1,15 @@
+import type { TupleTools } from '../../types/Tuple'
 import type { Expr, ExtractDefaultExpr, ExtractSpecificExprs } from './Expr'
 import type { FilterUnion } from './FilterUnion'
 import type { Guard } from './Guard'
 import type { IsExhaustive } from './IsExhaustive'
+import type { Overloads } from './Overloads'
 import type {
     ExtractPattern,
     ExtractSpecificPatterns,
     GroupByPattern,
     OmitUnknownPattern,
 } from './Pattern'
-
-import type { TupleTools } from '../../types/Tuple'
-
-import type { Overloads } from './Overloads'
 
 export type ExecFn<T extends readonly (readonly [any, any])[]> = Overloads<
     GroupByPattern<OmitUnknownPattern<T>>
@@ -24,11 +22,6 @@ export type ExecFn<T extends readonly (readonly [any, any])[]> = Overloads<
 export type ExecMatchBuilder<TExprs extends [...any[]], TPatterns extends [...any[]]> = {
     exec: ExecFn<TupleTools.MergeTuples<[TExprs, TPatterns]>>
 }
-
-// type a = ExecMatchBuilder<
-//     [(list: Iterable<unknown>) => unknown],
-//     [[(item: unknown) => unknown]]
-// >['exec']
 
 export type BaseMatchBuilder<
     TTarget,
@@ -55,9 +48,6 @@ export type BaseMatchBuilder<
 } & (HasDefault extends true
     ? {}
     : {
-          //   default<TExpr>(
-          //       expression: Expr<TExpr, TTarget>
-          //   ): MatchBuilder<never, [...TExprs, ExtractExpr<TExpr>], [...TPatterns, unknown], true>
           default<TExpr>(
               expression: Expr<TExpr, TTarget>
           ): MatchBuilder<never, [...TExprs, TExpr], [...TPatterns, unknown], true>

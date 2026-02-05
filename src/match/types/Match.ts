@@ -22,7 +22,6 @@ type BaseMatch<T, TExprs extends [...any[]], TPatterns, HasDefault extends boole
         expression?: Expr<TExpr, ExtractPattern<P>>
     ): Match<
         FilterUnion<T, ExtractPattern<P>>,
-        // [...TExprs, ExtractExpr<TExpr>],
         [...TExprs, TExpr],
         TPatterns | ExtractPattern<P>,
         HasDefault
@@ -30,9 +29,6 @@ type BaseMatch<T, TExprs extends [...any[]], TPatterns, HasDefault extends boole
 } & (HasDefault extends true
     ? {}
     : {
-          //   default<TExpr>(
-          //       expression: Expr<TExpr, T>
-          //   ): Match<never, [...TExprs, ExtractExpr<TExpr>], TPatterns, true>
           default<TExpr>(
               expression: Expr<TExpr, T>
           ): Match<never, [...TExprs, TExpr], TPatterns, true>
