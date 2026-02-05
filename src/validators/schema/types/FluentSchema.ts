@@ -3,7 +3,6 @@ import type { TypeGuard } from '../../../TypeGuards'
 import type { Fn, ThrowFn } from '../../../types/Func'
 import type { Custom } from '../../rules/types'
 import type { ValidateReturn } from '../../SchemaValidator'
-import type { ValidatorMessageMap } from '../../types'
 import type { ValidationErrors } from '../../ValidationErrors'
 import type { FluentOptionalSchema } from './FluentOptionalSchema'
 
@@ -30,10 +29,6 @@ export type FluentSchema<
     use<TCustomRules extends [Custom<any[], string, T>, ...Custom<any[], string, T>[]]>(
         ...rules: TCustomRules
     ): FluentSchema<T, TRules, TCalledRules, [...TUsedCustomRules, ...typeof rules]>
-
-    message(
-        messageMap: ValidatorMessageMap<T>
-    ): FluentSchema<T, TRules, TCalledRules, TUsedCustomRules>
 
     validator(): ThrowFn<ValidationErrors, [arg: unknown], T> & {
         validate: ThrowFn<ValidationErrors, [arg: unknown], T>
