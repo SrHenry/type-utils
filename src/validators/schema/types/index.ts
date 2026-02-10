@@ -221,6 +221,7 @@ export namespace V3 {
             | V3.NumberStruct
             | V3.SymbolStruct
             | V3.EnumStruct<PropertyKey>
+            | (V3.CustomStruct<string> & { kind: 'string' })
         valueMetadata: V3.GenericStruct<T[keyof T]> | V3.StructType
     }
 

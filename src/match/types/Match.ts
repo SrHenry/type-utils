@@ -1,4 +1,4 @@
-import type { Expr, ExtractExpr } from './Expr'
+import type { Expr } from './Expr'
 import type { FilterUnion } from './FilterUnion'
 import type { Guard } from './Guard'
 import type { IsExhaustive } from './IsExhaustive'
@@ -22,7 +22,7 @@ type BaseMatch<T, TExprs extends [...any[]], TPatterns, HasDefault extends boole
         expression?: Expr<TExpr, ExtractPattern<P>>
     ): Match<
         FilterUnion<T, ExtractPattern<P>>,
-        [...TExprs, ExtractExpr<TExpr>],
+        [...TExprs, TExpr],
         TPatterns | ExtractPattern<P>,
         HasDefault
     >
@@ -31,5 +31,5 @@ type BaseMatch<T, TExprs extends [...any[]], TPatterns, HasDefault extends boole
     : {
           default<TExpr>(
               expression: Expr<TExpr, T>
-          ): Match<never, [...TExprs, ExtractExpr<TExpr>], TPatterns, true>
+          ): Match<never, [...TExprs, TExpr], TPatterns, true>
       })

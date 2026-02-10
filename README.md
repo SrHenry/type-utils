@@ -53,6 +53,8 @@
     - [Available validations](#available-validations)
       - [`is`](#is)
       - [`ensureInterface`](#ensureinterface)
+    - [Match Pattern](#match-pattern)
+      -[`match()`](#match)
     - [Util types](#util-types)
       - [`Fn`](#fn)
       - [`AsyncFn`](#asyncfn)
