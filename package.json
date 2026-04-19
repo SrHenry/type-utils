@@ -50,22 +50,35 @@
     },
     "homepage": "https://github.com/SrHenry/type-utils#readme",
     "dependencies": {
-        "@types/node": "^25.1.0",
+        "@types/node": "^25.6.0",
         "reflect-metadata": "^0.2.2",
         "typescript": "5.9.3"
     },
     "devDependencies": {
         "@types/jest": "^30.0.0",
-        "jest": "^30.2.0",
+        "jest": "^30.3.0",
         "madge": "^8.0.0",
         "run-script-os": "^1.1.6",
-        "ts-jest": "^29.4.6",
+        "ts-jest": "^29.4.9",
         "ts-node": "^10.9.2",
         "tsx": "^4.21.0",
-        "typedoc": "^0.28.16",
-        "uuid": "^13.0.0",
-        "webpack": "^5.104.1",
+        "typedoc": "^0.28.19",
+        "uuid": "^14.0.0",
+        "webpack": "^5.106.2",
         "webpack-cli": "^7.0.2"
+    },
+    "resolutions": {
+        "jest/**/anymatch/picomatch": "^2.3.2",
+        "@types/jest/**/micromatch/picomatch": "^2.3.2",
+        "**/jest-haste-map/picomatch": "^4.0.4",
+        "**/jest-message-util/picomatch": "^4.0.4",
+        "**/jest-util/picomatch": "^4.0.4",
+        "glob/minimatch": "^9.0.7",
+        "typedoc/minimatch": "^9.0.7",
+        "madge/**/@typescript-eslint/typescript-estree/minimatch": "^9.0.7",
+        "jest/**/test-exclude/minimatch": "^3.1.3",
+        "jest/**/test-exclude/glob/minimatch": "^3.1.3",
+        "madge/**/glob/minimatch": "^3.1.3"
     },
     "exports": {
         ".": {
