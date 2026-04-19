@@ -78,7 +78,10 @@
         "madge/**/@typescript-eslint/typescript-estree/minimatch": "^9.0.7",
         "jest/**/test-exclude/minimatch": "^3.1.3",
         "jest/**/test-exclude/glob/minimatch": "^3.1.3",
-        "madge/**/glob/minimatch": "^3.1.3"
+        "madge/**/glob/minimatch": "^3.1.3",
+        "minimatch/brace-expansion": "^2.1.0",
+        "jest/**/test-exclude/minimatch/brace-expansion": "^1.1.14",
+        "madge/**/glob/minimatch/brace-expansion": "^1.1.14"
     },
     "exports": {
         ".": {
