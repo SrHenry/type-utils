@@ -7,9 +7,9 @@
   "module": "./dist/esm/index.js",
   "types": "./types/index.d.ts",
   "scripts": {
-    "test": "jest",
-    "test:inspect": "node --inspect node_modules/.bin/jest",
-    "test:coverage": "jest --coverage",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
+    "test:inspect": "NODE_OPTIONS='--experimental-vm-modules --inspect' node node_modules/.bin/jest",
+    "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage",
     "clear": "run-script-os",
     "clear:win32": "rmdir /s /q dist && rmdir /s /q types",
     "clear:default": "(rm -rf ./dist || exit 0) && (rm -rf ./types || exit 0)",

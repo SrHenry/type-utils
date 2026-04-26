@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import { repeat } from '../../helpers/repeat.ts'
 import { curry } from '../Experimental/curry/index.ts'
 
