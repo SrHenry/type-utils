@@ -7,7 +7,6 @@
       "ES2022"
     ],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "module": "commonjs",
     "rootDir": "./src",
     "moduleResolution": "node",
