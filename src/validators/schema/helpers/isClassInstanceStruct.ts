@@ -1,7 +1,7 @@
-import type { ConstructorSignature } from '../../../TypeGuards/types'
-import type { V3 } from '../types'
+import type { ConstructorSignature } from '../../../TypeGuards/types/index.ts'
+import type { V3 } from '../types/index.ts'
 
-import { isStruct } from './isStruct'
+import { isStruct } from './isStruct.ts'
 
 export function isClasInstanceStruct(struct: unknown): struct is V3.ClassInstanceStruct<any>
 export function isClasInstanceStruct<T extends {}>(

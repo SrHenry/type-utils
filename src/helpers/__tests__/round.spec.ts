@@ -1,4 +1,4 @@
-import { round } from '../round'
+import { round } from '../round.ts'
 
 describe('round', () => {
     it('should round a number to the given precision', () => {

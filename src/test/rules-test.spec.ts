@@ -1,14 +1,14 @@
-import type { Generics } from '../Generics'
-import type { TypeGuard } from '../TypeGuards/types'
-import type { Sanitize } from '../validators/types'
+import type { Generics } from '../Generics/index.ts'
+import type { TypeGuard } from '../TypeGuards/types/index.ts'
+import type { Sanitize } from '../validators/types/index.ts'
 
-import { any, array, getStructMetadata, number, object, string } from '../schema'
-import { ensureInterface } from '../TypeGuards/helpers/ensureInterface'
-import { getMessage } from '../TypeGuards/helpers/getMessage'
-import { getMetadata } from '../TypeGuards/helpers/getMetadata'
-import { is } from '../TypeGuards/helpers/is'
-import { setMetadata } from '../TypeGuards/helpers/setMetadata'
-import { TypeGuardError } from '../TypeGuards/TypeErrors'
+import { any, array, getStructMetadata, number, object, string } from '../schema/index.ts'
+import { ensureInterface } from '../TypeGuards/helpers/ensureInterface.ts'
+import { getMessage } from '../TypeGuards/helpers/getMessage.ts'
+import { getMetadata } from '../TypeGuards/helpers/getMetadata.ts'
+import { is } from '../TypeGuards/helpers/is.ts'
+import { setMetadata } from '../TypeGuards/helpers/setMetadata.ts'
+import { TypeGuardError } from '../TypeGuards/TypeErrors.ts'
 
 const schema = object({
     ean: string(/^[0-9]+$/),

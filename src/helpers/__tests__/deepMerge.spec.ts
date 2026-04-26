@@ -1,4 +1,4 @@
-import { deepMerge } from '../deepMerge' // adjust path!
+import { deepMerge } from '../deepMerge.ts' // adjust path!
 
 describe('deepMerge', () => {
     test('replaces primitive values', () => {

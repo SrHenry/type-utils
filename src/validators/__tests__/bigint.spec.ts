@@ -1,4 +1,4 @@
-import { bigint } from '../schema/bigint'
+import { bigint } from '../schema/bigint.ts'
 
 describe('bigint', () => {
     it('should validate a bigint', () => {

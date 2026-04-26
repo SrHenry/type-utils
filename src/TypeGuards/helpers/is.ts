@@ -1,4 +1,4 @@
-import type { TypeGuard } from '../types'
+import type { TypeGuard } from '../types/index.ts'
 
 export function is<Interface>(value: unknown, validator: TypeGuard<Interface>): value is Interface
 export function is<Interface>(

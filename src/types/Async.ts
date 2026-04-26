@@ -1,4 +1,4 @@
-import { AsyncFunc, Func } from './Func'
+import { AsyncFunc, Func } from './Func.ts'
 
 /**
  * wraps an value in a Promise or the return value of a function

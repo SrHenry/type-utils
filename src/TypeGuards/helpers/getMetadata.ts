@@ -1,7 +1,7 @@
-import type { GetTypeGuard, TypeGuard } from '../types'
-import { __curry_param__ } from './constants'
-import { getOwnMetadata } from './metadataStore'
-import { isTypeGuard } from './isTypeGuard'
+import type { GetTypeGuard, TypeGuard } from '../types/index.ts'
+import { __curry_param__ } from './constants.ts'
+import { getOwnMetadata } from './metadataStore.ts'
+import { isTypeGuard } from './isTypeGuard.ts'
 
 export function getMetadata<T extends string | symbol, U>(key: T, from: U): any | undefined
 export function getMetadata<T extends string | symbol, U, V extends TypeGuard>(

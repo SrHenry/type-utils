@@ -1,4 +1,4 @@
-import type { GetTypeGuard, TypeGuard } from '../../../../TypeGuards/types'
+import type { GetTypeGuard, TypeGuard } from '../../../../TypeGuards/types/index.ts'
 
 export type OptionalizeTypeGuard<T extends TypeGuard<any | any[]>> = TypeGuard<
     GetTypeGuard<T> | undefined

@@ -1,16 +1,16 @@
-import { Generics } from '../Generics'
-import type { GetTypeGuard } from '../TypeGuards/types'
+import { Generics } from '../Generics/index.ts'
+import type { GetTypeGuard } from '../TypeGuards/types/index.ts'
 
-export * from './Action'
-export * from './Async'
-export * from './Func'
-export * from './Predicate'
-export * from './Result'
-export * from './Tag'
-export * from './Tuple'
+export * from './Action.ts'
+export * from './Async.ts'
+export * from './Func.ts'
+export * from './Predicate.ts'
+export * from './Result.ts'
+export * from './Tag.ts'
+export * from './Tuple.ts'
 
-export * from './GetOptional'
-export * from './GetRequired'
+export * from './GetOptional.ts'
+export * from './GetRequired.ts'
 export {
     __E_2_T as Entries,
     __E_1_T as Entry,

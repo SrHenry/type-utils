@@ -1,7 +1,7 @@
-import type { Func0, Func1 } from '../../types/Func'
-import type { Lambda, Lambda0 } from '../../types/Lambda'
-import type { Predicate } from '../../types/Predicate'
-import { lambda } from './lambda'
+import type { Func0, Func1 } from '../../types/Func.ts'
+import type { Lambda, Lambda0 } from '../../types/Lambda.ts'
+import type { Predicate } from '../../types/Predicate.ts'
+import { lambda } from './lambda/index.ts'
 
 interface ICase<TSwitchArg, TSwitchResultAggregate = never> extends CallableFunction {
     <TMatch extends TSwitchArg, TResult>(

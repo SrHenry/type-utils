@@ -1,6 +1,6 @@
-import type { WithDepipe } from '../types/WithDepipe'
+import type { WithDepipe } from '../types/WithDepipe.ts'
 
-import { depipe } from './depipe'
+import { depipe } from './depipe.ts'
 
 export function addDepipe<RValue>(rvalue: RValue | Promise<RValue>): WithDepipe<typeof rvalue> {
     return Object.defineProperty(Object(rvalue), 'depipe', {

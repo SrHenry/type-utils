@@ -1,5 +1,5 @@
-import { __curry_param__ } from './constants'
-import { defineMetadata } from './metadataStore'
+import { __curry_param__ } from './constants.ts'
+import { defineMetadata } from './metadataStore.ts'
 
 export function setMetadata<U>(key: string | symbol, metadata: unknown, into: U): U
 export function setMetadata(key: string | symbol, metadata: unknown): <U>(into: U) => U

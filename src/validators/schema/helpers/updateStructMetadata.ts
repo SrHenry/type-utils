@@ -1,6 +1,6 @@
-import type { TypeGuard } from '../../../TypeGuards/types'
-import type { V3 } from '../types'
-import { copyStructMetadata } from './copyStructMetadata'
+import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
+import type { V3 } from '../types/index.ts'
+import { copyStructMetadata } from './copyStructMetadata.ts'
 
 export function updateStructMetadata<T>(
     target: TypeGuard<T>,

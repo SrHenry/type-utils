@@ -1,5 +1,5 @@
-import { repeat } from '../../helpers/repeat'
-import { curry } from '../Experimental/curry'
+import { repeat } from '../../helpers/repeat.ts'
+import { curry } from '../Experimental/curry/index.ts'
 
 describe('repeat', () => {
     it('should run a callback function n times', () => {

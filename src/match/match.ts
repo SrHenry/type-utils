@@ -1,7 +1,7 @@
-import type { Match } from './types/Match'
-import type { MatchBuilder } from './types/MatchBuilder'
+import type { Match } from './types/Match.ts'
+import type { MatchBuilder } from './types/MatchBuilder.ts'
 
-import { matcher } from './matcher'
+import { matcher } from './matcher.ts'
 
 const NO_PARAM = Symbol('match::NO_PARAM')
 

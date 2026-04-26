@@ -1,4 +1,4 @@
-import { optional } from './factories/optional'
+import { optional } from './factories/optional.ts'
 
 /**
  * A wrapper for the `optional` rule.

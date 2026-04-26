@@ -1,10 +1,10 @@
-import type { TypeGuard } from '../TypeGuards/types'
-import type { ValidatorArgs } from './types'
+import type { TypeGuard } from '../TypeGuards/types/index.ts'
+import type { ValidatorArgs } from './types/index.ts'
 
-import { ensureInstanceOf } from '../TypeGuards/helpers/ensureInstanceOf'
-import { ensureInterface } from '../TypeGuards/helpers/ensureInterface'
-import { is } from '../TypeGuards/helpers/is'
-import { TypeGuardError } from '../TypeGuards/TypeErrors'
+import { ensureInstanceOf } from '../TypeGuards/helpers/ensureInstanceOf.ts'
+import { ensureInterface } from '../TypeGuards/helpers/ensureInterface.ts'
+import { is } from '../TypeGuards/helpers/is.ts'
+import { TypeGuardError } from '../TypeGuards/TypeErrors.ts'
 
 export abstract class BaseValidator {
     public static validateProperties<T, U>(

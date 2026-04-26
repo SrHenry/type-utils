@@ -1,4 +1,4 @@
-import { asUndefined } from '../schema/asUndefined'
+import { asUndefined } from '../schema/asUndefined.ts'
 
 describe('asUndefined', () => {
     const schema = asUndefined()

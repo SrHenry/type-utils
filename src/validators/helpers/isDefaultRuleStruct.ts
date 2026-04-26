@@ -1,4 +1,4 @@
-import type { All as AllRules, Default as DefaultRule, RuleStruct } from '../rules/types'
+import type { All as AllRules, Default as DefaultRule, RuleStruct } from '../rules/types/index.ts'
 
 export type DefaultRuleStruct = RuleStruct<DefaultRule>
 

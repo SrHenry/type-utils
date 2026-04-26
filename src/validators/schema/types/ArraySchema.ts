@@ -1,7 +1,7 @@
-import type { TypeGuard } from '../../../TypeGuards'
-import type { ArrayRules } from '../../rules/Array'
-import type { ValidatorMap } from '../../types'
-import type { FluentSchema } from './FluentSchema'
+import type { TypeGuard } from '../../../TypeGuards/index.ts'
+import type { ArrayRules } from '../../rules/Array/index.ts'
+import type { ValidatorMap } from '../../types/index.ts'
+import type { FluentSchema } from './FluentSchema.ts'
 
 type Rules = Omit<typeof ArrayRules, 'optional'>
 

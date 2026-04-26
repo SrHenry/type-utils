@@ -1,9 +1,9 @@
-import type { TypeGuard } from '../TypeGuards/types'
+import type { TypeGuard } from '../TypeGuards/types/index.ts'
 
-import { TypeGuardError } from '../TypeGuards/TypeErrors'
-import { getValidatorMessageFormator } from '../TypeGuards/helpers/getValidatorMessageFormator'
-import { setValidatorMessageFormator } from '../TypeGuards/helpers/setValidatorMessageFormator'
-import { NonEnumerableProperty } from '../helpers/decorators/stage-2'
+import { TypeGuardError } from '../TypeGuards/TypeErrors.ts'
+import { getValidatorMessageFormator } from '../TypeGuards/helpers/getValidatorMessageFormator.ts'
+import { setValidatorMessageFormator } from '../TypeGuards/helpers/setValidatorMessageFormator.ts'
+import { NonEnumerableProperty } from '../helpers/decorators/stage-2/index.ts'
 
 export type ValidationArgs<
     Value,

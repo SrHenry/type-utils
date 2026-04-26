@@ -1,6 +1,6 @@
-import { MessageFormator, TypeGuard } from '../types'
-import { __validator_message_formator__ } from './constants'
-import { getMetadata } from './getMetadata'
+import { MessageFormator, TypeGuard } from '../types/index.ts'
+import { __validator_message_formator__ } from './constants.ts'
+import { getMetadata } from './getMetadata.ts'
 
 export function getValidatorMessageFormator(from: unknown): MessageFormator | undefined
 export function getValidatorMessageFormator<T>(

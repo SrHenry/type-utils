@@ -1,12 +1,12 @@
-import type { TypeGuard } from '../TypeGuards/types'
-import type { keys } from './rules/constants'
-import type { All as AllRules, Rule, RuleStruct } from './rules/types'
+import type { TypeGuard } from '../TypeGuards/types/index.ts'
+import type { keys } from './rules/constants.ts'
+import type { All as AllRules, Rule, RuleStruct } from './rules/types/index.ts'
 
-import { getMessageFormator } from '../TypeGuards/helpers/getMessageFormator'
-import { isCustomRuleStruct } from './helpers/isCustomRuleStruct'
-import { getRule } from './rules/helpers/getRule'
-import { ValidationError } from './ValidationError'
-import { ValidationErrors } from './ValidationErrors'
+import { getMessageFormator } from '../TypeGuards/helpers/getMessageFormator.ts'
+import { isCustomRuleStruct } from './helpers/isCustomRuleStruct.ts'
+import { getRule } from './rules/helpers/getRule.ts'
+import { ValidationError } from './ValidationError.ts'
+import { ValidationErrors } from './ValidationErrors.ts'
 
 type RuleContext = {
     rule: RuleStruct<AllRules>

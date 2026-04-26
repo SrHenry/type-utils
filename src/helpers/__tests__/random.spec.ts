@@ -1,4 +1,4 @@
-import { random } from '../random'
+import { random } from '../random.ts'
 
 describe('random', () => {
     it('should return a random number between min and max', () => {

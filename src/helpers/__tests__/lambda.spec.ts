@@ -1,4 +1,4 @@
-import { lambda } from '../Experimental/lambda'
+import { lambda } from '../Experimental/lambda/index.ts'
 
 describe('lambda', () => {
     const fn = (foo: string, bar: number): [bar: number, foo: string] => [bar, foo]

@@ -1,4 +1,4 @@
-import { omit } from '../../omit'
+import { omit } from '../../omit.ts'
 
 describe('omit', () => {
     it('should omit the specified keys from an object', () => {

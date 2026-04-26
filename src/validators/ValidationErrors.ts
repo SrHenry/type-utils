@@ -1,8 +1,8 @@
-import type ValidationError from './ValidationError'
+import type ValidationError from './ValidationError.ts'
 
-import { createDefaultGenerator } from '../helpers/createDefaultGenerator'
-import { getIterableObjectOrDefault } from '../helpers/getIterableObjectOrDefault'
-import { stringifyErrors } from './helpers/stringifyErrors'
+import { createDefaultGenerator } from '../helpers/createDefaultGenerator.ts'
+import { getIterableObjectOrDefault } from '../helpers/getIterableObjectOrDefault.ts'
+import { stringifyErrors } from './helpers/stringifyErrors.ts'
 
 export class ValidationErrors<
     T extends ValidationError<any, any> = ValidationError<unknown, unknown>,

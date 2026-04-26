@@ -1,4 +1,4 @@
-import { pickRandom } from '../pickRandom'
+import { pickRandom } from '../pickRandom.ts'
 
 describe('pickRandom', () => {
     it('should pick a random element from an array', () => {

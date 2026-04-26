@@ -1,4 +1,4 @@
-import { asNull } from '../schema/asNull'
+import { asNull } from '../schema/asNull.ts'
 
 describe('asNull', () => {
     const schema = asNull()

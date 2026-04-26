@@ -1,4 +1,4 @@
-import { isFunction } from './isFunction'
+import { isFunction } from './isFunction.ts'
 
 /**
  * @author marcuspoehls <marcus@futurestud.io>

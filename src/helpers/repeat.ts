@@ -1,4 +1,4 @@
-import { Func } from '../types/Func'
+import { Func } from '../types/Func.ts'
 
 export function repeat<TFuncShape extends Func<any[], any>>(fn: TFuncShape, times: number): void
 export function repeat<TFuncShape extends Func<any[], any>>(fn: TFuncShape, times: bigint): void

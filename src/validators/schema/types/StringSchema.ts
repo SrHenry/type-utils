@@ -1,5 +1,5 @@
-import type { StringRules } from '../../rules/String'
-import type { FluentSchema } from './FluentSchema'
+import type { StringRules } from '../../rules/String/index.ts'
+import type { FluentSchema } from './FluentSchema.ts'
 
 type Rules = Omit<typeof StringRules, 'optional'>
 

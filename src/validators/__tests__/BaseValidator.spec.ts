@@ -1,4 +1,4 @@
-import { BaseValidator } from '../BaseValidator'
+import { BaseValidator } from '../BaseValidator.ts'
 
 describe('BaseValidator', () => {
     it('should return true if the value is valid', () => {

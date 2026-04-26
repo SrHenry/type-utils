@@ -1,4 +1,4 @@
-import type { Guard } from './Guard'
+import type { Guard } from './Guard.ts'
 
 export type Pattern<T> = T | Guard<T, T>
 export type ExtractPattern<P> = P extends Guard<infer TOut> ? TOut : P

@@ -1,4 +1,4 @@
-import { range } from '../range'
+import { range } from '../range.ts'
 
 describe('range', () => {
     it('should return a valid generator to use with for..of loop as a (crescent) range to iterate over', () => {

@@ -1,4 +1,4 @@
-import { All } from '../types'
+import { All } from '../types/index.ts'
 
 export function isRule(rule: unknown): rule is All {
     if (!Array.isArray(rule)) return false

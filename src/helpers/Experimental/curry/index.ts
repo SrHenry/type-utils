@@ -1,11 +1,11 @@
-import type { Func } from '../../../types/Func'
-import type { Curried, Lambda } from '../../../types/Lambda'
+import type { Func } from '../../../types/Func.ts'
+import type { Curried, Lambda } from '../../../types/Lambda.ts'
 
-import { isLambda } from '../lambda/helpers'
-import { __curried__, __length__, __partialApply__, NO_ARG } from './constants'
-import { getParametersLength, isCurried } from './helpers'
+import { isLambda } from '../lambda/helpers.ts'
+import { __curried__, __length__, __partialApply__, NO_ARG } from './constants.ts'
+import { getParametersLength, isCurried } from './helpers.ts'
 
-export * from './helpers'
+export * from './helpers.ts'
 
 function addInvoke(fn: CallableFunction) {
     return Object.defineProperty(fn, 'invoke', {

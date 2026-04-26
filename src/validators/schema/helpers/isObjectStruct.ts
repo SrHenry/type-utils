@@ -1,7 +1,7 @@
-import type { TypeGuard } from '../../../TypeGuards/types'
-import type { ObjectStruct } from '../types'
+import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
+import type { ObjectStruct } from '../types/index.ts'
 
-import { isStruct } from './isStruct'
+import { isStruct } from './isStruct.ts'
 
 export function isObjectStruct(struct: unknown): struct is ObjectStruct<any>
 export function isObjectStruct<T extends {}>(

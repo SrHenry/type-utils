@@ -1,4 +1,4 @@
-import { ArrayRules } from '../../validators/rules'
+import { ArrayRules } from '../../validators/rules/index.ts'
 
 export { ArrayRules }
 

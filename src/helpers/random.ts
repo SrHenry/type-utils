@@ -1,10 +1,10 @@
-import { asTypeGuard } from '../TypeGuards/helpers/asTypeGuard'
+import { asTypeGuard } from '../TypeGuards/helpers/asTypeGuard.ts'
 
-import { and } from '../validators/schema/and'
-import { array } from '../validators/schema/array'
-import { number } from '../validators/schema/number'
-import { symbol } from '../validators/schema/symbol'
-import { tuple } from '../validators/schema/tuple'
+import { and } from '../validators/schema/and.ts'
+import { array } from '../validators/schema/array.ts'
+import { number } from '../validators/schema/number.ts'
+import { symbol } from '../validators/schema/symbol.ts'
+import { tuple } from '../validators/schema/tuple.ts'
 
 /** unique symbol representing a param not passed to `random` */
 const NULL_PARAM = Symbol('[src/helpers/random] null param')

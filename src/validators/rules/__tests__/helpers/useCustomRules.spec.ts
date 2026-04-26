@@ -1,8 +1,8 @@
-import type { Custom } from '../../types'
+import type { Custom } from '../../types/index.ts'
 
-import { number } from '../../../schema/number'
-import { createRule } from '../../helpers/createRule'
-import { useCustomRules } from '../../helpers/useCustomRules'
+import { number } from '../../../schema/number.ts'
+import { createRule } from '../../helpers/createRule.ts'
+import { useCustomRules } from '../../helpers/useCustomRules.ts'
 
 describe('useCustomRules', () => {
     it('should apply a simple custom rule', () => {

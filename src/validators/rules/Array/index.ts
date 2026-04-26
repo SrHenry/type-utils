@@ -1,8 +1,8 @@
-import { optional } from '../Optional/factories/optional'
+import { optional } from '../Optional/factories/optional.ts'
 
-import { max } from './factories/max'
-import { min } from './factories/min'
-import { unique } from './factories/unique'
+import { max } from './factories/max.ts'
+import { min } from './factories/min.ts'
+import { unique } from './factories/unique.ts'
 
 export const ArrayRules = {
     min,

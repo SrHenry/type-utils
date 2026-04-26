@@ -1,10 +1,10 @@
-// import type Generics from '../../../Generics'
-import type { TypeGuard } from '../../../TypeGuards'
-import type { Fn, ThrowFn } from '../../../types/Func'
-import type { Custom } from '../../rules/types'
-import type { ValidateReturn } from '../../SchemaValidator'
-import type { ValidationErrors } from '../../ValidationErrors'
-import type { FluentOptionalSchema } from './FluentOptionalSchema'
+// import type Generics from '../../../Generics/index.ts'
+import type { TypeGuard } from '../../../TypeGuards/index.ts'
+import type { Fn, ThrowFn } from '../../../types/Func.ts'
+import type { Custom } from '../../rules/types/index.ts'
+import type { ValidateReturn } from '../../SchemaValidator.ts'
+import type { ValidationErrors } from '../../ValidationErrors.ts'
+import type { FluentOptionalSchema } from './FluentOptionalSchema.ts'
 
 // type AppendMessageMethod<
 //     T,

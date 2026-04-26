@@ -1,11 +1,11 @@
-import type { Func } from '../../../types/Func'
-import type { GetPipeline } from './types'
-import type { CurryingTools } from './types/CurryingTools'
-import type { internal } from './types/Pipable'
+import type { Func } from '../../../types/Func.ts'
+import type { GetPipeline } from './types/index.ts'
+import type { CurryingTools } from './types/CurryingTools.ts'
+import type { internal } from './types/Pipable.ts'
 
-import { curry } from '../curry'
-import { getParametersLength } from '../curry/helpers'
-import { pipe } from './pipe'
+import { curry } from '../curry/index.ts'
+import { getParametersLength } from '../curry/helpers.ts'
+import { pipe } from './pipe.ts'
 
 export function enpipe<TValue extends {}>(value: TValue): internal.Pipe<TValue>
 

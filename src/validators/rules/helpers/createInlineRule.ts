@@ -2,10 +2,10 @@
 //     return rule
 // }
 
-import type { Fn } from '../../../types/Func'
-import type { Custom } from '../types'
-import { createRule } from './createRule'
-import { createRuleHandler } from './createRuleHandler'
+import type { Fn } from '../../../types/Func.ts'
+import type { Custom } from '../types/index.ts'
+import { createRule } from './createRule.ts'
+import { createRuleHandler } from './createRuleHandler.ts'
 
 export const InlineRuleName = 'Custom.Rule.<anonymous>' as const
 export type InlineRuleName = typeof InlineRuleName

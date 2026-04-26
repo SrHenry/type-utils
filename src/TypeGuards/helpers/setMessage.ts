@@ -1,5 +1,5 @@
-import { __curry_param__, __message__ } from './constants'
-import { setMetadata } from './setMetadata'
+import { __curry_param__, __message__ } from './constants.ts'
+import { setMetadata } from './setMetadata.ts'
 
 export function setMessage(message: string): <T extends Object>(into: T) => T
 export function setMessage<T extends Object>(message: string, into: T): T

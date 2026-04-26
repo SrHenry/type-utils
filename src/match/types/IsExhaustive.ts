@@ -1,4 +1,4 @@
-import type { FilterUnion } from './FilterUnion'
+import type { FilterUnion } from './FilterUnion.ts'
 
 export type IsExhaustive<T, P, HasDefault extends boolean> = HasDefault extends true
     ? true
