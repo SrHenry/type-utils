@@ -48,7 +48,7 @@ const defaults = {
 } as const
 type DefaultThrowsParam = (typeof defaults)['throws']
 
-const throws = Symbol('[@srhenry/type-utils]:/validators/SchemaValidator/__throws__')
+const throws = Symbol.for('[@srhenry/type-utils]:/validators/SchemaValidator/__throws__')
 
 const shouldThrow = (subject: unknown): boolean =>
     getMetadata(
