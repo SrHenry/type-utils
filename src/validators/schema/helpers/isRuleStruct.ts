@@ -1,6 +1,6 @@
-import { isRuleName } from '../../rules/helpers/isRuleName'
-import type { All as AllRules, RuleStruct } from '../../rules/types'
-import {} from '../types'
+import { isRuleName } from '../../rules/helpers/isRuleName.ts'
+import type { All as AllRules, RuleStruct } from '../../rules/types/index.ts'
+import {} from '../types/index.ts'
 
 export function isRuleStruct(struct: unknown): struct is RuleStruct<AllRules> {
     if (!struct || typeof struct !== 'object') return false

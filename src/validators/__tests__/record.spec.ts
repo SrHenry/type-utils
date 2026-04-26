@@ -1,8 +1,8 @@
-import { any } from '../schema/any'
-import { boolean } from '../schema/boolean'
-import { number } from '../schema/number'
-import { record } from '../schema/record'
-import { string } from '../schema/string'
+import { any } from '../schema/any.ts'
+import { boolean } from '../schema/boolean.ts'
+import { number } from '../schema/number.ts'
+import { record } from '../schema/record.ts'
+import { string } from '../schema/string.ts'
 
 describe('record', () => {
     it('should validate an empty record', () => {

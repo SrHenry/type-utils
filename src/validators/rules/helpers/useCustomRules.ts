@@ -1,14 +1,14 @@
-import type { TypeGuard } from '../../../TypeGuards/types'
-import type { Custom } from '../types'
+import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
+import type { Custom } from '../types/index.ts'
 
-import { getMessage } from '../../../TypeGuards/helpers/getMessage'
-import { isTypeGuard } from '../../../TypeGuards/helpers/isTypeGuard'
-import { getRuleStructMetadata } from '../../schema/helpers/getRuleStructMetadata'
-import { getStructMetadata } from '../../schema/helpers/getStructMetadata'
-import { isFollowingRules } from '../../schema/helpers/isFollowingRules'
-import { setRuleMessage } from '../../schema/helpers/setRuleMessage'
-import { setStructMetadata } from '../../schema/helpers/setStructMetadata'
-import { getCustomRuleMessages } from './getCustomRuleMessages'
+import { getMessage } from '../../../TypeGuards/helpers/getMessage.ts'
+import { isTypeGuard } from '../../../TypeGuards/helpers/isTypeGuard.ts'
+import { getRuleStructMetadata } from '../../schema/helpers/getRuleStructMetadata.ts'
+import { getStructMetadata } from '../../schema/helpers/getStructMetadata.ts'
+import { isFollowingRules } from '../../schema/helpers/isFollowingRules.ts'
+import { setRuleMessage } from '../../schema/helpers/setRuleMessage.ts'
+import { setStructMetadata } from '../../schema/helpers/setStructMetadata.ts'
+import { getCustomRuleMessages } from './getCustomRuleMessages.ts'
 
 export function useCustomRules<T, U extends Custom<any[], string, any>>(
     guard: TypeGuard<T>,

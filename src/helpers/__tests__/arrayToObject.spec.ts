@@ -1,4 +1,4 @@
-import { arrayToObject } from '../arrayToObject'
+import { arrayToObject } from '../arrayToObject.ts'
 
 describe('arrayToObject', () => {
     it("should return an object with the keys and values of the key-value array's array", () => {

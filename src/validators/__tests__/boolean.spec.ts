@@ -1,4 +1,4 @@
-import { boolean } from '../schema/boolean'
+import { boolean } from '../schema/boolean.ts'
 
 describe('boolean', () => {
     const schema = boolean()

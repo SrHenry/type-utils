@@ -1,1 +1,1 @@
-export * from './pick'
+export * from './pick.ts'

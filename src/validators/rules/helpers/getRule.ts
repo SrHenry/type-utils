@@ -1,9 +1,9 @@
-import type { Rule } from '../types'
+import type { Rule } from '../types/index.ts'
 
-import { bindings, keys } from '../constants'
+import { bindings, keys } from '../constants.ts'
 
-import { isKeyName } from './isKeyName'
-import { isRuleName } from './isRuleName'
+import { isKeyName } from './isKeyName.ts'
+import { isRuleName } from './isRuleName.ts'
 
 export function getRule<T extends keyof keys>(name: T): bindings[keys[T]]
 export function getRule<T extends keyof keys, R extends Rule>(name: T): R

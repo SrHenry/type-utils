@@ -1,9 +1,9 @@
-import type { TypeGuard } from '../TypeGuards/types'
-import type { GenericStruct, V3 } from '../validators/schema/types'
+import type { TypeGuard } from '../TypeGuards/types/index.ts'
+import type { GenericStruct, V3 } from '../validators/schema/types/index.ts'
 
-import { isTypeGuard } from '../TypeGuards/helpers/isTypeGuard'
-import { getStructMetadata } from '../validators/schema/helpers/getStructMetadata'
-import { object } from '../validators/schema/object'
+import { isTypeGuard } from '../TypeGuards/helpers/isTypeGuard.ts'
+import { getStructMetadata } from '../validators/schema/helpers/getStructMetadata.ts'
+import { object } from '../validators/schema/object.ts'
 
 export type ReplacedKeysTree<
     TOrigin extends {},

@@ -1,4 +1,4 @@
-export { Expr, ExtractExpr } from './Expr'
-export { Match } from './Match'
-export { MatchBuilder } from './MatchBuilder'
-export { ExtractPattern, Pattern } from './Pattern'
+export { Expr, ExtractExpr } from './Expr.ts'
+export { Match } from './Match.ts'
+export { MatchBuilder } from './MatchBuilder.ts'
+export { ExtractPattern, Pattern } from './Pattern.ts'

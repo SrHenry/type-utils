@@ -1,4 +1,4 @@
-import { Func, Func1 } from '../types/Func'
+import { Func, Func1 } from '../types/Func.ts'
 
 const NULL = Symbol('NULL')
 

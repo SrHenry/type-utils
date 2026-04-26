@@ -1,5 +1,5 @@
-import type { MessageFormator } from '../../../TypeGuards/types'
-import type { Factory, Param0 } from '../../../types/Func'
+import type { MessageFormator } from '../../../TypeGuards/types/index.ts'
+import type { Factory, Param0 } from '../../../types/Func.ts'
 import type {
     CreateRuleArgs,
     Custom,
@@ -7,8 +7,8 @@ import type {
     CustomHandler,
     GetCustomRuleHandler,
     GetCustomRuleName,
-} from '../types'
-import { getRuleSetterForCustomHandler } from './getRuleSetterForCustomHandler'
+} from '../types/index.ts'
+import { getRuleSetterForCustomHandler } from './getRuleSetterForCustomHandler.ts'
 
 export function createRule<
     Handler extends CustomHandler,

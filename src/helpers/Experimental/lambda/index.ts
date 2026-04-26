@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { GetTypeGuard, TypeGuard } from '../../../TypeGuards/types'
-import type { AsLambda, Lambda, LambdaTypeGuard } from '../../../types/Lambda'
+import type { GetTypeGuard, TypeGuard } from '../../../TypeGuards/types/index.ts'
+import type { AsLambda, Lambda, LambdaTypeGuard } from '../../../types/Lambda.ts'
 
-import { curry } from '../curry'
-import { __lambda__ } from './constants'
-import { isLambda } from './helpers'
+import { curry } from '../curry/index.ts'
+import { __lambda__ } from './constants.ts'
+import { isLambda } from './helpers.ts'
 
-export * from './helpers'
+export * from './helpers.ts'
 
 function addInvoke<TFunc extends (...args: any) => any>(fn: TFunc): AsLambda<TFunc> {
     return Object.defineProperty(fn, 'invoke', {

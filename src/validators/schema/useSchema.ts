@@ -1,13 +1,13 @@
-import type { TypeGuard } from '../../TypeGuards/types'
-import type { Custom } from '../rules/types'
-import type { FluentSchema } from './types/FluentSchema'
+import type { TypeGuard } from '../../TypeGuards/types/index.ts'
+import type { Custom } from '../rules/types/index.ts'
+import type { FluentSchema } from './types/FluentSchema.ts'
 
-import { useCustomRules } from '../rules/helpers/useCustomRules'
-import { SchemaValidator } from '../SchemaValidator'
-import { copyStructMetadata } from './helpers/copyStructMetadata'
-import { getRuleStructMetadata } from './helpers/getRuleStructMetadata'
-import { optionalize } from './helpers/optional'
-import { validateCustomRules } from './helpers/validateCustomRules'
+import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
+import { SchemaValidator } from '../SchemaValidator.ts'
+import { copyStructMetadata } from './helpers/copyStructMetadata.ts'
+import { getRuleStructMetadata } from './helpers/getRuleStructMetadata.ts'
+import { optionalize } from './helpers/optional/index.ts'
+import { validateCustomRules } from './helpers/validateCustomRules.ts'
 
 function _fn<T>(schema: TypeGuard<T>): TypeGuard<T> {
     return schema

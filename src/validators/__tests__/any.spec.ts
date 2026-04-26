@@ -1,4 +1,4 @@
-import { any } from '../schema/any'
+import { any } from '../schema/any.ts'
 
 describe('any', () => {
     const values = [

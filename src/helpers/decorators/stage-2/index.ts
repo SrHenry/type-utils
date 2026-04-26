@@ -1,2 +1,2 @@
-export * from './AutoBind'
-export * from './NonEnumerableProperty'
+export * from './AutoBind.ts'
+export * from './NonEnumerableProperty.ts'

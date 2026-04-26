@@ -1,45 +1,45 @@
-import { setMessageFormator } from '../../TypeGuards/helpers/setMessageFormator'
+import { setMessageFormator } from '../../TypeGuards/helpers/setMessageFormator.ts'
 
 // <NumberRules> import section:
-import { maxFormator } from './Number/formators/max'
-import { minFormator } from './Number/formators/min'
-import { nonZeroFormator } from './Number/formators/nonZero'
+import { maxFormator } from './Number/formators/max.ts'
+import { minFormator } from './Number/formators/min.ts'
+import { nonZeroFormator } from './Number/formators/nonZero.ts'
 
-import { max as numberMaxHandler } from './Number/handlers/max'
-import { min as numberMinHandler } from './Number/handlers/min'
-import { nonZero } from './Number/handlers/nonZero'
+import { max as numberMaxHandler } from './Number/handlers/max.ts'
+import { min as numberMinHandler } from './Number/handlers/min.ts'
+import { nonZero } from './Number/handlers/nonZero.ts'
 
 // <ArrayRules> import section:
-import { arrayMaxFormator } from './Array/formators/max'
-import { arrayMinFormator } from './Array/formators/min'
-import { uniqueFormator as arrayUniqueFormator } from './Array/formators/unique'
+import { arrayMaxFormator } from './Array/formators/max.ts'
+import { arrayMinFormator } from './Array/formators/min.ts'
+import { uniqueFormator as arrayUniqueFormator } from './Array/formators/unique.ts'
 
-import { max as arrayMaxHandler } from './Array/handlers/max'
-import { min as arrayMinHandler } from './Array/handlers/min'
-import { unique as uniqueHandler } from './Array/handlers/unique'
+import { max as arrayMaxHandler } from './Array/handlers/max.ts'
+import { min as arrayMinHandler } from './Array/handlers/min.ts'
+import { unique as uniqueHandler } from './Array/handlers/unique.ts'
 
 // <StringRules> import section:
-import { emailFormator as stringEmailFormator } from './String/formators/email'
-import { stringMaxFormator } from './String/formators/max'
-import { stringMinFormator } from './String/formators/min'
-import { nonEmptyFormator as stringNonEmptyFormator } from './String/formators/nonEmpty'
-import { regexFormator as stringRegexFormator } from './String/formators/regex'
-import { urlFormator as stringUrlFormator } from './String/formators/url'
+import { emailFormator as stringEmailFormator } from './String/formators/email.ts'
+import { stringMaxFormator } from './String/formators/max.ts'
+import { stringMinFormator } from './String/formators/min.ts'
+import { nonEmptyFormator as stringNonEmptyFormator } from './String/formators/nonEmpty.ts'
+import { regexFormator as stringRegexFormator } from './String/formators/regex.ts'
+import { urlFormator as stringUrlFormator } from './String/formators/url.ts'
 
-import { email as stringEmailHandler } from './String/handlers/email'
-import { max as stringMaxHandler } from './String/handlers/max'
-import { min as stringMinHandler } from './String/handlers/min'
-import { nonEmpty as stringNonEmptyHandler } from './String/handlers/nonEmpty'
-import { regex as stringRegexHandler } from './String/handlers/regex'
-import { url as stringUrlHandler } from './String/handlers/url'
+import { email as stringEmailHandler } from './String/handlers/email.ts'
+import { max as stringMaxHandler } from './String/handlers/max.ts'
+import { min as stringMinHandler } from './String/handlers/min.ts'
+import { nonEmpty as stringNonEmptyHandler } from './String/handlers/nonEmpty.ts'
+import { regex as stringRegexHandler } from './String/handlers/regex.ts'
+import { url as stringUrlHandler } from './String/handlers/url.ts'
 
 // <RecordRules> import section:
-import { nonEmptyFormator as recordNonEmptyFormator } from './Record/formators/nonEmpty'
+import { nonEmptyFormator as recordNonEmptyFormator } from './Record/formators/nonEmpty.ts'
 
-import { nonEmpty as recordNonEmptyHandler } from './Record/handlers/nonEmpty'
+import { nonEmpty as recordNonEmptyHandler } from './Record/handlers/nonEmpty.ts'
 
 // <OptionalRules> import section:
-import { optional as optionalHandler } from './Optional/handlers/optional'
+import { optional as optionalHandler } from './Optional/handlers/optional.ts'
 
 export const keys = {
     'Number.nonZero': '__Number.nonZero__',

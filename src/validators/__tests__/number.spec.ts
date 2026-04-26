@@ -1,5 +1,5 @@
-import { repeat } from '../../helpers/repeat'
-import { number } from '../schema/number'
+import { repeat } from '../../helpers/repeat.ts'
+import { number } from '../schema/number.ts'
 
 describe('number', () => {
     it('should return true if value is number', () => {

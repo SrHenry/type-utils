@@ -7,23 +7,20 @@
       "ES2022"
     ],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "module": "commonjs",
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "module": "node20",
     "rootDir": "./src",
-    "moduleResolution": "node",
-    "baseUrl": "./",
+    "moduleResolution": "nodenext",
     "typeRoots": [
       "./src/@types",
       "./node_modules/@types"
     ],
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "./dist",
-    "inlineSources": true,
+    "types": [
+      "*"
+    ],
+    "noEmit": true,
     "stripInternal": true,
-    "noEmitOnError": true,
-    "declarationDir": "./types",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -43,11 +40,12 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "skipLibCheck": true,
-    "noErrorTruncation": true
+    "noErrorTruncation": true,
+    "stableTypeOrdering": true
   },
   "exclude": [
     "node_modules",
     "dist",
-    "types",
+    "types"
   ]
 }

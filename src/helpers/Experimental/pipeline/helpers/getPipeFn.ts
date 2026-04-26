@@ -1,7 +1,7 @@
-import type { Func1 } from '../../../../types/Func'
-import type { internal } from '../types/Pipable'
+import type { Func1 } from '../../../../types/Func.ts'
+import type { internal } from '../types/Pipable.ts'
 
-import { applyPipeline } from './applyPipeline'
+import { applyPipeline } from './applyPipeline.ts'
 
 export function getPipeFn<T>(rvalue: T): internal.Pipe<typeof rvalue>
 export function getPipeFn(): internal.Pipe<void>

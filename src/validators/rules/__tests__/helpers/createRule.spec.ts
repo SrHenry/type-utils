@@ -1,4 +1,4 @@
-import { createRule } from '../../helpers/createRule'
+import { createRule } from '../../helpers/createRule.ts'
 
 describe('createRule', () => {
     const mockHandler = (value: number) => (min: number) => value >= min

@@ -1,13 +1,13 @@
-import { keys } from '../../rules/constants'
-import { isCustom } from '../../rules/helpers/isCustomRule'
-import { isDefaultRule } from '../../rules/helpers/isDefaultRule'
+import { keys } from '../../rules/constants.ts'
+import { isCustom } from '../../rules/helpers/isCustomRule.ts'
+import { isDefaultRule } from '../../rules/helpers/isDefaultRule.ts'
 
 import {
     Custom as CustomRuleSet,
     Default as DefaultRuleSet,
     All as RuleSet,
     RuleStruct,
-} from '../../rules/types'
+} from '../../rules/types/index.ts'
 
 export function getRuleStructMetadata<Rule extends RuleSet<any[], string, any>>(
     rule: Rule

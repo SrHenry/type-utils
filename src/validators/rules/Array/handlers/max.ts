@@ -1,4 +1,4 @@
-import { max } from '../../common'
+import { max } from '../../common.ts'
 
 const handler = (arg: unknown[], n: number | bigint) => Array.isArray(arg) && max(arg.length, n)
 

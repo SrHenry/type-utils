@@ -1,4 +1,4 @@
-import { string } from '../schema/string'
+import { string } from '../schema/string.ts'
 
 describe('string', () => {
     it('should return true if the input is a string', () => {

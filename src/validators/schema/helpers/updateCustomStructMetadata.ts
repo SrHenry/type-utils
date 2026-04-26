@@ -1,11 +1,11 @@
-import type { TypeGuard } from '../../../TypeGuards/types'
-import type { V3 } from '../types'
+import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
+import type { V3 } from '../types/index.ts'
 
-import { deepMerge } from '../../../helpers/deepMerge'
-import { getMetadata } from '../../../TypeGuards/helpers/getMetadata'
-import { setMetadata } from '../../../TypeGuards/helpers/setMetadata'
-import { __metadata__ } from './constants'
-import { hasStructMetadata } from './hasStructMetadata'
+import { deepMerge } from '../../../helpers/deepMerge.ts'
+import { getMetadata } from '../../../TypeGuards/helpers/getMetadata.ts'
+import { setMetadata } from '../../../TypeGuards/helpers/setMetadata.ts'
+import { __metadata__ } from './constants.ts'
+import { hasStructMetadata } from './hasStructMetadata.ts'
 
 export function updateCustomStructMetadata<T>(
     struct: Partial<V3.CustomStruct<T>>,

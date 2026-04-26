@@ -1,9 +1,9 @@
-import type { Generics } from '../../../Generics'
-import type { TypeGuard } from '../../../TypeGuards/types'
-import type { V3 } from '../types'
+import type { Generics } from '../../../Generics/index.ts'
+import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
+import type { V3 } from '../types/index.ts'
 
-import { getMetadata } from '../../../TypeGuards/helpers/getMetadata'
-import { __metadata__ } from './constants'
+import { getMetadata } from '../../../TypeGuards/helpers/getMetadata.ts'
+import { __metadata__ } from './constants.ts'
 
 // export function getStructMetadata(guard: TypeGuard<any>): V3.AnyStruct | V3.CustomStruct<any>
 // export function getStructMetadata(

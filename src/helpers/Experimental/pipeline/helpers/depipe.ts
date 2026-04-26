@@ -1,7 +1,7 @@
-import type { GetPipeline } from '../types/GetPipeline'
-import type { internal } from '../types/Pipable'
+import type { GetPipeline } from '../types/GetPipeline.ts'
+import type { internal } from '../types/Pipable.ts'
 
-import { hasPipelineMetadata } from './hasPipelineMetadata'
+import { hasPipelineMetadata } from './hasPipelineMetadata.ts'
 
 export function depipe<RValue>(arg: (RValue & internal.BasePipable<RValue>) | null): RValue | null
 export function depipe<RValue>(

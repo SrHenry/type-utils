@@ -1,4 +1,4 @@
-import { RecordRules } from '../../validators/rules'
+import { RecordRules } from '../../validators/rules/index.ts'
 
 export { RecordRules }
 

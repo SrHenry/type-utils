@@ -1,11 +1,11 @@
 import { v4 as uuid } from 'uuid'
 
-import { lambda } from '../Experimental/lambda/'
-// import { enpipe, pipe, pipeline } from '../Experimental/pipeline'
-import { getParametersLength } from '../Experimental/curry/helpers'
-import { createPipeline } from '../Experimental/pipeline/createPipeline'
-import { enpipe } from '../Experimental/pipeline/enpipe'
-import { pipe } from '../Experimental/pipeline/pipe'
+import { lambda } from '../Experimental/lambda/index.ts'
+// import { enpipe, pipe, pipeline } from '../Experimental/pipeline/index.ts'
+import { getParametersLength } from '../Experimental/curry/helpers.ts'
+import { createPipeline } from '../Experimental/pipeline/createPipeline.ts'
+import { enpipe } from '../Experimental/pipeline/enpipe.ts'
+import { pipe } from '../Experimental/pipeline/pipe.ts'
 
 const addUserFactory = (db: Record<string, Record<string, any>[]>) => (user: Record<string, any>) =>
     new Promise<string>(resolve => {

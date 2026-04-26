@@ -1,3 +1,3 @@
-import { internal } from './Pipable'
+import { internal } from './Pipable.ts'
 
 export type WithPipeAsync<TValue> = TValue & internal.HasPipeAsync<TValue>

@@ -1,11 +1,11 @@
-import { isInstanceOf } from '../../TypeGuards/helpers/isInstanceOf'
-import { Email } from '../../classes/Email'
-import { getStructMetadata } from '../../validators/schema/helpers/getStructMetadata'
-import { number } from '../../validators/schema/number'
-import { object } from '../../validators/schema/object'
-import { string } from '../../validators/schema/string'
-import { V3 } from '../../validators/schema/types'
-import { replaceSchemaTree, type ReplacedKeysTree } from '../replaceSchemaTree'
+import { isInstanceOf } from '../../TypeGuards/helpers/isInstanceOf.ts'
+import { Email } from '../../classes/Email.ts'
+import { getStructMetadata } from '../../validators/schema/helpers/getStructMetadata.ts'
+import { number } from '../../validators/schema/number.ts'
+import { object } from '../../validators/schema/object.ts'
+import { string } from '../../validators/schema/string.ts'
+import { V3 } from '../../validators/schema/types/index.ts'
+import { replaceSchemaTree, type ReplacedKeysTree } from '../replaceSchemaTree.ts'
 
 describe('replaceSchemaTree', () => {
     it('should replace keys in the schema with new type guards', () => {

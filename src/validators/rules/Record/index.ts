@@ -1,5 +1,5 @@
-import { optional } from '../Optional/factories/optional'
-import { nonEmpty } from './factories/nonEmpty'
+import { optional } from '../Optional/factories/optional.ts'
+import { nonEmpty } from './factories/nonEmpty.ts'
 
 export const RecordRules = {
     nonEmpty,

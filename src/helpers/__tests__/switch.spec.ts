@@ -1,4 +1,4 @@
-import { $switch } from '../Experimental/switch'
+import { $switch } from '../Experimental/switch.ts'
 
 describe('$switch', () => {
     it('should return the first matching value', () => {

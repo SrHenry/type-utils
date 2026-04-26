@@ -1,11 +1,11 @@
-import type { bindings, keys } from '../../../rules/constants'
-import { getRule } from '../../../rules/helpers/getRule'
-import { isCustom as isCustomRule } from '../../../rules/helpers/isCustomRule'
+import type { bindings, keys } from '../../../rules/constants.ts'
+import { getRule } from '../../../rules/helpers/getRule.ts'
+import { isCustom as isCustomRule } from '../../../rules/helpers/isCustomRule.ts'
 import type {
     Custom as CustomRules,
     Default as DefaultRules,
     RuleTuple as DefaultRuleTuple,
-} from '../../../rules/types'
+} from '../../../rules/types/index.ts'
 
 type DefaultMappedRule<R extends keyof keys = keyof keys> = {
     type: 'default'

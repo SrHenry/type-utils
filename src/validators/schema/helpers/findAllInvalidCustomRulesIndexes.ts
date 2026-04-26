@@ -1,4 +1,4 @@
-import { isCustom } from '../../rules/helpers/isCustomRule'
+import { isCustom } from '../../rules/helpers/isCustomRule.ts'
 
 export function findInvalidCustomRulesIndexes(list: unknown[]) {
     return list.reduce<number[]>((idxs, r, i) => {

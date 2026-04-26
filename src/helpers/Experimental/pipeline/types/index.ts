@@ -1,3 +1,3 @@
-export type { GetAsyncPipeline } from './GetAsyncPipeline'
-export type { GetPipeline } from './GetPipeline'
-export type { Pipable } from './Pipable'
+export type { GetAsyncPipeline } from './GetAsyncPipeline.ts'
+export type { GetPipeline } from './GetPipeline.ts'
+export type { Pipable } from './Pipable.ts'

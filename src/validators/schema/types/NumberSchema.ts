@@ -1,5 +1,5 @@
-import type { NumberRules } from '../../rules/Number'
-import type { FluentSchema } from './FluentSchema'
+import type { NumberRules } from '../../rules/Number/index.ts'
+import type { FluentSchema } from './FluentSchema.ts'
 
 type Rules = Omit<typeof NumberRules, 'optional'>
 

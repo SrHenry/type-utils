@@ -1,14 +1,14 @@
-import { isFunction } from '../../helpers/isFunction'
-import { asTypeGuard } from '../../TypeGuards/helpers/asTypeGuard'
-import { array } from '../../validators/schema/array'
-import { boolean } from '../../validators/schema/boolean'
-import { number } from '../../validators/schema/number'
-import { object } from '../../validators/schema/object'
-import { string } from '../../validators/schema/string'
-import { tuple } from '../../validators/schema/tuple'
-import { useSchema } from '../../validators/schema/useSchema'
+import { isFunction } from '../../helpers/isFunction.ts'
+import { asTypeGuard } from '../../TypeGuards/helpers/asTypeGuard.ts'
+import { array } from '../../validators/schema/array.ts'
+import { boolean } from '../../validators/schema/boolean.ts'
+import { number } from '../../validators/schema/number.ts'
+import { object } from '../../validators/schema/object.ts'
+import { string } from '../../validators/schema/string.ts'
+import { tuple } from '../../validators/schema/tuple.ts'
+import { useSchema } from '../../validators/schema/useSchema.ts'
 
-import { match } from '../match'
+import { match } from '../match.ts'
 
 describe('match', () => {
     it('should match a primitive value and return a value', () => {
@@ -153,9 +153,9 @@ describe('match', () => {
             ...infer Rest extends number[],
         ]
             ?
-                  | import('../../TypeGuards/types/index').TypeGuard<
-                        import('../../types/Func').Fn<
-                            import('../../types/Tuple').TupleTools.CreateTuple<T>,
+                  | import('../../TypeGuards/types/index.ts').TypeGuard<
+                        import('../../types/Func.ts').Fn<
+                            import('../../types/Tuple.ts').TupleTools.CreateTuple<T>,
                             any
                         >
                     >
@@ -164,14 +164,14 @@ describe('match', () => {
 
         function func<TParams extends [...any[]] = [], TReturn = any>(
             argsLength: TParams['length']
-        ): import('../../TypeGuards/types/index').TypeGuard<
-            import('../../types/Func').Fn<TParams, TReturn>
+        ): import('../../TypeGuards/types/index.ts').TypeGuard<
+            import('../../types/Func.ts').Fn<TParams, TReturn>
         >
         function func<T extends number>(
             params: T
-        ): import('../../TypeGuards/types/index').TypeGuard<
-            import('../../types/Func').Fn<
-                import('../../types/Tuple').TupleTools.CreateTuple<T>,
+        ): import('../../TypeGuards/types/index.ts').TypeGuard<
+            import('../../types/Func.ts').Fn<
+                import('../../types/Tuple.ts').TupleTools.CreateTuple<T>,
                 any
             >
         >
@@ -179,7 +179,7 @@ describe('match', () => {
 
         function func(...params: number[]) {
             return useSchema(
-                asTypeGuard<import('../../types/Func').Fn<any[], any>>(
+                asTypeGuard<import('../../types/Func.ts').Fn<any[], any>>(
                     value => isFunction(value) && params.some(p => p === value.length),
                     {
                         kind: 'function',
@@ -192,8 +192,8 @@ describe('match', () => {
         }
 
         function forEach__signature_1<T>(
-            fn: import('../../types/Func').Fn<[item: T], unknown>
-        ): import('../../types/Func').Fn1<Iterable<T>, void> {
+            fn: import('../../types/Func.ts').Fn<[item: T], unknown>
+        ): import('../../types/Func.ts').Fn1<Iterable<T>, void> {
             return (list: Iterable<T>) => {
                 for (const e of list) fn(e)
             }

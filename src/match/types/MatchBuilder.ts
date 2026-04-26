@@ -1,15 +1,15 @@
-import type { TupleTools } from '../../types/Tuple'
-import type { Expr, ExtractDefaultExpr, ExtractSpecificExprs } from './Expr'
-import type { FilterUnion } from './FilterUnion'
-import type { Guard } from './Guard'
-import type { IsExhaustive } from './IsExhaustive'
-import type { Overloads } from './Overloads'
+import type { TupleTools } from '../../types/Tuple.ts'
+import type { Expr, ExtractDefaultExpr, ExtractSpecificExprs } from './Expr.ts'
+import type { FilterUnion } from './FilterUnion.ts'
+import type { Guard } from './Guard.ts'
+import type { IsExhaustive } from './IsExhaustive.ts'
+import type { Overloads } from './Overloads.ts'
 import type {
     ExtractPattern,
     ExtractSpecificPatterns,
     GroupByPattern,
     OmitUnknownPattern,
-} from './Pattern'
+} from './Pattern.ts'
 
 export type ExecFn<T extends readonly (readonly [any, any])[]> = Overloads<
     GroupByPattern<OmitUnknownPattern<T>>

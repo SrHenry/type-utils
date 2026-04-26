@@ -1,6 +1,6 @@
-import type { TypeGuard } from '../../../TypeGuards'
-import type { RecordRules } from '../../rules/Record'
-import type { FluentSchema } from './FluentSchema'
+import type { TypeGuard } from '../../../TypeGuards/index.ts'
+import type { RecordRules } from '../../rules/Record/index.ts'
+import type { FluentSchema } from './FluentSchema.ts'
 
 type Rules = Omit<typeof RecordRules, 'optional'>
 

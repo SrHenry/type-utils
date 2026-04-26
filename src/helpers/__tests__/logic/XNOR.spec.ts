@@ -1,4 +1,4 @@
-import { XNOR } from '../../logic'
+import { XNOR } from '../../logic/index.ts'
 
 const LARGE_ARRAY_SIZE = 10000
 

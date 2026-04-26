@@ -1,4 +1,4 @@
-import { $throw } from '../helpers/throw'
+import { $throw } from '../helpers/throw.ts'
 
 const NO_PARAM = Symbol('matcher::NO_PARAM')
 

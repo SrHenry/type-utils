@@ -1,7 +1,7 @@
-import { optional } from '../Optional/factories/optional'
-import { max } from './factories/max'
-import { min } from './factories/min'
-import { nonZero } from './factories/nonZero'
+import { optional } from '../Optional/factories/optional.ts'
+import { max } from './factories/max.ts'
+import { min } from './factories/min.ts'
+import { nonZero } from './factories/nonZero.ts'
 
 export const NumberRules = {
     nonZero,

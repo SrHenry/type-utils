@@ -1,4 +1,4 @@
-import { arrayToObject } from './arrayToObject'
+import { arrayToObject } from './arrayToObject.ts'
 
 export function omit<T extends {}, K extends (keyof T)[]>(from: T, keys: K): Omit<T, K[number]> {
     if (keys.length === 0 || keys.every(key => !(key in <object>from)))

@@ -1,10 +1,10 @@
-import type { TypeGuard } from '../../TypeGuards/types'
-import type { V3 } from '../schema'
-import { boolean } from '../schema/boolean'
-import { getStructMetadata } from '../schema/helpers/getStructMetadata'
-import { number } from '../schema/number'
-import { string } from '../schema/string'
-import { tuple } from '../schema/tuple'
+import type { TypeGuard } from '../../TypeGuards/types/index.ts'
+import type { V3 } from '../schema/index.ts'
+import { boolean } from '../schema/boolean.ts'
+import { getStructMetadata } from '../schema/helpers/getStructMetadata.ts'
+import { number } from '../schema/number.ts'
+import { string } from '../schema/string.ts'
+import { tuple } from '../schema/tuple.ts'
 
 describe('tuple', () => {
     it('should validate a basic tuple', () => {

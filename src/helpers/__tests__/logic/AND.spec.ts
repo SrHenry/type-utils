@@ -1,4 +1,4 @@
-import { AND } from '../../logic'
+import { AND } from '../../logic/index.ts'
 
 const LARGE_ARRAY_SIZE = 10000
 

@@ -1,4 +1,4 @@
-import { isFunction } from '../../isFunction'
+import { isFunction } from '../../isFunction.ts'
 
 describe('isFunction', () => {
     it('should return true if value is a function', () => {

@@ -1,4 +1,4 @@
-import { NumberRules } from '../../validators/rules'
+import { NumberRules } from '../../validators/rules/index.ts'
 
 export { NumberRules }
 

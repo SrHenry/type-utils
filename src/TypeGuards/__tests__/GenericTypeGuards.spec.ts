@@ -1,16 +1,16 @@
-import { ensureInstanceOf } from '../helpers/ensureInstanceOf'
-import { ensureInterface } from '../helpers/ensureInterface'
-import { getMessage } from '../helpers/getMessage'
-import { getMetadata } from '../helpers/getMetadata'
-import { hasMessage } from '../helpers/hasMessage'
-import { hasMetadata } from '../helpers/hasMetadata'
-import { is } from '../helpers/is'
-import { isInstanceOf } from '../helpers/isInstanceOf'
-import { isTypeGuard } from '../helpers/isTypeGuard'
-import { setMessage } from '../helpers/setMessage'
-import { setMetadata } from '../helpers/setMetadata'
+import { ensureInstanceOf } from '../helpers/ensureInstanceOf.ts'
+import { ensureInterface } from '../helpers/ensureInterface.ts'
+import { getMessage } from '../helpers/getMessage.ts'
+import { getMetadata } from '../helpers/getMetadata.ts'
+import { hasMessage } from '../helpers/hasMessage.ts'
+import { hasMetadata } from '../helpers/hasMetadata.ts'
+import { is } from '../helpers/is.ts'
+import { isInstanceOf } from '../helpers/isInstanceOf.ts'
+import { isTypeGuard } from '../helpers/isTypeGuard.ts'
+import { setMessage } from '../helpers/setMessage.ts'
+import { setMetadata } from '../helpers/setMetadata.ts'
 
-import { TypeGuardError } from '../TypeErrors'
+import { TypeGuardError } from '../TypeErrors.ts'
 
 describe('isInstanceOf', () => {
     class A {

@@ -1,7 +1,7 @@
-import { TypeGuardError } from '../../../TypeGuards/TypeErrors'
-import { isCustom } from '../../rules/helpers/isCustomRule'
-import { findInvalidCustomRulesIndexes } from './findAllInvalidCustomRulesIndexes'
-import { parseListToString } from './parseListToString'
+import { TypeGuardError } from '../../../TypeGuards/TypeErrors.ts'
+import { isCustom } from '../../rules/helpers/isCustomRule.ts'
+import { findInvalidCustomRulesIndexes } from './findAllInvalidCustomRulesIndexes.ts'
+import { parseListToString } from './parseListToString.ts'
 
 export function validateCustomRules(rules: unknown[]) {
     const invalidArgsIndexes = findInvalidCustomRulesIndexes(rules)

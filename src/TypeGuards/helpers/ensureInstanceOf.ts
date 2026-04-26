@@ -1,8 +1,8 @@
-import type { ConstructorSignature } from '../types'
+import type { ConstructorSignature } from '../types/index.ts'
 
-import { TypeGuardError } from '../TypeErrors'
-import { __curry_param__ } from './constants'
-import { isInstanceOf } from './isInstanceOf'
+import { TypeGuardError } from '../TypeErrors.ts'
+import { __curry_param__ } from './constants.ts'
+import { isInstanceOf } from './isInstanceOf.ts'
 
 export function ensureInstanceOf<Instance, Constructor extends ConstructorSignature>(
     value: Instance,

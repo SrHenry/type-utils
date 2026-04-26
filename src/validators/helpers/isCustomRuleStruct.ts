@@ -1,4 +1,4 @@
-import type { All as AllRules, Custom as CustomRule, RuleStruct } from '../rules/types'
+import type { All as AllRules, Custom as CustomRule, RuleStruct } from '../rules/types/index.ts'
 
 export type CustomRuleStruct = RuleStruct<CustomRule<unknown[], string, unknown>>
 

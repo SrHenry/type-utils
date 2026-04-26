@@ -1,12 +1,12 @@
-import type { MessageFormator } from '../../../TypeGuards/types'
-import type { ArrayRule } from './../Array'
-import type { NumberRule } from './../Number'
-import type { RecordRule } from './../Record'
-import type { StringRule } from './../String'
-import type { RuleTuple } from './RuleTuple'
+import type { MessageFormator } from '../../../TypeGuards/types/index.ts'
+import type { ArrayRule } from './../Array/index.ts'
+import type { NumberRule } from './../Number/index.ts'
+import type { RecordRule } from './../Record/index.ts'
+import type { StringRule } from './../String/index.ts'
+import type { RuleTuple } from './RuleTuple.ts'
 
-export type * from './RuleFactory'
-export type * from './RuleTuple'
+export type * from './RuleFactory.ts'
+export type * from './RuleTuple.ts'
 
 export type Rule<Subject = any, Args extends any[] = any[]> = (
     subject: Subject,

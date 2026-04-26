@@ -1,5 +1,5 @@
-import type { Tag } from './Tag'
-import type { TupleTools } from './Tuple'
+import type { Tag } from './Tag.ts'
+import type { TupleTools } from './Tuple.ts'
 
 export type NoParamsFunc<ReturnType = void> = Func<[], ReturnType>
 export type Func0<ReturnType = void> = NoParamsFunc<ReturnType>
