@@ -1,5 +1,5 @@
-import { __curry_param__ } from './constants'
-import { hasOwnMetadata } from './metadataStore'
+import { __curry_param__ } from './constants.ts'
+import { hasOwnMetadata } from './metadataStore.ts'
 
 export function hasMetadata<K extends string | symbol, T>(key: K, from: T): boolean
 export function hasMetadata<K extends string | symbol>(key: K): <T>(from: T) => boolean
