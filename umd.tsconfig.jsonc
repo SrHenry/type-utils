@@ -9,5 +9,5 @@
     "sourceMap": true,
     "noEmitOnError": true
   },
-  "files": ["src/umd.ts"]
+  "files": ["src/umd.ts", "src/@types/object.d.ts"]
 }
