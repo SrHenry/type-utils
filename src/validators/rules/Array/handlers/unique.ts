@@ -1,4 +1,4 @@
-import { unique } from '../../common'
+import { unique } from '../../common.ts'
 
 const handler = (arg: unknown[], deepObject: boolean = true) =>
     Array.isArray(arg) && unique(arg, deepObject)

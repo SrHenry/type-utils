@@ -1,4 +1,4 @@
-import { NonEnumerableProperty } from '../helpers/decorators/stage-2'
+import { NonEnumerableProperty } from '../helpers/decorators/stage-2/index.ts'
 
 const NO_CAUSE = Symbol('TypeGuardError::NO_CAUSE')
 

@@ -1,7 +1,7 @@
-import type { Func } from '../../../types/Func'
-import type { Curried, CurriedFunc, CurriedLambda, Lambda } from '../../../types/Lambda'
+import type { Func } from '../../../types/Func.ts'
+import type { Curried, CurriedFunc, CurriedLambda, Lambda } from '../../../types/Lambda.ts'
 
-import { __curried__, __length__, __partialApply__ } from './constants'
+import { __curried__, __length__, __partialApply__ } from './constants.ts'
 
 export function isCurried<TLambda extends Lambda<any[], any>>(
     fn: unknown

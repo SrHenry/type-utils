@@ -1,4 +1,4 @@
-import { arrayToObject } from '../arrayToObject'
+import { arrayToObject } from '../arrayToObject.ts'
 
 type ExtractKey<K> = K extends object ? keyof K : K
 type ExtractValue<T, M> = M extends keyof T

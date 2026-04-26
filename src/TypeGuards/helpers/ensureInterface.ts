@@ -1,9 +1,9 @@
-import { TypeGuardError } from '../TypeErrors'
-import { TypeGuard } from '../types'
-import { __curry_param__ } from './constants'
-import { getMessage } from './getMessage'
-import { hasMessage } from './hasMessage'
-import { isTypeGuard } from './isTypeGuard'
+import { TypeGuardError } from '../TypeErrors.ts'
+import { TypeGuard } from '../types/index.ts'
+import { __curry_param__ } from './constants.ts'
+import { getMessage } from './getMessage.ts'
+import { hasMessage } from './hasMessage.ts'
+import { isTypeGuard } from './isTypeGuard.ts'
 
 export function ensureInterface<Interface, Instance = unknown>(
     value: Instance,

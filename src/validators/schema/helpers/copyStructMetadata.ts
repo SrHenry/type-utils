@@ -1,10 +1,10 @@
-import { deepMerge } from '../../../helpers/deepMerge'
-import type { TypeGuard } from '../../../TypeGuards/types'
-import type { V3 } from '../types'
+import { deepMerge } from '../../../helpers/deepMerge.ts'
+import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
+import type { V3 } from '../types/index.ts'
 
-import { getStructMetadata } from './getStructMetadata'
-import { hasStructMetadata } from './hasStructMetadata'
-import { setStructMetadata } from './setStructMetadata'
+import { getStructMetadata } from './getStructMetadata.ts'
+import { hasStructMetadata } from './hasStructMetadata.ts'
+import { setStructMetadata } from './setStructMetadata.ts'
 
 export function copyStructMetadata<T, Target>(source: TypeGuard<T>, target: Target): Target
 export function copyStructMetadata<Target>(

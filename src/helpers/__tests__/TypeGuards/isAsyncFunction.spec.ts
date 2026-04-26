@@ -1,4 +1,4 @@
-import { isAsyncFunction } from '../../isAsyncFunction'
+import { isAsyncFunction } from '../../isAsyncFunction.ts'
 ;((async () => {}).constructor.name === 'AsyncFunction' ? describe : describe.skip)(
     'isAsyncFunction',
     () => {

@@ -1,19 +1,19 @@
-import type { TypeGuard } from '../../TypeGuards/types'
-import type { Custom } from '../rules/types'
-import type { V3 } from './types'
-import type { FluentSchema } from './types/FluentSchema'
+import type { TypeGuard } from '../../TypeGuards/types/index.ts'
+import type { Custom } from '../rules/types/index.ts'
+import type { V3 } from './types/index.ts'
+import type { FluentSchema } from './types/FluentSchema.ts'
 
-import { Generics } from '../../Generics'
-import { useCustomRules } from '../rules/helpers/useCustomRules'
-import { branchIfOptional } from './helpers/branchIfOptional'
-import { setRuleMessage } from './helpers/setRuleMessage'
-import { setStructMetadata } from './helpers/setStructMetadata'
+import { Generics } from '../../Generics/index.ts'
+import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
+import { branchIfOptional } from './helpers/branchIfOptional.ts'
+import { setRuleMessage } from './helpers/setRuleMessage.ts'
+import { setStructMetadata } from './helpers/setStructMetadata.ts'
 
-import { SchemaValidator } from '../SchemaValidator'
-import { copyStructMetadata } from './helpers/copyStructMetadata'
-import { getRuleStructMetadata } from './helpers/getRuleStructMetadata'
-import { optionalize } from './helpers/optional'
-import { validateCustomRules } from './helpers/validateCustomRules'
+import { SchemaValidator } from '../SchemaValidator.ts'
+import { copyStructMetadata } from './helpers/copyStructMetadata.ts'
+import { getRuleStructMetadata } from './helpers/getRuleStructMetadata.ts'
+import { optionalize } from './helpers/optional/index.ts'
+import { validateCustomRules } from './helpers/validateCustomRules.ts'
 
 function _fn(): TypeGuard<Generics.PrimitiveType> {
     const guard = (arg: unknown): arg is Generics.PrimitiveType =>

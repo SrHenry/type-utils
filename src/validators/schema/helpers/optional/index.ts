@@ -1,21 +1,21 @@
-import type { TypeGuard } from '../../../../TypeGuards/types'
-import type { Func } from '../../../../types/Func'
+import type { TypeGuard } from '../../../../TypeGuards/types/index.ts'
+import type { Func } from '../../../../types/Func.ts'
 import type {
     OptionalizedTypeGuardFactory,
     OptionalizeTypeGuardFactory,
     TypeGuardFactory,
     TypeGuardFactoryParameters,
     TypeGuardFactoryType,
-} from './types'
+} from './types.ts'
 
-import { getMessage } from '../../../../TypeGuards/helpers/getMessage'
-import { isTypeGuard } from '../../../../TypeGuards/helpers/isTypeGuard'
-import { setMessage } from '../../../../TypeGuards/helpers/setMessage'
-import { getRule } from '../../../rules/helpers/getRule'
-import { ValidationError } from '../../../ValidationError'
-import { getStructMetadata } from '../getStructMetadata'
-import { setOptionalFlag } from '../optionalFlag'
-import { setStructMetadata } from '../setStructMetadata'
+import { getMessage } from '../../../../TypeGuards/helpers/getMessage.ts'
+import { isTypeGuard } from '../../../../TypeGuards/helpers/isTypeGuard.ts'
+import { setMessage } from '../../../../TypeGuards/helpers/setMessage.ts'
+import { getRule } from '../../../rules/helpers/getRule.ts'
+import { ValidationError } from '../../../ValidationError.ts'
+import { getStructMetadata } from '../getStructMetadata.ts'
+import { setOptionalFlag } from '../optionalFlag.ts'
+import { setStructMetadata } from '../setStructMetadata.ts'
 
 const wrapOptional = <Params extends any[], Guarded>(
     factoryFn: Func<Params, TypeGuard<Guarded>>

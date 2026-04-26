@@ -1,8 +1,8 @@
-import type { TypeGuard } from '../../../../TypeGuards/types'
-import { number } from '../../../schema/number'
-import { object } from '../../../schema/object'
-import { string } from '../../../schema/string'
-import { optionalize, optionalizeOverloadFactory } from '../optional'
+import type { TypeGuard } from '../../../../TypeGuards/types/index.ts'
+import { number } from '../../../schema/number.ts'
+import { object } from '../../../schema/object.ts'
+import { string } from '../../../schema/string.ts'
+import { optionalize, optionalizeOverloadFactory } from '../optional/index.ts'
 
 describe('optionalize', () => {
     it('should generate an optional schema embeded in the original schema', () => {

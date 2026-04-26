@@ -1,4 +1,4 @@
-import { getDateTimeStringAsDB } from '../getDateTimeStringAsDB'
+import { getDateTimeStringAsDB } from '../getDateTimeStringAsDB.ts'
 
 describe('getDateTimeStringAsDB', () => {
     it('should return a string with the MySQL date format', () => {

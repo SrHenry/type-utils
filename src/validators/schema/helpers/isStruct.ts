@@ -1,8 +1,8 @@
-import Generics from '../../../Generics'
-import { isTypeGuard } from '../../../TypeGuards/helpers'
-import { TypeGuard } from '../../../TypeGuards/types'
-import { GenericStruct } from '../types'
-import { isRuleStruct } from './isRuleStruct'
+import Generics from '../../../Generics/index.ts'
+import { isTypeGuard } from '../../../TypeGuards/helpers/index.ts'
+import { TypeGuard } from '../../../TypeGuards/types/index.ts'
+import { GenericStruct } from '../types/index.ts'
+import { isRuleStruct } from './isRuleStruct.ts'
 
 export function isStruct(struct: unknown): struct is GenericStruct<any>
 export function isStruct<T, IsGeneric extends true | false = true>(

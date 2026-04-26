@@ -1,4 +1,4 @@
-import { StringRules } from '../../validators/rules'
+import { StringRules } from '../../validators/rules/index.ts'
 
 export { StringRules }
 

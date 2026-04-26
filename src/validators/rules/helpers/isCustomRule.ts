@@ -1,6 +1,6 @@
-import type { Custom } from '../types'
-import { isCustomHandler } from './isCustomHandler'
-import { isRule } from './isRule'
+import type { Custom } from '../types/index.ts'
+import { isCustomHandler } from './isCustomHandler.ts'
+import { isRule } from './isRule.ts'
 
 export const isCustom = <
     Args extends any[] = unknown[],

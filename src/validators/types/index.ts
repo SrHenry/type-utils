@@ -1,6 +1,6 @@
-import type { Generics } from '../../Generics'
-import type { MessageFormator, TypeGuard } from '../../TypeGuards/types'
-import type { Merge } from '../../types'
+import type { Generics } from '../../Generics/index.ts'
+import type { MessageFormator, TypeGuard } from '../../TypeGuards/types/index.ts'
+import type { Merge } from '../../types/index.ts'
 
 export type OptionalKeys<T> = keyof Generics.OmitNever<{
     [K in keyof T]-?: T[K] extends Exclude<T[K], undefined> ? never : K

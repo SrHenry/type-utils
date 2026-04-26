@@ -1,4 +1,4 @@
-import { MapFn, TMapFn } from '../../types'
+import { MapFn, TMapFn } from '../../types/index.ts'
 
 const EMPTY = Symbol('map:empty')
 export function map<T, U>(fn: TMapFn<T, U>): (array: T[]) => U[]

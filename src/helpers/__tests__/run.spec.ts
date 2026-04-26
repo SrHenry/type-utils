@@ -1,4 +1,4 @@
-import { run } from '../Experimental/run'
+import { run } from '../Experimental/run.ts'
 describe('run', () => {
     it('should run a callback function and return a tuple with the error or the result of the function', () => {
         const callback = (a: number, b: number) => a + b

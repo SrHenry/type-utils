@@ -1,4 +1,4 @@
-import { removeLastElement } from '../removeLastElement'
+import { removeLastElement } from '../removeLastElement.ts'
 
 describe('removeLastElement', () => {
     it('should remove the last element from an array', () => {

@@ -1,32 +1,32 @@
-import type { GetTypeGuard, MessageFormator, TypeGuard } from '../TypeGuards/types'
-import type { Merge } from '../types'
-import type { Custom as CustomRules, RuleStruct } from './rules/types/'
-import type { GenericStruct, V3 } from './schema/types'
-import type { ValidatorMessageMap } from './types'
+import type { GetTypeGuard, MessageFormator, TypeGuard } from '../TypeGuards/types/index.ts'
+import type { Merge } from '../types/index.ts'
+import type { Custom as CustomRules, RuleStruct } from './rules/types/index.ts'
+import type { GenericStruct, V3 } from './schema/types/index.ts'
+import type { ValidatorMessageMap } from './types/index.ts'
 
-import Generics from '../Generics'
-import { AutoBind } from '../helpers/decorators/stage-2/AutoBind'
-import { asTypeGuard } from '../TypeGuards/helpers/asTypeGuard'
-import { ensureInterface } from '../TypeGuards/helpers/ensureInterface'
-import { getMessage } from '../TypeGuards/helpers/getMessage'
-import { getMetadata } from '../TypeGuards/helpers/getMetadata'
-import { getValidatorMessage } from '../TypeGuards/helpers/getValidatorMessage'
-import { hasValidatorMessage } from '../TypeGuards/helpers/hasValidatorMessage'
-import { isInstanceOf } from '../TypeGuards/helpers/isInstanceOf'
-import { setMetadata } from '../TypeGuards/helpers/setMetadata'
-import { setValidatorMessage } from '../TypeGuards/helpers/setValidatorMessage'
-import { setValidatorMessageFormator } from '../TypeGuards/helpers/setValidatorMessageFormator'
-import { TypeGuardError } from '../TypeGuards/TypeErrors'
-import { isValidObject } from './helpers/isValidObject'
-import { nonEmpty as nonEmptyRecordRuleFactory } from './rules/Record/factories/nonEmpty'
-import { doesNotMatchRules, validateRules } from './RuleValidator'
-import { getRuleStructMetadata } from './schema/helpers/getRuleStructMetadata'
-import { getStructMetadata } from './schema/helpers/getStructMetadata'
-import { hasStructMetadata } from './schema/helpers/hasStructMetadata'
-import { isStruct } from './schema/helpers/isStruct'
-import { updateStructMetadata } from './schema/helpers/updateStructMetadata'
-import { type ValidationArgs, ValidationError } from './ValidationError'
-import { ValidationErrors } from './ValidationErrors'
+import Generics from '../Generics/index.ts'
+import { AutoBind } from '../helpers/decorators/stage-2/AutoBind.ts'
+import { asTypeGuard } from '../TypeGuards/helpers/asTypeGuard.ts'
+import { ensureInterface } from '../TypeGuards/helpers/ensureInterface.ts'
+import { getMessage } from '../TypeGuards/helpers/getMessage.ts'
+import { getMetadata } from '../TypeGuards/helpers/getMetadata.ts'
+import { getValidatorMessage } from '../TypeGuards/helpers/getValidatorMessage.ts'
+import { hasValidatorMessage } from '../TypeGuards/helpers/hasValidatorMessage.ts'
+import { isInstanceOf } from '../TypeGuards/helpers/isInstanceOf.ts'
+import { setMetadata } from '../TypeGuards/helpers/setMetadata.ts'
+import { setValidatorMessage } from '../TypeGuards/helpers/setValidatorMessage.ts'
+import { setValidatorMessageFormator } from '../TypeGuards/helpers/setValidatorMessageFormator.ts'
+import { TypeGuardError } from '../TypeGuards/TypeErrors.ts'
+import { isValidObject } from './helpers/isValidObject.ts'
+import { nonEmpty as nonEmptyRecordRuleFactory } from './rules/Record/factories/nonEmpty.ts'
+import { doesNotMatchRules, validateRules } from './RuleValidator.ts'
+import { getRuleStructMetadata } from './schema/helpers/getRuleStructMetadata.ts'
+import { getStructMetadata } from './schema/helpers/getStructMetadata.ts'
+import { hasStructMetadata } from './schema/helpers/hasStructMetadata.ts'
+import { isStruct } from './schema/helpers/isStruct.ts'
+import { updateStructMetadata } from './schema/helpers/updateStructMetadata.ts'
+import { type ValidationArgs, ValidationError } from './ValidationError.ts'
+import { ValidationErrors } from './ValidationErrors.ts'
 
 export type ValidateReturn<T> =
     | T
@@ -48,7 +48,7 @@ const defaults = {
 } as const
 type DefaultThrowsParam = (typeof defaults)['throws']
 
-const throws = Symbol('[@srhenry/type-utils]:/validators/SchemaValidator/__throws__')
+const throws = Symbol.for('[@srhenry/type-utils]:/validators/SchemaValidator/__throws__')
 
 const shouldThrow = (subject: unknown): boolean =>
     getMetadata(

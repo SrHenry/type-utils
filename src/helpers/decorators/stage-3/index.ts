@@ -1,1 +1,1 @@
-export * from './NonEnumerableProperty'
+export * from './NonEnumerableProperty.ts'

@@ -1,4 +1,4 @@
-import { curry, isPartialApply } from '../Experimental/curry'
+import { curry, isPartialApply } from '../Experimental/curry/index.ts'
 
 describe('curry', () => {
     it('should have no effect in functions with up to one parameter', () => {

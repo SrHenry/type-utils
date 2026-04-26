@@ -1,8 +1,8 @@
-import type { Expr } from './Expr'
-import type { FilterUnion } from './FilterUnion'
-import type { Guard } from './Guard'
-import type { IsExhaustive } from './IsExhaustive'
-import type { ExtractPattern } from './Pattern'
+import type { Expr } from './Expr.ts'
+import type { FilterUnion } from './FilterUnion.ts'
+import type { Guard } from './Guard.ts'
+import type { IsExhaustive } from './IsExhaustive.ts'
+import type { ExtractPattern } from './Pattern.ts'
 
 export type ExecMatch<TExprs extends [...any[]]> = {
     exec(): TExprs[number]

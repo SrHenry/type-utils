@@ -1,10 +1,10 @@
-import type { Custom as CustomRule, Default as DefaultRules, Rule } from '../../rules/types'
+import type { Custom as CustomRule, Default as DefaultRules, Rule } from '../../rules/types/index.ts'
 
-import { AND } from '../../../helpers/logic'
-import { getRule } from '../../rules/helpers/getRule'
-import { isCustomHandler } from '../../rules/helpers/isCustomHandler'
-import { isRule } from '../../rules/helpers/isRule'
-import { isRequired } from './isRequired'
+import { AND } from '../../../helpers/logic/index.ts'
+import { getRule } from '../../rules/helpers/getRule.ts'
+import { isCustomHandler } from '../../rules/helpers/isCustomHandler.ts'
+import { isRule } from '../../rules/helpers/isRule.ts'
+import { isRequired } from './isRequired.ts'
 
 export function isFollowingRules<CustomRules extends CustomRule<any[], string, any>[]>(
     arg: unknown,

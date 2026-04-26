@@ -1,4 +1,4 @@
-import { Email } from '../../../../classes/Email'
+import { Email } from '../../../../classes/Email.ts'
 
 const handler = (arg: string) => Email.validate(String(arg))
 

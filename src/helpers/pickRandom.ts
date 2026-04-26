@@ -1,4 +1,4 @@
-import { random } from './random'
+import { random } from './random.ts'
 
 /** Picks a random element from an array and removes it from the array */
 export function pickRandom<T>(from: T[]): T {

@@ -1,8 +1,8 @@
-import type { TypeGuard } from '../../../TypeGuards'
-import type { Fn, ThrowFn } from '../../../types/Func'
-import type { Custom } from '../../rules/types'
-import type { ValidateReturn } from '../../SchemaValidator'
-import type { ValidationErrors } from '../../ValidationErrors'
+import type { TypeGuard } from '../../../TypeGuards/index.ts'
+import type { Fn, ThrowFn } from '../../../types/Func.ts'
+import type { Custom } from '../../rules/types/index.ts'
+import type { ValidateReturn } from '../../SchemaValidator.ts'
+import type { ValidationErrors } from '../../ValidationErrors.ts'
 
 export type FluentOptionalSchema<
     T,

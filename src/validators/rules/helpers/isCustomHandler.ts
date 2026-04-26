@@ -1,5 +1,5 @@
-import { asTypeGuard } from '../../../TypeGuards'
-import type { CustomHandler } from '../types'
+import { asTypeGuard } from '../../../TypeGuards/index.ts'
+import type { CustomHandler } from '../types/index.ts'
 
 export const isCustomHandler = asTypeGuard<CustomHandler>(
     (handler: unknown) =>

@@ -1,5 +1,5 @@
-import type { Func } from './Func'
-import type { MergeObjects } from './index'
+import type { Func } from './Func.ts'
+import type { MergeObjects } from './index.ts'
 
 export type NoParamsLambda<ReturnType = void> = Lambda<[], ReturnType>
 export type Lambda0<ReturnType = void> = NoParamsLambda<ReturnType>

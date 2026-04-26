@@ -1,4 +1,4 @@
-import { min } from '../../common'
+import { min } from '../../common.ts'
 
 const handler = (arg: number | bigint, n: number | bigint) => min(Number(arg), n)
 

@@ -1,10 +1,10 @@
-import { optional } from '../Optional/factories/optional'
-import { email } from './factories/email'
-import { max } from './factories/max'
-import { min } from './factories/min'
-import { nonEmpty } from './factories/nonEmpty'
-import { regex } from './factories/regex'
-import { url } from './factories/url'
+import { optional } from '../Optional/factories/optional.ts'
+import { email } from './factories/email.ts'
+import { max } from './factories/max.ts'
+import { min } from './factories/min.ts'
+import { nonEmpty } from './factories/nonEmpty.ts'
+import { regex } from './factories/regex.ts'
+import { url } from './factories/url.ts'
 
 export const StringRules = {
     min,

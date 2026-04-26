@@ -6,7 +6,7 @@ import {
     isInstanceOf,
     isTypeGuard,
     isUnaryFunction,
-} from './helpers'
+} from './helpers/index.ts'
 
 export {
     asTypeGuard,
@@ -18,6 +18,6 @@ export {
     isUnaryFunction,
 }
 
-export * as helpers from './helpers'
-export * from './TypeErrors'
-export * from './types'
+export * as helpers from './helpers/index.ts'
+export * from './TypeErrors.ts'
+export * from './types/index.ts'

@@ -1,8 +1,8 @@
-import { isPromise } from '../../helpers/isPromise'
-import { AsyncFunc, Func } from '../../types/Func'
-import { AsyncLambda, Lambda } from '../../types/Lambda'
-import { AsyncResult, ErrorResult, Result, SucessfulResult } from '../../types/Result'
-import { lambda } from './lambda'
+import { isPromise } from '../../helpers/isPromise.ts'
+import { AsyncFunc, Func } from '../../types/Func.ts'
+import { AsyncLambda, Lambda } from '../../types/Lambda.ts'
+import { AsyncResult, ErrorResult, Result, SucessfulResult } from '../../types/Result.ts'
+import { lambda } from './lambda/index.ts'
 
 export function run<TParams extends any[], ReturnType>(
     callback: AsyncFunc<TParams, ReturnType>

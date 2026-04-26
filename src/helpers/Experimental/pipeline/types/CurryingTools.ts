@@ -1,4 +1,4 @@
-import { Func } from '../../../../types/Func'
+import { Func } from '../../../../types/Func.ts'
 
 export namespace CurryingTools {
     /**

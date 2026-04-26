@@ -1,4 +1,4 @@
-import { TypeGuardError } from '../TypeErrors'
+import { TypeGuardError } from '../TypeErrors.ts'
 
 test.skip('TypeGuardError', () => {
     it('should throw a TypeGuardError', () => {

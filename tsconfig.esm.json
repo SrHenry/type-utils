@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "module": "node20",
+    "moduleResolution": "nodenext",
+    "outDir": "./dist/esm",
+    "declaration": true,
+    "declarationDir": "./types",
+    "declarationMap": true,
+    "sourceMap": true,
+    "noEmitOnError": true
+  }
+}

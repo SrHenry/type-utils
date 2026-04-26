@@ -1,4 +1,4 @@
-import { getRule } from '../../helpers/getRule'
+import { getRule } from '../../helpers/getRule.ts'
 
 describe('getRule', () => {
     it('should return a rule', () => {

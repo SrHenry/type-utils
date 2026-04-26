@@ -1,12 +1,12 @@
-import type { AsyncFunc, Func1 } from '../../../../types/Func'
-import type { GetAsyncPipeline } from '../types/GetAsyncPipeline'
-import type { GetPipeline } from '../types/GetPipeline'
-import type { internal } from '../types/Pipable'
-import type { WithPipe } from '../types/WithPipe'
-import type { WithPipeAsync } from '../types/WithPipeAsync'
+import type { AsyncFunc, Func1 } from '../../../../types/Func.ts'
+import type { GetAsyncPipeline } from '../types/GetAsyncPipeline.ts'
+import type { GetPipeline } from '../types/GetPipeline.ts'
+import type { internal } from '../types/Pipable.ts'
+import type { WithPipe } from '../types/WithPipe.ts'
+import type { WithPipeAsync } from '../types/WithPipeAsync.ts'
 
-import { addDepipe } from './addDepipe'
-import { setPipelineMetadata } from './setPipelineMetadata'
+import { addDepipe } from './addDepipe.ts'
+import { setPipelineMetadata } from './setPipelineMetadata.ts'
 
 export function getPipeFn<T>(rvalue: T): internal.Pipe<typeof rvalue>
 export function getPipeFn(): internal.Pipe<void>

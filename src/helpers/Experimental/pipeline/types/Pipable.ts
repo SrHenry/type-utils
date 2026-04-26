@@ -1,7 +1,7 @@
-import type { Func, Func1 } from '../../../../types/Func'
-import type { Unpipable } from './Unpipable'
+import type { Func, Func1 } from '../../../../types/Func.ts'
+import type { Unpipable } from './Unpipable.ts'
 
-import { HasDepipe } from './interfaces/HasDepipe'
+import { HasDepipe } from './interfaces/HasDepipe.ts'
 
 export type Pipable<T> = T extends Unpipable
     ? T

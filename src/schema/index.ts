@@ -1,1 +1,1 @@
-export * from '../validators/schema'
+export * from '../validators/schema/index.ts'

@@ -1,8 +1,8 @@
-import type { Func1 } from '../../../types/Func'
-import type { GetPipeline } from './types'
-import type { internal } from './types/Pipable'
+import type { Func1 } from '../../../types/Func.ts'
+import type { GetPipeline } from './types/index.ts'
+import type { internal } from './types/Pipable.ts'
 
-import { pipeline } from './helpers/pipeline'
+import { pipeline } from './helpers/pipeline.ts'
 
 export function createPipeline(): internal.HasPipe<void>
 export function createPipeline<T extends Func1<any, any>>(cb: T): GetPipeline<typeof cb>

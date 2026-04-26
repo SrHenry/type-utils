@@ -1,5 +1,5 @@
-import type { GetOptional } from '../../types/GetOptional'
-import type { GetRequired } from '../../types/GetRequired'
+import type { GetOptional } from '../../types/GetOptional.ts'
+import type { GetRequired } from '../../types/GetRequired.ts'
 
 export type ConstructorSignature<T = any> = new (...args: any[]) => T
 export type TypeGuard<T = any> = (value: unknown) => value is T

@@ -1,4 +1,4 @@
-import { XOR } from '../../logic'
+import { XOR } from '../../logic/index.ts'
 
 const LARGE_ARRAY_SIZE = 10000
 

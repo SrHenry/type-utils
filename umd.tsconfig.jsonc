@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "module": "commonjs",
+    "moduleResolution": "bundler",
+    "outDir": "./dist/umd-temp",
+    "declaration": false,
+    "sourceMap": true,
+    "noEmitOnError": true
+  },
+  "files": ["src/umd.ts", "src/@types/object.d.ts"]
+}
