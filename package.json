@@ -112,11 +112,11 @@
       "require": "./dist/cjs/types/index.js",
       "default": "./dist/cjs/types/index.js"
     },
-    "./schemas": {
-      "types": "./types/schemas/index.d.ts",
-      "import": "./dist/esm/schemas/index.js",
-      "require": "./dist/cjs/schemas/index.js",
-      "default": "./dist/cjs/schemas/index.js"
+    "./schema": {
+      "types": "./types/schema/index.d.ts",
+      "import": "./dist/esm/schema/index.js",
+      "require": "./dist/cjs/schema/index.js",
+      "default": "./dist/cjs/schema/index.js"
     },
     "./rules": {
       "types": "./types/rules/index.d.ts",
