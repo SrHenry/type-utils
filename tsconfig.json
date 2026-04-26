@@ -16,6 +16,9 @@
       "./src/@types",
       "./node_modules/@types"
     ],
+    "types": [
+      "*"
+    ],
     "noEmit": true,
     "stripInternal": true,
     "esModuleInterop": true,
@@ -37,7 +40,8 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "skipLibCheck": true,
-    "noErrorTruncation": true
+    "noErrorTruncation": true,
+    "stableTypeOrdering": true
   },
   "exclude": [
     "node_modules",
