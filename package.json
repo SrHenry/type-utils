@@ -149,6 +149,12 @@
       "require": "./dist/cjs/match/index.js",
       "default": "./dist/cjs/match/index.js"
     },
+    "./standard-schema": {
+      "types": "./types/validators/standard-schema/index.d.ts",
+      "import": "./dist/esm/validators/standard-schema/index.js",
+      "require": "./dist/cjs/validators/standard-schema/index.js",
+      "default": "./dist/cjs/validators/standard-schema/index.js"
+    },
     "./*": "./dist/esm/*",
     "./package.json": "./package.json"
   }

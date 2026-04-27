@@ -4,6 +4,7 @@ import type { TypeFromArray } from '../../../types/index.ts'
 import type { V3 } from '../types/index.ts'
 
 import { setMetadata } from '../../../TypeGuards/helpers/setMetadata.ts'
+import { attachStandardSchema } from '../../standard-schema/attachStandardSchema.ts'
 import { __metadata__ } from './constants.ts'
 
 export function setStructMetadata<TSource>(
@@ -58,8 +59,12 @@ export function setStructMetadata<TStruct extends V3.UnionStruct<any[]>>(
     guard: TypeGuard<V3.FromUnionStruct<TStruct>>
 ): typeof guard
 export function setStructMetadata<TStruct extends V3.IntersectionStruct<any[]>>(
-    struct: TStruct,
-    guard: TypeGuard<V3.FromIntersectionStruct<TStruct>>
+  struct: TStruct,
+  guard: TypeGuard<V3.FromIntersectionStruct<TStruct>>
+): typeof guard
+export function setStructMetadata<T>(
+  struct: V3.CustomStruct<T>,
+  guard: TypeGuard<T>
 ): typeof guard
 
 export function setStructMetadata<T>(
@@ -79,10 +84,13 @@ export function setStructMetadata<T>(
         | V3.UnionStruct<any>
         | V3.IntersectionStruct<any>
         | V3.ClassInstanceStruct<any>
-        | V3.EnumStruct<any>
-        | V3.AnyStruct
-        | V3.GenericStruct<T>,
+  | V3.EnumStruct<any>
+  | V3.AnyStruct
+  | V3.CustomStruct<any>
+  | V3.GenericStruct<T>,
     guard: TypeGuard<T>
 ): typeof guard {
-    return setMetadata(__metadata__, struct, guard)
+  const tagged = setMetadata(__metadata__, struct, guard)
+  attachStandardSchema(guard)
+  return tagged
 }

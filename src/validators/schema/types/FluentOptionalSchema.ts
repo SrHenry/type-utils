@@ -3,6 +3,7 @@ import type { Fn, ThrowFn } from '../../../types/Func.ts'
 import type { Custom } from '../../rules/types/index.ts'
 import type { ValidateReturn } from '../../SchemaValidator.ts'
 import type { ValidationErrors } from '../../ValidationErrors.ts'
+import type { StandardSchemaV1 } from '../../standard-schema/types.ts'
 
 export type FluentOptionalSchema<
     T,
@@ -31,7 +32,9 @@ export type FluentOptionalSchema<
     validator(throwOnError: false): Fn<[arg: unknown], ValidateReturn<undefined | T>> & {
         validate: ThrowFn<ValidationErrors, [arg: unknown], undefined | T>
     }
-    validator(throwOnError: boolean): Fn<[arg: unknown], ValidateReturn<undefined | T>> & {
-        validate: Fn<[arg: unknown], ValidateReturn<undefined | T>>
-    }
+  validator(throwOnError: boolean): Fn<[arg: unknown], ValidateReturn<undefined | T>> & {
+    validate: Fn<[arg: unknown], ValidateReturn<undefined | T>>
+  }
+} & {
+  toStandardSchema(): StandardSchemaV1<undefined | T, undefined | T>
 }

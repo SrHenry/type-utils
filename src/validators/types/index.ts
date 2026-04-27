@@ -1,6 +1,7 @@
 import type { Generics } from '../../Generics/index.ts'
 import type { MessageFormator, TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Merge } from '../../types/index.ts'
+import type { StandardSchemaV1 } from '../standard-schema/types.ts'
 
 export type OptionalKeys<T> = keyof Generics.OmitNever<{
     [K in keyof T]-?: T[K] extends Exclude<T[K], undefined> ? never : K
@@ -16,17 +17,22 @@ export type RequiredProps<T> = Omit<T, OptionalKeys<T>>
 export type OptionalProps<T> = Pick<T, OptionalKeys<T>>
 
 export type ValidatorMap<T> = {
-    [K in keyof T]-?: TypeGuard<T[K]>
+  [K in keyof T]-?: TypeGuard<T[K]> | StandardSchemaV1<T[K], T[K]>
+}
+
+/** @internal */
+export type NormalizedValidatorMap<T> = {
+  [K in keyof T]-?: TypeGuard<T[K]>
 }
 
 export type GetTypeFromValidatorMap<T extends ValidatorMap<any>> = T extends ValidatorMap<infer U>
-    ? Sanitize<U>
-    : never
+  ? Sanitize<U>
+  : never
 
 export type ValidatorArgs<T> = {
-    validators: ValidatorMap<T>
-    required?: Array<keyof T>
-    optional?: Array<keyof T>
+  validators: NormalizedValidatorMap<T>
+  required?: Array<keyof T>
+  optional?: Array<keyof T>
 }
 
 export type ValidatorMessageMap<T> = T extends (infer U)[]

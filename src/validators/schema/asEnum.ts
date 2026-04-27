@@ -6,6 +6,7 @@ import type { FluentSchema } from './types/FluentSchema.ts'
 
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
 import { SchemaValidator } from '../SchemaValidator.ts'
+import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 import { branchIfOptional } from './helpers/branchIfOptional.ts'
 import { copyStructMetadata } from './helpers/copyStructMetadata.ts'
 import { getRuleStructMetadata } from './helpers/getRuleStructMetadata.ts'
@@ -100,10 +101,11 @@ export const asEnum: EnumSchema = ((values: any[]) => {
         })
     }
 
-    schema.optional = () => addCall('optional')
-    schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, Generics.PrimitiveType>) =>
-        addCall('use', [...rules])
+  schema.optional = () => addCall('optional')
+  schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
+  schema.use = (...rules: Custom<any[], string, Generics.PrimitiveType>) =>
+    addCall('use', [...rules])
+  schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<Generics.PrimitiveType>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(
