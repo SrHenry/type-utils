@@ -1,12 +1,14 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
+import type { StandardSchemaV1 } from '../standard-schema/types.ts'
 import type { V3 } from './types/index.ts'
 import type { FluentSchema } from './types/FluentSchema.ts'
 
 import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'
-import { isTypeGuard } from '../../TypeGuards/helpers/isTypeGuard.ts'
 import { setMessage } from '../../TypeGuards/helpers/setMessage.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
+import { normalizeSchema } from '../standard-schema/normalizeSchema.ts'
+import { isStandardSchema } from '../standard-schema/isStandardSchema.ts'
 import { SchemaValidator } from '../SchemaValidator.ts'
 import { copyStructMetadata } from './helpers/copyStructMetadata.ts'
 import { getRuleStructMetadata } from './helpers/getRuleStructMetadata.ts'
@@ -14,6 +16,9 @@ import { getStructMetadata } from './helpers/getStructMetadata.ts'
 import { optionalizeOverloadFactory } from './helpers/optional/index.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
+import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
+
+type TupleSchemaEntry<T = any> = TypeGuard<T> | StandardSchemaV1<T, T>
 
 const guardFactory =
     (schemas: TypeGuard<any>[]) =>
@@ -29,23 +34,23 @@ const guardFactory =
         return true
     }
 
-function _fn<const T extends TypeGuard<any>[]>(schemas: T): TypeGuard<V3.TypeGuardTupleUnwrap<T>>
-function _fn<const T extends TypeGuard<any>[]>(...schemas: T): TypeGuard<V3.TypeGuardTupleUnwrap<T>>
+function _fn<const T extends TupleSchemaEntry[]>(schemas: T): TypeGuard<V3.TypeGuardTupleUnwrap<T>>
+function _fn<const T extends TupleSchemaEntry[]>(...schemas: T): TypeGuard<V3.TypeGuardTupleUnwrap<T>>
 
 function _fn(
-    this: unknown,
-    _schemas?: TypeGuard<any> | TypeGuard<any>[],
-    ...rest: TypeGuard<any>[]
+  this: unknown,
+  _schemas?: TupleSchemaEntry | TupleSchemaEntry[],
+  ...rest: TupleSchemaEntry[]
 ): TypeGuard<any[]> {
-    const schemas: TypeGuard<any>[] = []
+  const rawSchemas: TupleSchemaEntry[] = []
 
-    if (!Array.isArray(_schemas)) {
-        if (_schemas) schemas.push(_schemas)
+  if (!Array.isArray(_schemas)) {
+    if (_schemas) rawSchemas.push(_schemas)
 
-        if (rest.length > 0) schemas.push(...rest)
-    } else schemas.push(..._schemas)
+    if (rest.length > 0) rawSchemas.push(...rest)
+  } else rawSchemas.push(..._schemas)
 
-    if (!schemas.every(s => isTypeGuard(s))) throw new Error('All schemas must be type guards')
+  const schemas = rawSchemas.map(s => normalizeSchema(s))
 
     const guard = guardFactory(schemas)
 
@@ -62,36 +67,36 @@ function _fn(
 }
 
 type OptionalizedTuple = CallableFunction & {
-    <const T extends TypeGuard<any>[]>(
-        schemas: T
-    ): TypeGuard<undefined | V3.TypeGuardTupleUnwrap<T>>
-    <const T extends TypeGuard<any>[]>(
-        ...schemas: T
-    ): TypeGuard<undefined | V3.TypeGuardTupleUnwrap<T>>
+  <const T extends TupleSchemaEntry[]>(
+    schemas: T
+  ): TypeGuard<undefined | V3.TypeGuardTupleUnwrap<T>>
+  <const T extends TupleSchemaEntry[]>(
+    ...schemas: T
+  ): TypeGuard<undefined | V3.TypeGuardTupleUnwrap<T>>
 }
 
 export const _tuple = optionalizeOverloadFactory(_fn).optionalize<OptionalizedTuple>()
 
 type TupleSchema = CallableFunction & {
-    <const T extends TypeGuard<any>[]>(schemas: T): FluentSchema<V3.TypeGuardTupleUnwrap<T>>
-    <const T extends TypeGuard<any>[]>(...schemas: T): FluentSchema<V3.TypeGuardTupleUnwrap<T>>
+  <const T extends TupleSchemaEntry[]>(schemas: T): FluentSchema<V3.TypeGuardTupleUnwrap<T>>
+  <const T extends TupleSchemaEntry[]>(...schemas: T): FluentSchema<V3.TypeGuardTupleUnwrap<T>>
 }
 
 export const tuple: TupleSchema = ((
-    _schema?: TypeGuard<any> | TypeGuard<any>[],
-    ...rest: TypeGuard<any>[]
+  _schema?: TupleSchemaEntry | TupleSchemaEntry[],
+  ...rest: TupleSchemaEntry[]
 ) => {
     const customRules: Custom<any[], string, [...any]>[] = []
     const callStack: { [key: string]: boolean } = {}
 
-    const getGuard = () => {
-        const resolver = callStack['optional'] ? _tuple.optional : _tuple
-        return _schema
-            ? typeof _schema === 'function'
-                ? resolver([_schema, ...rest])
-                : resolver(_schema)
-            : resolver([])
-    }
+  const getGuard = () => {
+    const resolver = callStack['optional'] ? _tuple.optional : _tuple
+    if (!_schema) return resolver([])
+    if (typeof _schema === 'function') return resolver([_schema, ...rest])
+    if (Array.isArray(_schema)) return resolver(_schema)
+    if (isStandardSchema(_schema)) return resolver([_schema, ...rest])
+    return resolver([_schema as TupleSchemaEntry, ...rest])
+  }
 
     const schema = (arg: unknown) => {
         const guard = getGuard()
@@ -138,6 +143,7 @@ export const tuple: TupleSchema = ((
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, [...any]>) => addCall('use', [...rules])
+schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<[...any]>)
 
     return copyStructMetadata(getGuard() as TypeGuard<[...any]>, schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, [...any]>>),

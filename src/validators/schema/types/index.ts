@@ -5,6 +5,7 @@ import type { ArrayRule } from '../../rules/Array/index.ts'
 import type { NumberRule } from '../../rules/Number/index.ts'
 import type { RecordRule } from '../../rules/Record/index.ts'
 import type { StringRule } from '../../rules/String/index.ts'
+import type { StandardSchemaV1 } from '../../standard-schema/types.ts'
 import type { All as AllRules, Custom as CustomRule, RuleStruct } from '../../rules/types/index.ts'
 import type {
     OptionalizeTypeGuard,
@@ -255,14 +256,16 @@ export namespace V3 {
         ? readonly [V3.GenericStruct<T0>, ...TupleToStructMap<TRest>]
         : T
 
-    export type TypeGuardTupleUnwrap<T extends readonly [...any]> = T extends readonly [
-        infer T0,
-        ...infer TRest,
-    ]
-        ? T0 extends TypeGuard<infer U>
-            ? [U, ...TypeGuardTupleUnwrap<TRest>]
-            : [T0, ...TypeGuardTupleUnwrap<TRest>]
-        : T
+export type TypeGuardTupleUnwrap<T extends readonly [...any]> = T extends readonly [
+  infer T0,
+  ...infer TRest,
+]
+  ? T0 extends TypeGuard<infer U>
+    ? [U, ...TypeGuardTupleUnwrap<TRest>]
+    : T0 extends StandardSchemaV1<infer U, any>
+      ? [U, ...TypeGuardTupleUnwrap<TRest>]
+      : [T0, ...TypeGuardTupleUnwrap<TRest>]
+  : T
 
     export type TupleStruct<
         T extends readonly [...any],

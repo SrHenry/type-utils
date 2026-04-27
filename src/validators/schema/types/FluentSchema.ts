@@ -4,6 +4,7 @@ import type { Fn, ThrowFn } from '../../../types/Func.ts'
 import type { Custom } from '../../rules/types/index.ts'
 import type { ValidateReturn } from '../../SchemaValidator.ts'
 import type { ValidationErrors } from '../../ValidationErrors.ts'
+import type { StandardSchemaV1 } from '../../standard-schema/types.ts'
 import type { FluentOptionalSchema } from './FluentOptionalSchema.ts'
 
 // type AppendMessageMethod<
@@ -43,6 +44,7 @@ export type FluentSchema<
         validate: Fn<[arg: unknown], ValidateReturn<T>>
     }
 } & {
-    optional(): TypeGuard<undefined | T> &
-        FluentOptionalSchema<T, TRules, TCalledRules, TUsedCustomRules>
+  optional(): TypeGuard<undefined | T> &
+    FluentOptionalSchema<T, TRules, TCalledRules, TUsedCustomRules>
+  toStandardSchema(): StandardSchemaV1<T, T>
 }
