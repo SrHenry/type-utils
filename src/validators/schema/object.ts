@@ -1,6 +1,6 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
-import type { Sanitize, ValidatorMap } from '../types/index.ts'
+import type { Sanitize, NormalizedValidatorMap, ValidatorMap } from '../types/index.ts'
 import type { V3 } from './types/index.ts'
 import type { FluentSchema } from './types/FluentSchema.ts'
 
@@ -9,6 +9,7 @@ import { map } from '../../helpers/Experimental/map.ts'
 import { pipe } from '../../helpers/Experimental/pipeline/pipe.ts'
 import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'
 import { BaseValidator } from '../BaseValidator.ts'
+import { normalizeSchema } from '../standard-schema/normalizeSchema.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
 import { SchemaValidator } from '../SchemaValidator.ts'
 import { branchIfOptional } from './helpers/branchIfOptional.ts'
@@ -40,17 +41,21 @@ function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, an
         )
     }
 
-    const keys = Object.keys(tree)
+  const keys = Object.keys(tree)
 
-    const optional = keys.filter(key => hasOptionalFlag(tree[key]))
-    const required = keys.filter(key => !hasOptionalFlag(tree[key]))
+  const normalizedTree = Object.fromEntries(
+    Object.entries(tree).map(([k, v]) => [k, normalizeSchema(v)])
+  ) as NormalizedValidatorMap<T>
 
-    const config = { validators: tree, required, optional }
+  const optional = keys.filter(key => hasOptionalFlag(normalizedTree[key]))
+  const required = keys.filter(key => !hasOptionalFlag(normalizedTree[key]))
 
-    const guard = (arg: unknown): arg is T =>
-        branchIfOptional(arg, []) || BaseValidator.hasValidProperties(arg, config)
+  const config = { validators: normalizedTree, required, optional }
 
-    const message = pipe(Object.entries(tree))
+  const guard = (arg: unknown): arg is T =>
+    branchIfOptional(arg, []) || BaseValidator.hasValidProperties(arg, config)
+
+  const message = pipe(Object.entries(normalizedTree))
         .pipe(
             map(
                 ([k, v]) =>
@@ -65,7 +70,7 @@ function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, an
         type: 'object' as const,
         schema: guard,
         optional: false,
-        tree: Object.entries(tree)
+        tree: Object.entries(normalizedTree)
             .map(([k, v]) => ({ [k]: getStructMetadata(v) as V3.StructType }))
             .reduce(
                 (acc, item) => Object.assign(acc, item),
