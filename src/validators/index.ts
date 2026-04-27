@@ -6,3 +6,5 @@ export * from './standard-schema/index.ts'
 
 export { ValidationError } from './ValidationError.ts'
 export { ValidationErrors } from './ValidationErrors.ts'
+
+import './standard-schema/registerValidateCallback.ts'

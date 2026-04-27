@@ -1,10 +1,17 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { StandardSchemaV1 } from './types.ts'
 
-import { SchemaValidator } from '../SchemaValidator.ts'
-import { ValidationErrors } from '../ValidationErrors.ts'
-import { ValidationError } from '../ValidationError.ts'
-import { parsePathString } from './pathConverter.ts'
+type SchemaValidateCallback = (
+  value: unknown,
+  guard: TypeGuard<any>,
+  shouldThrow: boolean
+) => StandardSchemaV1.Result<any>
+
+let _schemaValidateCallback: SchemaValidateCallback | null = null
+
+export const registerSchemaValidateCallback = (cb: SchemaValidateCallback): void => {
+  _schemaValidateCallback = cb
+}
 
 export function attachStandardSchema<T>(guard: TypeGuard<T>): void {
   if ('~standard' in (guard as object)) return
@@ -13,28 +20,8 @@ export function attachStandardSchema<T>(guard: TypeGuard<T>): void {
     version: 1,
     vendor: '@srhenry/type-utils',
     validate: (value: unknown): StandardSchemaV1.Result<T> => {
-      const result = SchemaValidator.validate(value, guard, false)
-
-      if (result instanceof ValidationErrors) {
-        const issues: StandardSchemaV1.Issue[] = []
-
-        for (const error of result.errors) {
-          if (error instanceof ValidationError) {
-            issues.push({
-              message: error.message,
-              path: parsePathString(error.path),
-            })
-          } else {
-            issues.push({
-              message: String(error),
-            })
-          }
-        }
-
-        return { success: false, issues }
-      }
-
-      return { success: true, value: result as T }
+      if (!_schemaValidateCallback) throw new Error('Standard Schema validate callback not registered')
+      return _schemaValidateCallback(value, guard, false) as StandardSchemaV1.Result<T>
     },
     types: {
       input: undefined as unknown as T,
