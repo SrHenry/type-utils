@@ -4,6 +4,7 @@ import type { TypeFromArray } from '../../../types/index.ts'
 import type { V3 } from '../types/index.ts'
 
 import { setMetadata } from '../../../TypeGuards/helpers/setMetadata.ts'
+import { attachStandardSchema } from '../../standard-schema/attachStandardSchema.ts'
 import { __metadata__ } from './constants.ts'
 
 export function setStructMetadata<TSource>(
@@ -84,5 +85,7 @@ export function setStructMetadata<T>(
         | V3.GenericStruct<T>,
     guard: TypeGuard<T>
 ): typeof guard {
-    return setMetadata(__metadata__, struct, guard)
+  const tagged = setMetadata(__metadata__, struct, guard)
+  attachStandardSchema(guard)
+  return tagged
 }
