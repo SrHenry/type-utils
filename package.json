@@ -1,6 +1,6 @@
 {
   "name": "@srhenry/type-utils",
-  "version": "0.6.5",
+  "version": "0.7.0",
   "description": "Type utilities for Typescript and also Javascript",
   "type": "module",
   "main": "./dist/cjs/index.js",
@@ -148,6 +148,12 @@
       "import": "./dist/esm/match/index.js",
       "require": "./dist/cjs/match/index.js",
       "default": "./dist/cjs/match/index.js"
+    },
+    "./standard-schema": {
+      "types": "./types/validators/standard-schema/index.d.ts",
+      "import": "./dist/esm/validators/standard-schema/index.js",
+      "require": "./dist/cjs/validators/standard-schema/index.js",
+      "default": "./dist/cjs/validators/standard-schema/index.js"
     },
     "./*": "./dist/esm/*",
     "./package.json": "./package.json"

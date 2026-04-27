@@ -1,5 +1,6 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
+import type { StandardSchemaV1 } from '../standard-schema/types.ts'
 import type { V3 } from './types/index.ts'
 import type { RecordSchema } from './types/RecordSchema.ts'
 
@@ -7,6 +8,8 @@ import { asTypeGuard } from '../../TypeGuards/helpers/asTypeGuard.ts'
 import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
 import { type RecordRule, RecordRules } from '../rules/Record/index.ts'
+import { isStandardSchema } from '../standard-schema/isStandardSchema.ts'
+import { normalizeSchema } from '../standard-schema/normalizeSchema.ts'
 import { SchemaValidator } from '../SchemaValidator.ts'
 import { branchIfOptional } from './helpers/branchIfOptional.ts'
 import { copyStructMetadata } from './helpers/copyStructMetadata.ts'
@@ -16,6 +19,7 @@ import { isFollowingRules } from './helpers/isFollowingRules.ts'
 import { optionalizeOverloadFactory } from './helpers/optional/index.ts'
 import { setRuleMessage } from './helpers/setRuleMessage.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
+import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 
 const NULL = Symbol('NULL')
 
@@ -44,24 +48,24 @@ function _fn(rules: Partial<Rules>): TypeGuard<Record<string, any>>
 function _fn(rules: RecordRule[]): TypeGuard<Record<string, any>>
 
 function _fn<K extends PropertyKey, T>(
-    keyGuard: TypeGuard<K>,
-    valueGuard: TypeGuard<T>
+  keyGuard: TypeGuard<K> | StandardSchemaV1<K, K>,
+  valueGuard: TypeGuard<T> | StandardSchemaV1<T, T>
 ): TypeGuard<Record<K, T>>
 function _fn<K extends PropertyKey, T>(
-    keyGuard: TypeGuard<K>,
-    valueGuard: TypeGuard<T>,
-    rules: Partial<Rules>
+  keyGuard: TypeGuard<K> | StandardSchemaV1<K, K>,
+  valueGuard: TypeGuard<T> | StandardSchemaV1<T, T>,
+  rules: Partial<Rules>
 ): TypeGuard<Record<K, T>>
 function _fn<K extends PropertyKey, T>(
-    keyGuard: TypeGuard<K>,
-    valueGuard: TypeGuard<T>,
-    rules: RecordRule[]
+  keyGuard: TypeGuard<K> | StandardSchemaV1<K, K>,
+  valueGuard: TypeGuard<T> | StandardSchemaV1<T, T>,
+  rules: RecordRule[]
 ): TypeGuard<Record<K, T>>
 
 function _fn<K extends PropertyKey, T>(
-    keyGuard_or_rules: TypeGuard<K> | Partial<Rules> | RecordRule[] | typeof NULL = NULL,
-    valueGuard: TypeGuard<T> | typeof NULL = NULL,
-    rules: Partial<Rules> | RecordRule[] | typeof NULL = NULL
+  keyGuard_or_rules: TypeGuard<K> | StandardSchemaV1<K, K> | Partial<Rules> | RecordRule[] | typeof NULL = NULL,
+  valueGuard: TypeGuard<T> | StandardSchemaV1<T, T> | typeof NULL = NULL,
+  rules: Partial<Rules> | RecordRule[] | typeof NULL = NULL
 ): TypeGuard<Record<K, T>> | TypeGuard<Record<string, any>> {
     if (keyGuard_or_rules === NULL) return _fn(defaults.keyGuard, defaults.valueGuard)
 
@@ -75,7 +79,14 @@ function _fn<K extends PropertyKey, T>(
         return _fn(defaults.keyGuard, defaults.valueGuard, _rules)
     }
 
-    if (isPartialRulesObject(keyGuard_or_rules)) return handleRulesObject(keyGuard_or_rules)
+    if (isStandardSchema(keyGuard_or_rules)) {
+    const _kg = normalizeSchema(keyGuard_or_rules)
+    const _vg = valueGuard === NULL ? defaults.valueGuard : normalizeSchema(valueGuard as TypeGuard<T> | StandardSchemaV1<T, T>)
+    const _rules = rules === NULL ? defaults.rules : rules
+    return _fn(_kg, _vg, _rules as RecordRule[])
+  }
+
+  if (isPartialRulesObject(keyGuard_or_rules)) return handleRulesObject(keyGuard_or_rules)
 
     if (Array.isArray<RecordRule>(keyGuard_or_rules)) {
         const guard = (arg: unknown): arg is Record<string, any> =>
@@ -97,91 +108,97 @@ function _fn<K extends PropertyKey, T>(
         return setStructMetadata(metadata, setRuleMessage('record', guard, keyGuard_or_rules))
     }
 
-    if (valueGuard === NULL) ({ valueGuard } = defaults)
+  if (valueGuard === NULL) ({ valueGuard } = defaults)
 
-    if (rules === NULL) ({ rules } = defaults)
+  if (rules === NULL) ({ rules } = defaults)
 
-    if (isPartialRulesObject(rules)) return handleRulesObject(rules)
+  if (isPartialRulesObject(rules)) return handleRulesObject(rules)
 
-    const _guard = (arg: unknown): arg is Record<K, T> => {
-        if (arg === null || typeof arg !== 'object') {
-            return false
-        }
+  const _keyGuard = normalizeSchema(keyGuard_or_rules as TypeGuard<K> | StandardSchemaV1<K, K>)
+  const _valueGuard = normalizeSchema(valueGuard as TypeGuard<T> | StandardSchemaV1<T, T>)
 
-        for (const key in arg) {
-            if (!keyGuard_or_rules(key)) {
-                return false
-            }
-
-            const value = arg[key as keyof typeof arg]
-
-            if (!valueGuard(value)) {
-                return false
-            }
-        }
-
-        return true
+  const _guard = (arg: unknown): arg is Record<K, T> => {
+    if (arg === null || typeof arg !== 'object') {
+      return false
     }
 
-    const guard = (arg: unknown): arg is Record<K, T> =>
-        branchIfOptional(arg, []) || (isFollowingRules(arg, rules) && _guard(arg))
+    for (const key in arg) {
+      if (!_keyGuard(key)) {
+        return false
+      }
 
-    const message = `record<${getMessage(keyGuard_or_rules)}, ${getMessage(valueGuard)}>`
+      const value = arg[key as keyof typeof arg]
 
-    const metadata: V3.RecordStruct<K, T> = {
-        type: 'record',
-        schema: guard,
-        keyMetadata: getStructMetadata(keyGuard_or_rules) as unknown as
-            | V3.StringStruct
-            | V3.NumberStruct
-            | V3.SymbolStruct,
-        valueMetadata: getStructMetadata(valueGuard) as V3.GenericStruct<T>,
-        rules: rules.map(getRuleStructMetadata<RecordRule>),
-        optional: false,
+      if (!_valueGuard(value)) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  const guard = (arg: unknown): arg is Record<K, T> =>
+    branchIfOptional(arg, []) || (isFollowingRules(arg, rules) && _guard(arg))
+
+  const message = `record<${getMessage(_keyGuard)}, ${getMessage(_valueGuard)}>`
+
+  const metadata: V3.RecordStruct<K, T> = {
+    type: 'record',
+    schema: guard,
+    keyMetadata: getStructMetadata(_keyGuard) as unknown as
+      | V3.StringStruct
+      | V3.NumberStruct
+      | V3.SymbolStruct,
+    valueMetadata: getStructMetadata(_valueGuard) as V3.GenericStruct<T>,
+    rules: rules.map(getRuleStructMetadata<RecordRule>),
+    optional: false,
     }
 
     return setStructMetadata<K, T>(metadata, setRuleMessage(message, guard))
 }
 
 type OptionalizedRecord = {
-    (): TypeGuard<undefined | Record<string, any>>
-    (rules: Partial<Rules>): TypeGuard<undefined | Record<string, any>>
-    (rules: RecordRule[]): TypeGuard<undefined | Record<string, any>>
+  (): TypeGuard<undefined | Record<string, any>>
+  (rules: Partial<Rules>): TypeGuard<undefined | Record<string, any>>
+  (rules: RecordRule[]): TypeGuard<undefined | Record<string, any>>
 
-    <K extends PropertyKey, T>(
-        keyGuard: TypeGuard<K>,
-        valueGuard: TypeGuard<T>
-    ): TypeGuard<undefined | Record<K, T>>
-    <K extends PropertyKey, T>(
-        keyGuard: TypeGuard<K>,
-        valueGuard: TypeGuard<T>,
-        rules: Partial<Rules>
-    ): TypeGuard<undefined | Record<K, T>>
-    <K extends PropertyKey, T>(
-        keyGuard: TypeGuard<K>,
-        valueGuard: TypeGuard<T>,
-        rules: RecordRule[]
-    ): TypeGuard<undefined | Record<K, T>>
+  <K extends PropertyKey, T>(
+    keyGuard: TypeGuard<K> | StandardSchemaV1<K, K>,
+    valueGuard: TypeGuard<T> | StandardSchemaV1<T, T>
+  ): TypeGuard<undefined | Record<K, T>>
+  <K extends PropertyKey, T>(
+    keyGuard: TypeGuard<K> | StandardSchemaV1<K, K>,
+    valueGuard: TypeGuard<T> | StandardSchemaV1<T, T>,
+    rules: Partial<Rules>
+  ): TypeGuard<undefined | Record<K, T>>
+  <K extends PropertyKey, T>(
+    keyGuard: TypeGuard<K> | StandardSchemaV1<K, K>,
+    valueGuard: TypeGuard<T> | StandardSchemaV1<T, T>,
+    rules: RecordRule[]
+  ): TypeGuard<undefined | Record<K, T>>
 }
 
 export const _record = optionalizeOverloadFactory(_fn).optionalize<OptionalizedRecord>()
 
 export const record: RecordSchema = ((
-    keyGuard?: TypeGuard<PropertyKey>,
-    valueGuard?: TypeGuard<any>
+  keyGuard?: TypeGuard<PropertyKey> | StandardSchemaV1<PropertyKey, PropertyKey>,
+  valueGuard?: TypeGuard<any> | StandardSchemaV1<any, any>
 ) => {
     const rules: RecordRule[] = []
     const customRules: Custom<any[], string, Record<PropertyKey, any>>[] = []
     const callStack: { [key: string]: boolean } = {}
 
-    const getGuard = () => {
-        const resolver = callStack['optional'] ? _record.optional : _record
-        return typeof keyGuard === 'function'
-            ? typeof valueGuard === 'function'
-                ? resolver(keyGuard, valueGuard)
-                : resolver(keyGuard, defaults.valueGuard)
-            : resolver(rules)
+  const getGuard = () => {
+    const resolver = callStack['optional'] ? _record.optional : _record
+    if (!keyGuard) return resolver(rules)
+    if (typeof keyGuard === 'function') {
+      return valueGuard ? resolver(keyGuard, valueGuard) : resolver(keyGuard, defaults.valueGuard)
     }
+    if (isStandardSchema(keyGuard)) {
+      return valueGuard ? resolver(keyGuard, valueGuard) : resolver(keyGuard, defaults.valueGuard)
+    }
+    return resolver(rules)
+  }
 
     const schema = (arg: unknown) => {
         const guard = getGuard()
@@ -233,8 +250,10 @@ export const record: RecordSchema = ((
     schema.optional = () => addCall('optional')
     schema.nonEmpty = () => addCall('nonEmpty', [RecordRules.nonEmpty()])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, Record<PropertyKey, any>>) =>
-        addCall('use', [...rules])
+schema.use = (...rules: Custom<any[], string, Record<PropertyKey, any>>) =>
+  addCall('use', [...rules])
+schema.toStandardSchema = () =>
+  toStandardSchema(schema as unknown as TypeGuard<Record<PropertyKey, any>>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(
