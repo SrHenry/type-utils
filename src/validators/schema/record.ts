@@ -16,6 +16,7 @@ import { isFollowingRules } from './helpers/isFollowingRules.ts'
 import { optionalizeOverloadFactory } from './helpers/optional/index.ts'
 import { setRuleMessage } from './helpers/setRuleMessage.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
+import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 
 const NULL = Symbol('NULL')
 
@@ -233,8 +234,10 @@ export const record: RecordSchema = ((
     schema.optional = () => addCall('optional')
     schema.nonEmpty = () => addCall('nonEmpty', [RecordRules.nonEmpty()])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, Record<PropertyKey, any>>) =>
-        addCall('use', [...rules])
+schema.use = (...rules: Custom<any[], string, Record<PropertyKey, any>>) =>
+  addCall('use', [...rules])
+schema.toStandardSchema = () =>
+  toStandardSchema(schema as unknown as TypeGuard<Record<PropertyKey, any>>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(

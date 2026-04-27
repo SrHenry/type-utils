@@ -14,6 +14,7 @@ import { optionalizeOverloadFactory } from './helpers/optional/index.ts'
 import { setRuleMessage } from './helpers/setRuleMessage.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
+import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 
 function _fn<T1, T2>(guard1: TypeGuard<T1>, guard2: TypeGuard<T2>): TypeGuard<Merge<T1, T2>>
 function _fn<TGuards extends [TypeGuard<any>, TypeGuard<any>, ...TypeGuard<any>[]]>(
@@ -114,6 +115,7 @@ export const and: IntersectionSchema = ((
     schema.optional = () => addCall('optional')
     schema.use = (...rules: Custom<any[], string, any>) => addCall('use', [...rules])
     schema.validator = (throwOnError: boolean = true) => addCall('validator', [], { throwOnError })
+schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, any>>),

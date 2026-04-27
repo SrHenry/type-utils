@@ -19,6 +19,7 @@ import { optionalizeOverloadFactory } from './helpers/optional/index.ts'
 import { setRuleMessage } from './helpers/setRuleMessage.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
+import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 import { object } from './object.ts'
 
 function _fn(): TypeGuard<any[]>
@@ -154,6 +155,7 @@ export const array: ArraySchema = ((tree_schema?: TypeGuard<any> | ValidatorMap<
     schema.max = (n: number) => addCall('max', [ArrayRules.max(n)])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, any[]>) => addCall('use', [...rules])
+schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any[]>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, any>>),

@@ -14,6 +14,7 @@ import { getStructMetadata } from './helpers/getStructMetadata.ts'
 import { optionalizeOverloadFactory } from './helpers/optional/index.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
+import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 
 const guardFactory =
     (schemas: TypeGuard<any>[]) =>
@@ -138,6 +139,7 @@ export const tuple: TupleSchema = ((
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, [...any]>) => addCall('use', [...rules])
+schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<[...any]>)
 
     return copyStructMetadata(getGuard() as TypeGuard<[...any]>, schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, [...any]>>),

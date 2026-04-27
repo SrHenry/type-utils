@@ -20,6 +20,7 @@ import { hasOptionalFlag } from './helpers/optionalFlag.ts'
 import { setRuleMessage } from './helpers/setRuleMessage.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
+import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 
 function _fn<T extends {}>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
 // function _fn<T extends ValidatorMap<any>>(tree: T): TypeGuard<GetTypeFromValidatorMap<T>>
@@ -146,6 +147,7 @@ export const object: ObjectSchema = ((tree?: ValidatorMap<any>) => {
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, object>) => addCall('use', [...rules])
+schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<object>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, object>>),

@@ -13,6 +13,7 @@ import { optionalizeOverloadFactory } from './helpers/optional/index.ts'
 import { setRuleMessage } from './helpers/setRuleMessage.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
+import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 
 type Rules = {
     min: bigint
@@ -123,6 +124,7 @@ export const bigint: BigIntSchema = (() => {
     schema.min = (n: bigint) => addCall('min', [NumberRules.min(n)])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, bigint>) => addCall('use', [...rules])
+schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<bigint>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, bigint>>),

@@ -13,6 +13,7 @@ import { optionalizeOverloadFactory } from './helpers/optional/index.ts'
 import { setRuleMessage } from './helpers/setRuleMessage.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
+import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 
 function _fn<T1, T2>(guard1: TypeGuard<T1>, guard2: TypeGuard<T2>): TypeGuard<T1 | T2>
 function _fn<TGuards extends TypeGuards<any>>(
@@ -107,6 +108,7 @@ export const or: UnionSchema = ((
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, any>) => addCall('use', [...rules])
+schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, any>>),
