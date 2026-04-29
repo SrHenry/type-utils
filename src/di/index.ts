@@ -2,3 +2,5 @@ export { createContainer, CircularDependencyError, TokenNotRegisteredError } fro
 export { createToken } from './ServiceToken.ts'
 export { Lifetime } from './types.ts'
 export type { Container, Factory, Module, Registration, ServiceToken } from './types.ts'
+export * from './tokens.ts'
+export type * from './service-types.ts'
