@@ -2,11 +2,16 @@ import type { TypeGuard } from '../TypeGuards/types/index.ts'
 import type { keys } from './rules/constants.ts'
 import type { All as AllRules, Rule, RuleStruct } from './rules/types/index.ts'
 
-import { getMessageFormator } from '../TypeGuards/helpers/getMessageFormator.ts'
+import { MessageService } from '../di/tokens.ts'
+import { createServiceResolver } from '../container.ts'
 import { isCustomRuleStruct } from './helpers/isCustomRuleStruct.ts'
 import { getRule } from './rules/helpers/getRule.ts'
 import { ValidationError } from './ValidationError.ts'
 import { ValidationErrors } from './ValidationErrors.ts'
+
+const _services = createServiceResolver((c) => ({
+  getMessageFormator: c.resolve(MessageService).getMessageFormator,
+}))
 
 type RuleContext = {
     rule: RuleStruct<AllRules>
@@ -39,24 +44,24 @@ export function* createRulesValidationGenerator<Value, Schema, Parent = unknown>
             const passed = ruleFunction(value, ...ruleStruct.args)
             if (passed) continue
 
-            const messageFormator = getMessageFormator(ruleFunction)
-            const message = messageFormator(...ruleStruct.args)
+    const messageFormator = _services.getMessageFormator(ruleFunction)
+    const message = messageFormator(...ruleStruct.args)
 
-            yield new ValidationError<Value, Schema, string, Parent, RuleContext>({
-                schema,
-                value,
-                message,
-                name: path,
-                parent,
-                context: { rule: ruleStruct },
-            })
-        } else if (isCustomRuleStruct(ruleStruct)) {
-            const ruleFunction = ruleStruct.handler(value)
+    yield new ValidationError<Value, Schema, string, Parent, RuleContext>({
+      schema,
+      value,
+      message,
+      name: path,
+      parent,
+      context: { rule: ruleStruct },
+    })
+  } else if (isCustomRuleStruct(ruleStruct)) {
+    const ruleFunction = ruleStruct.handler(value)
 
-            const passed = ruleFunction(...ruleStruct.args)
-            if (passed) continue
+    const passed = ruleFunction(...ruleStruct.args)
+    if (passed) continue
 
-            const messageFormator = getMessageFormator(ruleFunction)
+    const messageFormator = _services.getMessageFormator(ruleFunction)
             const message = messageFormator(...ruleStruct.args)
 
             yield new ValidationError<Value, Schema, string, Parent, RuleContext>({
