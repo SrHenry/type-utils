@@ -1,8 +1,13 @@
 import Generics from '../../../Generics/index.ts'
-import { isTypeGuard } from '../../../TypeGuards/helpers/index.ts'
-import { TypeGuard } from '../../../TypeGuards/types/index.ts'
+import { TypeGuardTagService } from '../../../di/tokens.ts'
+import { createServiceResolver } from '../../../container.ts'
+import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
 import { GenericStruct } from '../types/index.ts'
 import { isRuleStruct } from './isRuleStruct.ts'
+
+const _di = createServiceResolver((c) => ({
+  isTypeGuard: c.resolve(TypeGuardTagService).isTypeGuard,
+}))
 
 export function isStruct(struct: unknown): struct is GenericStruct<any>
 export function isStruct<T, IsGeneric extends true | false = true>(
@@ -21,7 +26,7 @@ export function isStruct(struct: unknown, schema?: TypeGuard): struct is Generic
     )
         return false
     if (!('optional' in struct) || typeof struct.optional !== 'boolean') return false
-    if (!('schema' in struct) || !isTypeGuard(struct.schema)) return false
+    if (!('schema' in struct) || !_di.isTypeGuard(struct.schema)) return false
     if (!('rules' in struct) || !Array.isArray(struct.rules) || !struct.rules.every(isRuleStruct))
         return false
     if (!!schema && (struct as any).schema !== schema) return false
