@@ -1,62 +1,54 @@
 import type { TypeGuard } from '../TypeGuards/types/index.ts'
 import type { GenericStruct, V3 } from '../validators/schema/types/index.ts'
 
-import { isTypeGuard } from '../TypeGuards/helpers/isTypeGuard.ts'
-import { getStructMetadata } from '../validators/schema/helpers/getStructMetadata.ts'
-import { object } from '../validators/schema/object.ts'
+import { TypeGuardTagService, StructMetadataService, SchemaFactory } from '../di/tokens.ts'
+import { createServiceResolver } from '../container.ts'
+
+const _di = createServiceResolver((c) => ({
+  isTypeGuard: c.resolve(TypeGuardTagService).isTypeGuard,
+  getStructMetadata: c.resolve(StructMetadataService).getStructMetadata,
+  object: c.resolve(SchemaFactory).object,
+}))
 
 export type ReplacedKeysTree<
-    TOrigin extends {},
-    TReplace extends Partial<Record<keyof TOrigin, any>>,
+  TOrigin extends {},
+  TReplace extends Partial<Record<keyof TOrigin, any>>,
 > = {
-    [K in keyof TReplace]: K extends keyof TReplace
-        ? TypeGuard<TReplace[K]>
-        : K extends keyof TOrigin
-          ? TypeGuard<TOrigin[K]>
-          : never
+  [K in keyof TReplace]: K extends keyof TReplace
+  ? TypeGuard<TReplace[K]>
+  : K extends keyof TOrigin
+  ? TypeGuard<TOrigin[K]>
+  : never
 }
 
-/**
- * Replaces key guards in a (object) schema tree partially.
- *
- * @template TOrigin The original schema type.
- * @template TReplace The replacement schema type.
- *
- * @param schema The original schema.
- * @param tree The replacement schema tree.
- *
- * @returns The modified schema with replaced key guards.
- *
- * @throws {TypeError} If the schema is not a type guard or if the schema is not an object schema.
- */
 export function replaceSchemaTree<
-    TOrigin extends {},
-    TReplace extends Partial<Record<keyof TOrigin, any>>,
+  TOrigin extends {},
+  TReplace extends Partial<Record<keyof TOrigin, any>>,
 >(
-    schema: TypeGuard<TOrigin>,
-    tree: ReplacedKeysTree<TOrigin, TReplace>
+  schema: TypeGuard<TOrigin>,
+  tree: ReplacedKeysTree<TOrigin, TReplace>
 ): TypeGuard<Prettify<Omit<TOrigin, keyof TReplace> & TReplace>> {
-    if (!isTypeGuard<TOrigin>(schema)) throw new TypeError('schema must be a type guard')
+  if (!_di.isTypeGuard<TOrigin>(schema)) throw new TypeError('schema must be a type guard')
 
-    const _struct = getStructMetadata(schema) as V3.StructType
+  const _struct = _di.getStructMetadata(schema) as V3.StructType
 
-    if (_struct.type !== 'object' || !('tree' in _struct))
-        throw new TypeError(`\`${schema.name}\` must be an object schema`)
+  if (_struct.type !== 'object' || !('tree' in _struct))
+    throw new TypeError(`\`${schema.name}\` must be an object schema`)
 
-    const baseTree = Object.entries<Record<string, GenericStruct>>(
-        _struct.tree as Record<string, GenericStruct>
-    )
-        .filter(([key]) => !(key in tree))
-        .map(([key, value]) => ({
-            [key]: value.schema,
-        })) as unknown as Record<string, TypeGuard>[]
+  const baseTree = Object.entries<Record<string, GenericStruct>>(
+    _struct.tree as Record<string, GenericStruct>
+  )
+    .filter(([key]) => !(key in tree))
+    .map(([key, value]) => ({
+      [key]: value.schema,
+    })) as unknown as Record<string, TypeGuard>[]
 
-    Object.entries<Record<string, TypeGuard>>(tree).forEach(([k, v]) => baseTree.push({ [k]: v }))
+  Object.entries<Record<string, TypeGuard>>(tree).forEach(([k, v]) => baseTree.push({ [k]: v }))
 
-    const newTree = baseTree.reduce(
-        (o, branch) => Object.assign(o, branch),
-        {} as Record<string, TypeGuard>
-    )
+  const newTree = baseTree.reduce(
+    (o, branch) => Object.assign(o, branch),
+    {} as Record<string, TypeGuard>
+  )
 
-    return object(newTree) as TypeGuard<Prettify<Omit<TOrigin, keyof TReplace> & TReplace>>
+  return _di.object(newTree) as TypeGuard<Prettify<Omit<TOrigin, keyof TReplace> & TReplace>>
 }

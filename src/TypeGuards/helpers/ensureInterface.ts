@@ -1,13 +1,18 @@
 import type { TypeGuard } from '../types/index.ts'
 import type { StandardSchemaV1 } from '../../validators/standard-schema/types.ts'
 
+import { StandardSchemaAdapter } from '../../di/tokens.ts'
+import { createServiceResolver } from '../../container.ts'
 import { TypeGuardError } from '../TypeErrors.ts'
 import { __curry_param__ } from './constants.ts'
-import { fromStandardSchema } from '../../validators/standard-schema/fromStandardSchema.ts'
 import { getMessage } from './getMessage.ts'
 import { hasMessage } from './hasMessage.ts'
-import { isStandardSchema } from '../../validators/standard-schema/isStandardSchema.ts'
 import { isTypeGuard } from './isTypeGuard.ts'
+
+const _di = createServiceResolver((c) => ({
+  isStandardSchema: c.resolve(StandardSchemaAdapter).isStandardSchema,
+  fromStandardSchema: c.resolve(StandardSchemaAdapter).fromStandardSchema,
+}))
 
 export function ensureInterface<Interface, Instance = unknown>(
   value: Instance,
@@ -30,14 +35,14 @@ export function ensureInterface<Interface, Instance = unknown>(
 ): Interface | ((value: Instance) => Interface) {
   if (validator === __curry_param__) {
     const firstArg = value as ((value: unknown) => boolean) | StandardSchemaV1<Interface>
-    if (isStandardSchema(firstArg)) {
+    if (_di.isStandardSchema(firstArg)) {
       return (_: Instance): Interface => ensureInterface(_, firstArg as StandardSchemaV1<Interface>)
     }
     return (_: Instance): Interface => ensureInterface(_, firstArg as TypeGuard)
   }
 
-  if (isStandardSchema(validator)) {
-    const guard = fromStandardSchema(validator as StandardSchemaV1<Interface>)
+  if (_di.isStandardSchema(validator)) {
+    const guard = _di.fromStandardSchema(validator as StandardSchemaV1<Interface>)
 
     if (!guard(value)) {
       const message = `Failed while ensuring interface type constraint of ${JSON.stringify(
