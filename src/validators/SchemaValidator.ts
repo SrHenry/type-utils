@@ -5,18 +5,11 @@ import type { GenericStruct, V3 } from './schema/types/index.ts'
 import type { ValidatorMessageMap } from './types/index.ts'
 
 import Generics from '../Generics/index.ts'
+import { TypeGuardTagService, MessageService, ValidatorMessageService, MetadataService$, TypeGuardErrorService } from '../di/tokens.ts'
+import { createServiceResolver } from '../container.ts'
 import { AutoBind } from '../helpers/decorators/stage-2/AutoBind.ts'
-import { asTypeGuard } from '../TypeGuards/helpers/asTypeGuard.ts'
 import { ensureInterface } from '../TypeGuards/helpers/ensureInterface.ts'
-import { getMessage } from '../TypeGuards/helpers/getMessage.ts'
-import { getMetadata } from '../TypeGuards/helpers/getMetadata.ts'
-import { getValidatorMessage } from '../TypeGuards/helpers/getValidatorMessage.ts'
-import { hasValidatorMessage } from '../TypeGuards/helpers/hasValidatorMessage.ts'
 import { isInstanceOf } from '../TypeGuards/helpers/isInstanceOf.ts'
-import { setMetadata } from '../TypeGuards/helpers/setMetadata.ts'
-import { setValidatorMessage } from '../TypeGuards/helpers/setValidatorMessage.ts'
-import { setValidatorMessageFormator } from '../TypeGuards/helpers/setValidatorMessageFormator.ts'
-import { TypeGuardError } from '../TypeGuards/TypeErrors.ts'
 import { isValidObject } from './helpers/isValidObject.ts'
 import { nonEmpty as nonEmptyRecordRuleFactory } from './rules/Record/factories/nonEmpty.ts'
 import { doesNotMatchRules, validateRules } from './RuleValidator.ts'
@@ -27,6 +20,22 @@ import { isStruct } from './schema/helpers/isStruct.ts'
 import { updateStructMetadata } from './schema/helpers/updateStructMetadata.ts'
 import { type ValidationArgs, ValidationError } from './ValidationError.ts'
 import { ValidationErrors } from './ValidationErrors.ts'
+
+const _services = createServiceResolver((c) => {
+  const TypeGuardErrorClass = c.resolve(TypeGuardErrorService) as new <T = unknown, U = unknown>(message: string, checked: T, against?: U) => Error & { checked: T; against: U | undefined; toJSON(): Record<string, unknown> }
+  return {
+    asTypeGuard: c.resolve(TypeGuardTagService).asTypeGuard,
+    getMessage: c.resolve(MessageService).getMessage,
+    setMessage: c.resolve(MessageService).setMessage,
+    getMetadata: c.resolve(MetadataService$).get,
+    setMetadata: c.resolve(MetadataService$).set,
+    getValidatorMessage: c.resolve(ValidatorMessageService).getValidatorMessage,
+    setValidatorMessage: c.resolve(ValidatorMessageService).setValidatorMessage,
+    hasValidatorMessage: c.resolve(ValidatorMessageService).hasValidatorMessage,
+    setValidatorMessageFormator: c.resolve(ValidatorMessageService).setValidatorMessageFormator,
+    TypeGuardError: TypeGuardErrorClass,
+  }
+})
 
 export type ValidateReturn<T> =
     | T
@@ -51,15 +60,15 @@ type DefaultThrowsParam = (typeof defaults)['throws']
 const throws = Symbol.for('[@srhenry/type-utils]:/validators/SchemaValidator/__throws__')
 
 const shouldThrow = (subject: unknown): boolean =>
-    getMetadata(
-        throws,
-        subject,
-        asTypeGuard<boolean>(e => typeof e === 'boolean')
-    ) ?? defaults.throws
+  _services.getMetadata(
+    throws,
+    subject,
+    (_services.asTypeGuard as <T>(p: (arg: unknown) => boolean, m?: any) => TypeGuard<T>)<boolean>(e => typeof e === 'boolean')
+  ) ?? defaults.throws
 
 const mustNotThrow = <T>(subject: T = {} as T) => setThrows(false, subject)
 
-const setThrows = <T>(value: boolean, subject: T = {} as T) => setMetadata(throws, value, subject)
+const setThrows = <T>(value: boolean, subject: T = {} as T) => _services.setMetadata(throws, value, subject)
 
 type ValidationArgsStaticValues = 'name' | 'parent' | 'schema' | 'value'
 function pushNewErrorFactory<
@@ -143,11 +152,11 @@ function validate<T, Name extends string, Parent>(
         try {
             ensureInterface(arg, schema)
         } catch (e) {
-            if (!(e instanceof TypeGuardError)) throw e
+            if (!(e instanceof _services.TypeGuardError)) throw e
 
             let { message } = e
 
-            if (hasValidatorMessage(schema)) message = getValidatorMessage(schema)!
+            if (_services.hasValidatorMessage(schema)) message = _services.getValidatorMessage(schema)!
 
             pushNewError({
                 message,
@@ -163,7 +172,7 @@ function validate<T, Name extends string, Parent>(
                     if (metadata.optional && arg === undefined) break
 
                     if (!isValidObject(arg)) {
-                        pushNewError(getMessage(schema) ?? `Expected object, got ${typeof arg}`)
+                        pushNewError(_services.getMessage(schema) ?? `Expected object, got ${typeof arg}`)
 
                         break
                     }
@@ -184,7 +193,7 @@ function validate<T, Name extends string, Parent>(
                             if (!(arg instanceof constructor)) {
                                 pushNewError({
                                     message:
-                                        getMessage(schema) ??
+_services.getMessage(schema) ??
                                         `Expected ${className} instance, got ${arg}`,
                                     context: { structMetadata: metadata, constructor, className },
                                 })
@@ -362,7 +371,7 @@ function validate<T, Name extends string, Parent>(
                                                         type,
                                                     }): TypeGuard<string> | TypeGuard<symbol> =>
                                                         type === 'number'
-                                                            ? asTypeGuard<string>(
+                                                            ? (_services.asTypeGuard as <T>(p: (...a: any[]) => boolean, m?: any) => TypeGuard<T>)<string>(
                                                                   (input: string) =>
                                                                       Number.isNaN(Number(input)) &&
                                                                       schema(Number(input))
@@ -686,13 +695,13 @@ function validate<T, Name extends string, Parent>(
                     ensureInterface(arg, schema)
 
                     if (doesNotMatchRules(arg, metadata.rules, schema, name, parent))
-                        throw new TypeGuardError(
-                            'Value does not match all rules',
-                            arg,
-                            metadata.rules
-                        )
-                } catch (e) {
-                    if (!(e instanceof TypeGuardError))
+      throw new _services.TypeGuardError(
+        'Value does not match all rules',
+        arg,
+        metadata.rules
+      )
+    } catch (e) {
+      if (!(e instanceof _services.TypeGuardError))
                         throw new TypeError(`Expected TypeGuardError, got ${(e as Error)?.name}`, {
                             cause: e,
                         })
@@ -701,7 +710,7 @@ function validate<T, Name extends string, Parent>(
                         case 'custom':
                             if (!metadata.schema(arg)) {
                                 pushNewError({
-                                    message: getValidatorMessage(
+                                    message: _services.getValidatorMessage(
                                         schema,
                                         'Value does not match the custom schema'
                                     ),
@@ -719,7 +728,7 @@ function validate<T, Name extends string, Parent>(
                         case 'tuple':
                             if (!Array.isArray(arg) || arg.length !== metadata.elements.length) {
                                 pushNewError({
-                                    message: getValidatorMessage(
+                                    message: _services.getValidatorMessage(
                                         schema,
                                         `Value must be a tuple/array of length ${metadata.elements.length}`
                                     ),
@@ -735,7 +744,7 @@ function validate<T, Name extends string, Parent>(
                             }
 
                             if (!metadata.elements.every(isStruct))
-                                throw new TypeGuardError(
+                                throw new _services.TypeGuardError(
                                     'Tuple metadata must have elements that are structs',
                                     metadata.elements,
                                     isStruct
@@ -757,7 +766,7 @@ function validate<T, Name extends string, Parent>(
                         case 'primitive':
                             if (!(Generics.Primitives as readonly string[]).includes(typeof arg))
                                 pushNewError({
-                                    message: getValidatorMessage(
+                                    message: _services.getValidatorMessage(
                                         schema,
                                         `Value must be a primitive`
                                     ),
@@ -776,7 +785,7 @@ function validate<T, Name extends string, Parent>(
 
                             if (!(Generics.Primitives as readonly string[]).includes(typeof arg))
                                 pushNewError({
-                                    message: getValidatorMessage(
+                                    message: _services.getValidatorMessage(
                                         schema,
                                         `Value must be a primitive`
                                     ),
@@ -804,7 +813,7 @@ function validate<T, Name extends string, Parent>(
 
                             if (enumErrorCount === enumResults.length)
                                 pushNewError({
-                                    message: getValidatorMessage(
+                                    message: _services.getValidatorMessage(
                                         schema,
                                         `Value does not match any of the enum values`
                                     ),
@@ -818,7 +827,7 @@ function validate<T, Name extends string, Parent>(
                         case 'null':
                             if (arg !== null)
                                 pushNewError({
-                                    message: getValidatorMessage(schema, `Value must be null`),
+                                    message: _services.getValidatorMessage(schema, `Value must be null`),
                                     context: {
                                         structMetadata: metadata,
                                         expectedType: metadata.type,
@@ -830,7 +839,7 @@ function validate<T, Name extends string, Parent>(
                         default:
                             if (typeof arg !== metadata.type)
                                 pushNewError({
-                                    message: getValidatorMessage(
+                                    message: _services.getValidatorMessage(
                                         schema,
                                         `Value must be of type "${metadata.type}"`
                                     ),
@@ -842,7 +851,7 @@ function validate<T, Name extends string, Parent>(
                                 })
                             else if (!schema(arg))
                                 pushNewError({
-                                    message: getValidatorMessage(
+                                    message: _services.getValidatorMessage(
                                         schema,
                                         `Value must pass inner schema validations "${metadata.type}"`
                                     ),
@@ -938,9 +947,9 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
         if (schema === NO_ARG)
             return (schema: TypeGuard<T>) => __SchemaValidator.setValidatorMessage(message, schema)
 
-        if (typeof message === 'string') return setValidatorMessage(message, schema)
-        if (typeof message === 'function')
-            return setValidatorMessageFormator(message as MessageFormator, schema)
+  if (typeof message === 'string') return _services.setValidatorMessage(message, schema)
+  if (typeof message === 'function')
+    return _services.setValidatorMessageFormator(message as MessageFormator, schema)
 
         if (!hasStructMetadata(schema))
             throw new Error(

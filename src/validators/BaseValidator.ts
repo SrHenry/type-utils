@@ -1,28 +1,33 @@
 import type { TypeGuard } from '../TypeGuards/types/index.ts'
 import type { ValidatorArgs } from './types/index.ts'
 
-import { ensureInstanceOf } from '../TypeGuards/helpers/ensureInstanceOf.ts'
-import { ensureInterface } from '../TypeGuards/helpers/ensureInterface.ts'
-import { is } from '../TypeGuards/helpers/is.ts'
-import { TypeGuardError } from '../TypeGuards/TypeErrors.ts'
+import { EnsureInterfaceService, EnsureInstanceOfService, IsService, TypeGuardErrorService } from '../di/tokens.ts'
+import { createServiceResolver } from '../container.ts'
+
+const _services = createServiceResolver((c) => ({
+  ensureInterface: c.resolve(EnsureInterfaceService),
+  ensureInstanceOf: c.resolve(EnsureInstanceOfService),
+  is: c.resolve(IsService),
+  TypeGuardError: c.resolve(TypeGuardErrorService),
+}))
 
 export abstract class BaseValidator {
     public static validateProperties<T, U>(
         arg: T,
         { validators, required = [], optional = [] }: ValidatorArgs<U>
     ): U {
-        const o = ensureInstanceOf(arg, Object) as Record<string, unknown>
+        const o = _services.ensureInstanceOf(arg, Object) as Record<string, unknown>
 
         if (required.length === 0 && optional.length === 0) {
             for (const [prop, validator] of Object.entries<TypeGuard>(validators)) {
-                if (!(prop in o)) throw new TypeGuardError(`Property ${prop} is not defined`, o)
+      if (!(prop in o)) throw new _services.TypeGuardError(`Property ${prop} is not defined`, o)
 
-                if (!validator(o[prop]))
-                    throw new TypeGuardError(
-                        `Property '${prop}' failed validation`,
-                        o[prop],
-                        validator
-                    )
+      if (!validator(o[prop]))
+        throw new _services.TypeGuardError(
+          `Property '${prop}' failed validation`,
+          o[prop],
+          validator
+        )
             }
 
             return o as U
@@ -30,23 +35,23 @@ export abstract class BaseValidator {
 
         for (const key of required) {
             if (!(key in o))
-                throw new TypeGuardError(`Missing required key ${String(key)}`, o, validators[key])
+      throw new _services.TypeGuardError(`Missing required key ${String(key)}`, o, validators[key])
 
-            if (!validators[key](o[key as keyof typeof o]))
-                throw new TypeGuardError(
-                    `Invalid value for key ${String(key)}`,
-                    o[key as keyof typeof o],
-                    validators[key]
-                )
+      if (!validators[key](o[key as keyof typeof o]))
+        throw new _services.TypeGuardError(
+          `Invalid value for key ${String(key)}`,
+          o[key as keyof typeof o],
+          validators[key]
+        )
         }
         for (const key of optional) {
             if (key in o) {
                 if (!validators[key](o[key as keyof typeof o]))
-                    throw new TypeGuardError(
-                        `Invalid value for key ${String(key)}`,
-                        o[key as keyof typeof o],
-                        validators[key]
-                    )
+        throw new _services.TypeGuardError(
+          `Invalid value for key ${String(key)}`,
+          o[key as keyof typeof o],
+          validators[key]
+        )
             }
         }
 
@@ -87,7 +92,7 @@ export abstract class BaseValidator {
     }
 
     public static validateArray<T, U>(arg: T, args: ValidatorArgs<U>): U[] {
-        if (!Array.isArray(arg)) throw new TypeGuardError(`Invalid type for array`, arg, Array)
+        if (!Array.isArray(arg)) throw new _services.TypeGuardError(`Invalid type for array`, arg, Array)
 
         for (const item of arg) {
             this.validateProperties(item, args)
@@ -106,12 +111,12 @@ export abstract class BaseValidator {
         args: ValidatorArgs<U> | TypeGuard<U>,
         defaultValue: U | undefined = undefined
     ): U | undefined {
-        if (typeof args === 'function') return is(arg, args) ? arg : defaultValue ?? void 0
+        if (typeof args === 'function') return (_services.is as Function)(arg, args) ? (arg as unknown as U) : defaultValue ?? void 0
         return this.hasValidProperties(arg, args) ? arg : defaultValue ?? void 0
     }
 
     public static validate<T, U>(arg: T, schema: TypeGuard<U>): U {
-        return ensureInterface(arg, schema)
+        return _services.ensureInterface(arg, schema)
     }
 
     public static isValid<T>(arg: unknown, schema: TypeGuard<T>): arg is T {

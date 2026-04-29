@@ -1,3 +1,7 @@
+import { bootstrap } from './bootstrap.ts'
+
+bootstrap()
+
 export * as Classes from './classes/index.ts'
 export * as Experimental from './Experimental.ts'
 export * from './Generics/index.ts'

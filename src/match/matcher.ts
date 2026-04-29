@@ -1,5 +1,14 @@
-import { $throw } from '../helpers/throw.ts'
-import { isStandardSchema } from '../validators/standard-schema/isStandardSchema.ts'
+import { ThrowHelper, StandardSchemaAdapter } from '../di/tokens.ts'
+import { createServiceResolver } from '../container.ts'
+
+type StandardSchemaLike = { readonly '~standard': { validate: (value: unknown) => { success: boolean } | Promise<{ success: boolean }> } }
+
+const _di = createServiceResolver((c) => ({
+  $throw: c.resolve(ThrowHelper),
+  _isStandardSchema: c.resolve(StandardSchemaAdapter).isStandardSchema as (value: unknown) => value is StandardSchemaLike,
+}))
+
+const isStandardSchema = (p: unknown): p is StandardSchemaLike => _di._isStandardSchema(p)
 
 const NO_PARAM = Symbol('matcher::NO_PARAM')
 
@@ -31,7 +40,7 @@ export function matcher(
           return p === value
         })
         ?.expression ??
-      (defaultExpr === NO_PARAM ? $throw(new TypeError('No matching pattern')) : defaultExpr)
+          (defaultExpr === NO_PARAM ? _di.$throw(new TypeError('No matching pattern')) : defaultExpr)
 
     return typeof expr === 'function' ? expr(value) : expr
   }

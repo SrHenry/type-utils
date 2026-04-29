@@ -4,10 +4,8 @@ import type { Sanitize, NormalizedValidatorMap, ValidatorMap } from '../types/in
 import type { V3 } from './types/index.ts'
 import type { FluentSchema } from './types/FluentSchema.ts'
 
-import { join } from '../../helpers/Experimental/join.ts'
-import { map } from '../../helpers/Experimental/map.ts'
-import { pipe } from '../../helpers/Experimental/pipeline/pipe.ts'
-import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'
+import { PipelineHelpers, MessageService } from '../../di/tokens.ts'
+import { createServiceResolver } from '../../container.ts'
 import { BaseValidator } from '../BaseValidator.ts'
 import { normalizeSchema } from '../standard-schema/normalizeSchema.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
@@ -22,6 +20,13 @@ import { setRuleMessage } from './helpers/setRuleMessage.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
 import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
+
+const _di = createServiceResolver((c) => ({
+  join: c.resolve(PipelineHelpers).join,
+  map: c.resolve(PipelineHelpers).map as any,
+  pipe: c.resolve(PipelineHelpers).pipe as any,
+  getMessage: c.resolve(MessageService).getMessage,
+}))
 
 function _fn<T extends {}>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
 // function _fn<T extends ValidatorMap<any>>(tree: T): TypeGuard<GetTypeFromValidatorMap<T>>
@@ -55,16 +60,16 @@ function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, an
   const guard = (arg: unknown): arg is T =>
     branchIfOptional(arg, []) || BaseValidator.hasValidProperties(arg, config)
 
-  const message = pipe(Object.entries(normalizedTree))
-        .pipe(
-            map(
-                ([k, v]) =>
-                    `${String(k)}${optional.some(key => key === k) ? '?' : ''}: ${getMessage(v)}`
-            )
-        )
-        .pipe(join(', '))
-        .pipe(inner => `{${inner}}`)
-        .depipe()
+  const message: string = _di.pipe(Object.entries(normalizedTree))
+    .pipe(
+      _di.map(
+        ([k, v]: [string, unknown]) =>
+          `${String(k)}${optional.some(key => key === k) ? '?' : ''}: ${_di.getMessage(v)}`
+      )
+    )
+    .pipe(_di.join(', '))
+    .pipe((inner: string) => `{${inner}}`)
+    .depipe()
 
     const metadata: V3.ObjectStruct<T> = {
         type: 'object' as const,

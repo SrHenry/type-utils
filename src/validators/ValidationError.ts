@@ -1,9 +1,14 @@
 import type { TypeGuard } from '../TypeGuards/types/index.ts'
 
+import { ValidatorMessageService, MessageService } from '../di/tokens.ts'
+import { createServiceResolver } from '../container.ts'
 import { TypeGuardError } from '../TypeGuards/TypeErrors.ts'
-import { getValidatorMessageFormator } from '../TypeGuards/helpers/getValidatorMessageFormator.ts'
-import { setValidatorMessageFormator } from '../TypeGuards/helpers/setValidatorMessageFormator.ts'
 import { NonEnumerableProperty } from '../helpers/decorators/stage-2/index.ts'
+
+const _di = createServiceResolver((c) => ({
+  setValidatorMessageFormator: c.resolve(ValidatorMessageService).setValidatorMessageFormator,
+  getValidatorMessageFormator: c.resolve(MessageService).getMessageFormator,
+}))
 
 export type ValidationArgs<
     Value,
@@ -52,7 +57,7 @@ export class ValidationError<
 
         if (context) this.context = context
 
-        setValidatorMessageFormator(defaultMessageFormator, this)
+        _di.setValidatorMessageFormator(defaultMessageFormator, this)
     }
 
     public get path(): Path | undefined {
@@ -73,7 +78,7 @@ export class ValidationError<
     }
 
     public override toString() {
-        const format = getValidatorMessageFormator(this) ?? defaultMessageFormator
+        const format = _di.getValidatorMessageFormator(this) ?? defaultMessageFormator
 
         return format(this.path ?? '$', this.message)
     }
