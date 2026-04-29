@@ -1,3 +1,7 @@
+import { bootstrap } from './bootstrap.ts'
+
+bootstrap()
+
 import './validators/standard-schema/registerValidateCallback.ts'
 
 function normalize(obj: any, seen = new WeakMap<any, string>(), path = '$'): any {
