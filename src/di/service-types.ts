@@ -91,6 +91,8 @@ export type AutoBindDecorator$ = () => (_: any, _2: string | symbol, descriptor:
 
 export type PipelineHelpers$ = {
   pipe<RValue>(arg: RValue): GetPipeline<RValue>
+  tap<TValue>(fn: (value: TValue) => void, options?: any): any
+  tapAsync<TValue>(fn: (value: TValue) => Promise<void> | void, options?: any): any
   join(separator: string): (array: any[]) => string
   join(separator: string, array: any[]): string
   map<T, U>(fn: (...args: [T] | [T, number] | [T, number, T[]]) => U): (array: T[]) => U[]
