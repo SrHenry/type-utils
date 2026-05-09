@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+export type { GetAsyncPipeline, Pipable, PipeTransform } from './types/index.ts'
 
-export type { GetAsyncPipeline, GetPipeline, Pipable } from './types/index.ts'
-
+export { PipelineBox, AsyncPipelineBox } from './core/PipelineBox.ts'
+export { apply } from './apply.ts'
 export { createPipeline as pipeline } from './createPipeline.ts'
-
 export { depipe } from './depipe.ts'
 export { enpipe } from './enpipe.ts'
+export { inject } from './inject.ts'
 export { pipe } from './pipe.ts'
 export { tap } from './tap.ts'
 export { tapAsync } from './tapAsync.ts'

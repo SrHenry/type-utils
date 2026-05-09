@@ -3,7 +3,7 @@ import type { V3 } from '../validators/schema/types/index.ts'
 import type { Sanitize, ValidatorMap } from '../validators/types/index.ts'
 import type { StandardSchemaV1 } from '../validators/standard-schema/types.ts'
 import type { All as AllRules, Custom as CustomRule, RuleStruct } from '../validators/rules/types/index.ts'
-import type { GetPipeline } from '../helpers/Experimental/pipeline/types/GetPipeline.ts'
+import type { PipelineBox } from '../helpers/Experimental/pipeline/core/PipelineBox.ts'
 
 type FluentSchemaLike<T> = TypeGuard<T> & {
   optional(): TypeGuard<undefined | T> & Record<string, any>
@@ -90,7 +90,7 @@ export type ThrowHelper$ = <T>(e: T) => never
 export type AutoBindDecorator$ = () => (_: any, _2: string | symbol, descriptor: PropertyDescriptor) => PropertyDescriptor
 
 export type PipelineHelpers$ = {
-  pipe<RValue>(arg: RValue): GetPipeline<RValue>
+  pipe<RValue>(arg: RValue): PipelineBox<RValue>
   tap<TValue>(fn: (value: TValue) => void, options?: any): any
   tapAsync<TValue>(fn: (value: TValue) => Promise<void> | void, options?: any): any
   join(separator: string): (array: any[]) => string

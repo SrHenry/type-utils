@@ -1,1 +1,1 @@
-export type Depipe<T> = (this: any) => T
+export type Depipe<T> = () => T
