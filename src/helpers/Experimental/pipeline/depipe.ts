@@ -1,1 +1,1 @@
-export { depipe } from './helpers/depipe.ts'
+export { depipe } from './core/depipe.ts'
