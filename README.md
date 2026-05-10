@@ -750,62 +750,65 @@ console.log(
 
 This is a fluent API to create sync/async function pipelines. Inspired in FP pipe operator while it does not comes to Javascript/Typescript yet. It allows only single param functions, piping the return as the parameter to the next function in pipeline.
 
+> **Breaking changes** (experimental API):
+>
+> - `GetPipeline<T>` type has been removed — use `Pipe<T>` instead
+> - `PipelineBox` and `AsyncPipelineBox` are now standalone classes (not decorator-based)
+> - `AsyncPipelineBox` no longer has `.catch()` — use `.depipe().catch()` on the promise
+
 ```typescript
 import { Experimental } from '@srhenry/type-utils'
 
-const { pipe, enpipe, lambda } = Experimental
+const { pipe, apply, tap } = Experimental
 
 const addUserFactory =
-    (db: Record<string, Record<string, any>[]>) => (user: Record<string, any>) =>
-        new Promise<string>(resolve => {
-            setTimeout(() => {
-                const id = uuid()
+  (db: Record<string, Record<string, any>[]>) => (user: Record<string, any>) =>
+  new Promise<string>(resolve => {
+    setTimeout(() => {
+      const id = uuid()
 
-                db['users'] ??= []
-                db['users']?.push({ id, ...user })
-                resolve(id)
-            }, 200)
-        })
+      db['users'] ??= []
+      db['users']?.push({ id, ...user })
+      resolve(id)
+    }, 200)
+  })
 const addPostFactory =
-    (db: Record<string, Record<string, any>[]>) => (user_id: string, post: Record<string, any>) =>
-        new Promise<boolean>(resolve => {
-            setTimeout(() => {
-                db['posts'] ??= []
-                db['posts']?.push({ user_id, ...post })
-                resolve(true)
-            }, 300)
-        })
+  (db: Record<string, Record<string, any>[]>) => (user_id: string, post: Record<string, any>) =>
+  new Promise<boolean>(resolve => {
+    setTimeout(() => {
+      db['posts'] ??= []
+      db['posts']?.push({ user_id, ...post })
+      resolve(true)
+    }, 300)
+  })
 
 const db = {
-    users: [] as Record<string, any>[],
-    posts: [] as Record<string, any>[],
+  users: [] as Record<string, any>[],
+  posts: [] as Record<string, any>[],
 } as Record<string, Record<string, any>[]>
 
 const len = <T = any>(s: string | ArrayLike<T>) => s.length
 const addPostCurried = (post: Record<string, any>) => (id: string) =>
-    pipe(addPostFactory).pipe(enpipe(db)).pipe(lambda).invoke(id, post)
+  pipe(addPostFactory)
+    .pipe(fn => fn(db))
+    .pipe(apply(addPostFactory(db), id, post))
 
 const result = await pipe(addUserFactory)
-    .pipe(enpipe(db))
-    .pipe(
-        enpipe({
-            name: 'Marcus',
-            email: 'example@email.com',
-        })
-    )
-    .pipeAsync(
-        addPostCurried({
-            title: 'Hello World',
-            content: 'Lorem ipsum dolor sit amet',
-        })
-    )
-    .pipeAsync(() => {
-        if (len(db['users']!) === 0 || len(db['posts']!) === 0) return false
-
-        db['replies'] = []
-        return true
+  .pipe(fn => fn(db))
+  .pipe(fn => fn({ name: 'Marcus', email: 'example@email.com' }))
+  .pipeAsync(
+    addPostCurried({
+      title: 'Hello World',
+      content: 'Lorem ipsum dolor sit amet',
     })
-    .depipe() // true | false
+  )
+  .pipeAsync(() => {
+    if (len(db['users']!) === 0 || len(db['posts']!) === 0) return false
+
+    db['replies'] = []
+    return true
+  })
+  .depipe() // true | false
 ```
 
 ---

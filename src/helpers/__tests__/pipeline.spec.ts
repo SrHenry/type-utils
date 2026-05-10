@@ -1,13 +1,17 @@
-import { v4 as uuid } from 'uuid'
+const uuid = () => Math.random().toString(36).slice(2) + Date.now().toString(36)
 
-import { lambda } from '../Experimental/lambda/index.ts'
-// import { enpipe, pipe, pipeline } from '../Experimental/pipeline/index.ts'
 import { getParametersLength } from '../Experimental/curry/helpers.ts'
+import { apply } from '../Experimental/pipeline/apply.ts'
 import { createPipeline } from '../Experimental/pipeline/createPipeline.ts'
 import { enpipe } from '../Experimental/pipeline/enpipe.ts'
 import { pipe } from '../Experimental/pipeline/pipe.ts'
+import { PipelineBox } from '../Experimental/pipeline/core/PipelineBox.ts'
 import { tap } from '../Experimental/pipeline/tap.ts'
 import { tapAsync } from '../Experimental/pipeline/tapAsync.ts'
+import { isPipeTransform } from '../Experimental/pipeline/core/isPipeTransform.ts'
+import { setPipeTransformCheck } from '../Experimental/pipeline/core/pipeTransformCheck.ts'
+
+setPipeTransformCheck(isPipeTransform)
 
 const addUserFactory = (db: Record<string, Record<string, any>[]>) => (user: Record<string, any>) =>
     new Promise<string>(resolve => {
@@ -194,26 +198,21 @@ describe('enpipe', () => {
         } as Record<string, Record<string, any>[]>
 
         const len = <T = any>(s: string | ArrayLike<T>) => s.length
-        const addPostCurried = (post: Record<string, any>) => (id: string) =>
-            pipe(addPostFactory)
-                .pipe(enpipe(db))
-                .pipe(fn => lambda(fn))
-                .invoke(id, post)
+    const addPostCurried = (post: Record<string, any>) => (id: string) =>
+      pipe(addPostFactory)
+      .pipe(fn => fn(db))
+      .pipe((fn: (uid: string, p: Record<string, any>) => Promise<boolean>) => fn(id, post))
+      .depipe()
 
-        const result = await pipe(addUserFactory)
-            .pipe(enpipe(db))
-            .pipe(
-                enpipe({
-                    name: 'Marcus',
-                    email: 'example@email.com',
-                })
-            )
-            .pipeAsync(
-                addPostCurried({
-                    title: 'Hello World',
-                    content: 'Lorem ipsum dolor sit amet',
-                })
-            )
+    const result = await pipe(addUserFactory)
+      .pipe(fn => fn(db))
+      .pipe(fn => fn({ name: 'Marcus', email: 'example@email.com' }))
+ .pipeAsync(
+ (addPostCurried({
+ title: 'Hello World',
+ content: 'Lorem ipsum dolor sit amet',
+ }) as any)
+ )
             .pipeAsync(() => {
                 if (len(db['users']!) === 0 || len(db['posts']!) === 0) return false
 
@@ -240,80 +239,69 @@ describe('enpipe', () => {
         expect(db['users']![0]!['email']).toBe('example@email.com')
     })
 
-    it('should enpipe multiple values in pipeline callback factory function', async () => {
-        const db = {
-            users: [] as Record<string, any>[],
-            posts: [] as Record<string, any>[],
-        } as Record<string, Record<string, any>[]>
+ it('should enpipe multiple values in pipeline callback factory function', async () => {
+ const db = {
+ users: [] as Record<string, any>[],
+ posts: [] as Record<string, any>[],
+ } as Record<string, Record<string, any>[]>
 
-        // const addPost = addPostFactory(db)
-        // const addUser = addUserFactory(db)
+ const newUser = { name: 'Marcus', email: 'example@email.com' }
+ const newPost = { title: 'Hello World', content: 'Lorem ipsum dolor sit amet' }
 
-        const newUser = { name: 'Marcus', email: 'example@email.com' }
-        const newPost = { title: 'Hello World', content: 'Lorem ipsum dolor sit amet' }
+const addPostCurried = (post: Record<string, any>) => (id: string) =>
+  createPipeline(addPostFactory)
+  .pipe(fn => fn(db))
+  .pipe((fn: (uid: string, p: Record<string, any>) => Promise<boolean>) => fn(id, post))
+      .pipeAsync(
+        (r: unknown) =>
+        new Promise<boolean>(resolve => setTimeout(() => resolve(r as boolean), Math.random() * 1000))
+      )
+      .depipe()
 
-        const addPostCurried = (post: Record<string, any>) => (id: string) =>
-            createPipeline(addPostFactory)
-                .pipe(enpipe(db))
-                .pipe(enpipe(id, post))
-                .pipeAsync(
-                    r =>
-                        new Promise<boolean>(resolve =>
-                            setTimeout(() => resolve(r), Math.random() * 1000)
-                        )
-                )
+await createPipeline(addUserFactory)
+  .pipe(fn => fn(db))
+  .pipe(fn => fn(newUser))
+      .pipeAsync(id => (expect(typeof id).toBe('string'), id))
+      .pipeAsync(apply(addPostCurried, newPost))
+      .pipeAsync(result => (expect(result).toBe(true), result))
+      .depipe()
 
-        await createPipeline(addUserFactory)
-            .pipe(enpipe(db))
-            .pipe(enpipe(newUser))
-            .pipeAsync(id => (expect(typeof id).toBe('string'), id))
-            .pipeAsync(enpipe(addPostCurried, newPost))
-            .pipeAsync(result => (expect(result).toBe(true), result))
+expect(db['users']).toBeDefined()
+expect(db['users']).toHaveLength(1)
 
-        expect(db['users']).toBeDefined()
-        expect(db['users']).toHaveLength(1)
+ expect(db['posts']).toBeDefined()
+ expect(db['posts']).toHaveLength(1)
 
-        expect(db['posts']).toBeDefined()
-        expect(db['posts']).toHaveLength(1)
+ expect(db['users']![0]!['name']).toBe(newUser.name)
+ expect(db['users']![0]!['email']).toBe(newUser.email)
+ expect(db['users']![0]!['id']).toBe(db['posts']![0]!['user_id'])
+ expect(db['posts']![0]!['title']).toBe(newPost.title)
+ expect(db['posts']![0]!['content']).toBe(newPost.content)
 
-        expect(db['users']![0]!['name']).toBe(newUser.name)
-        expect(db['users']![0]!['email']).toBe(newUser.email)
-        expect(db['users']![0]!['id']).toBe(db['posts']![0]!['user_id'])
-        expect(db['posts']![0]!['title']).toBe(newPost.title)
-        expect(db['posts']![0]!['content']).toBe(newPost.content)
+    const underparameterizedPipelineCallback = pipe(3)
+      .pipe(apply((a: number, b: number, c: number) => a + b + c, 1))
+      .depipe() as (b: number) => number
 
-        const underparameterizedPipelineCallback = pipe(3)
-            .pipe(enpipe((a: number, b: number, c: number) => a + b + c, 1))
-            .depipe()
+    expect(typeof underparameterizedPipelineCallback).toBe('function')
+    expect(getParametersLength(underparameterizedPipelineCallback)).toBe(1)
+    expect(underparameterizedPipelineCallback(6)).toBe(10)
 
-        const overparameterizedPipelineCallback = pipe(
-            enpipe((a: any, b: any, c: any) => a + b - c, 1, 2, 3, 4, 5)
-        ).depipe()
+    const overparameterizedPipelineCallback = pipe(
+      (enpipe as any)((a: any, b: any, c: any) => a + b - c, 1, 2, 3, 4, 5)
+    ).depipe()
 
-        expect(typeof underparameterizedPipelineCallback).toBe('function')
-        expect(getParametersLength(underparameterizedPipelineCallback)).toBe(1)
-        expect(underparameterizedPipelineCallback(6)).toBe(10)
+    expect(typeof overparameterizedPipelineCallback).toBe('number')
+    expect(overparameterizedPipelineCallback).toBe(0)
 
-        expect(typeof overparameterizedPipelineCallback).toBe('number')
-        expect(overparameterizedPipelineCallback).toBe(0)
+    const underparameterizedPipelineCallback__2 = enpipe((a: number, b: number, c: number) => a + b + c, 1)
+      .pipe((fn: (b: number) => (c: number) => number) => enpipe(fn, 2)) as unknown as PipelineBox<(c: number) => number>
 
-        const underparameterizedPipelineCallback__2 = pipe(
-            enpipe((a: number, b: number, c: number) => a + b + c, 1)
-        )
+ expect(typeof underparameterizedPipelineCallback__2.depipe()).toBe('function')
+ expect(getParametersLength(underparameterizedPipelineCallback__2.depipe())).toBe(1)
 
-        expect(typeof underparameterizedPipelineCallback__2).toBe('function')
-        expect(getParametersLength(underparameterizedPipelineCallback__2)).toBe(2)
-
-        const underparameterizedPipelineCallback__3 = underparameterizedPipelineCallback__2.pipe(
-            enpipe(2)
-        )
-
-        expect(typeof underparameterizedPipelineCallback__3).toBe('function')
-        expect(getParametersLength(underparameterizedPipelineCallback__3)).toBe(1)
-
-        expect(underparameterizedPipelineCallback__3(3)).toBe(6)
-        expect(underparameterizedPipelineCallback__3(7)).toBe(10)
-    })
+ expect(underparameterizedPipelineCallback__2.depipe()(3)).toBe(6)
+ expect(underparameterizedPipelineCallback__2.depipe()(7)).toBe(10)
+ })
 })
 
 describe('pipeAsync', () => {
@@ -330,12 +318,13 @@ describe('pipeAsync', () => {
 
         expect(result).toBe('error')
 
-        const result2 = await pipe(Promise.resolve('foo'))
-            .pipeAsync(arg => [arg] as const)
-            .pipeAsync(async ([_]) => {
-                return new Promise<string>((_, reject) => reject(new Error('error')))
-            })
-            .catch((error: Error) => error.message)
+ const result2 = await pipe(Promise.resolve('foo'))
+ .pipeAsync(arg => [arg] as const)
+ .pipeAsync(async ([_]) => {
+ return new Promise<string>((_, reject) => reject(new Error('error')))
+ })
+ .depipe()
+ .catch((error: Error) => error.message)
 
         expect(result2).toBe('error')
     })
@@ -351,17 +340,16 @@ describe('createPipeline', () => {
         str.split(sep)
 
     const pipeline = createPipeline(atob)
-      .pipe(enpipe('aGVsbG8gd29ybGQ='))
+      .pipe(fn => fn('aGVsbG8gd29ybGQ='))
       .pipe(split())
       .depipe()
 
     expect(pipeline).toEqual(['hello', 'world'])
 
     const pipeline2 = createPipeline(atob)
-      .pipe(enpipe('aGVsbG8gd29ybGQ='))
-      // .pipe(_ => (console.warn({ _ }), _))
-      .pipe(enpipe(split, ' '))
-      .depipe()
+      .pipe(fn => fn('aGVsbG8gd29ybGQ='))
+      .pipe(enpipe(split, ' ').depipe())
+ .depipe()
 
     expect(pipeline2).toEqual(['hello', 'world'])
   })

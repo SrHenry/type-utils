@@ -1,7 +1,7 @@
-import type { GetPipeline } from './types/GetPipeline.ts'
+import { PipelineBox, AsyncPipelineBox } from './core/PipelineBox.ts'
 
-import { pipelineFactory } from './core/pipelineFactory.ts'
-
-export function pipe<RValue>(arg: RValue): GetPipeline<RValue> {
-  return pipelineFactory((o: RValue) => o)(arg)
+export function pipe<T>(value: Exclude<T, Promise<any>>): PipelineBox<T>
+export function pipe<T>(value: Promise<T>): AsyncPipelineBox<T>
+export function pipe(value: unknown): PipelineBox<unknown> | AsyncPipelineBox<unknown> {
+ return PipelineBox.wrap(value)
 }

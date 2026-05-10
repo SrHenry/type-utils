@@ -1,4 +1,5 @@
 import './validators/standard-schema/registerValidateCallback.ts'
+import './helpers/Experimental/pipeline/core/registerPipeTransformCheck.ts'
 
 function normalize(obj: any, seen = new WeakMap<any, string>(), path = '$'): any {
     if (obj === null) return null
