@@ -4,6 +4,7 @@ import type { Sanitize, ValidatorMap } from '../validators/types/index.ts'
 import type { StandardSchemaV1 } from '../validators/standard-schema/types.ts'
 import type { All as AllRules, Custom as CustomRule, RuleStruct } from '../validators/rules/types/index.ts'
 import type { PipelineBox } from '../helpers/Experimental/pipeline/core/PipelineBox.ts'
+import type { PipeTransformCheck } from '../helpers/Experimental/pipeline/core/pipeTransformCheck.ts'
 
 type FluentSchemaLike<T> = TypeGuard<T> & {
   optional(): TypeGuard<undefined | T> & Record<string, any>
@@ -98,6 +99,8 @@ export type PipelineHelpers$ = {
   map<T, U>(fn: (...args: [T] | [T, number] | [T, number, T[]]) => U): (array: T[]) => U[]
   map<T, U>(fn: (...args: [T] | [T, number] | [T, number, T[]]) => U, array: T[]): U[]
 }
+
+export type PipeTransformCheck$ = PipeTransformCheck
 
 export type StructMetadataService$ = {
   setStructMetadata<T>(struct: V3.GenericStruct<T, false>, guard: TypeGuard<T>): TypeGuard<T>

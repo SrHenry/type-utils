@@ -1,5 +1,5 @@
 import type { Container, Module } from '../di/index.ts'
-import { AutoBindDecorator, PipelineHelpers, ThrowHelper } from '../di/tokens.ts'
+import { AutoBindDecorator, PipelineHelpers, PipeTransformCheckToken, ThrowHelper } from '../di/tokens.ts'
 import { Lifetime } from '../di/index.ts'
 import { AutoBind } from './decorators/stage-2/AutoBind.ts'
 import { pipe } from './Experimental/pipeline/pipe.ts'
@@ -8,18 +8,25 @@ import { tapAsync } from './Experimental/pipeline/tapAsync.ts'
 import { join } from './Experimental/join.ts'
 import { map } from './Experimental/map.ts'
 import { $throw } from './throw.ts'
+import { isPipeTransform } from './Experimental/pipeline/core/isPipeTransform.ts'
+import { setPipeTransformCheck } from './Experimental/pipeline/core/pipeTransformCheck.ts'
 
 export const helpersModule: Module = {
   register(container: Container): void {
     container.register(AutoBindDecorator, () => AutoBind, Lifetime.Singleton)
 
     container.register(PipelineHelpers, () => ({
-    pipe,
-    tap,
-    tapAsync,
-    join,
-    map,
+      pipe,
+      tap,
+      tapAsync,
+      join,
+      map,
     }), Lifetime.Singleton)
+
+    container.register(PipeTransformCheckToken, () => {
+      setPipeTransformCheck(isPipeTransform)
+      return isPipeTransform
+    }, Lifetime.Singleton)
 
     container.register(ThrowHelper, () => $throw, Lifetime.Singleton)
   },

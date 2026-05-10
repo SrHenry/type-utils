@@ -14,6 +14,7 @@ import type {
   ThrowHelper$,
   AutoBindDecorator$,
   PipelineHelpers$,
+  PipeTransformCheck$,
   StructMetadataService$,
   StandardSchemaAdapter$,
   SchemaFactory$,
@@ -26,6 +27,7 @@ export const MessageService: ServiceToken<MessageService$> = createToken('Messag
 export const ValidatorMessageService: ServiceToken<ValidatorMessageService$> = createToken('ValidatorMessageService')
 export const AutoBindDecorator: ServiceToken<AutoBindDecorator$> = createToken('AutoBindDecorator')
 export const PipelineHelpers: ServiceToken<PipelineHelpers$> = createToken('PipelineHelpers')
+export const PipeTransformCheckToken: ServiceToken<PipeTransformCheck$> = createToken('PipeTransformCheck')
 export const StandardSchemaAdapter: ServiceToken<StandardSchemaAdapter$> = createToken('StandardSchemaAdapter')
 export const StructMetadataService: ServiceToken<StructMetadataService$> = createToken('StructMetadataService')
 export const SchemaFactory: ServiceToken<SchemaFactory$> = createToken('SchemaFactory')

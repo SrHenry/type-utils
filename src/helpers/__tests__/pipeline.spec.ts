@@ -9,6 +9,10 @@ import { pipe } from '../Experimental/pipeline/pipe.ts'
 import { PipelineBox } from '../Experimental/pipeline/core/PipelineBox.ts'
 import { tap } from '../Experimental/pipeline/tap.ts'
 import { tapAsync } from '../Experimental/pipeline/tapAsync.ts'
+import { isPipeTransform } from '../Experimental/pipeline/core/isPipeTransform.ts'
+import { setPipeTransformCheck } from '../Experimental/pipeline/core/pipeTransformCheck.ts'
+
+setPipeTransformCheck(isPipeTransform)
 
 const addUserFactory = (db: Record<string, Record<string, any>[]>) => (user: Record<string, any>) =>
     new Promise<string>(resolve => {

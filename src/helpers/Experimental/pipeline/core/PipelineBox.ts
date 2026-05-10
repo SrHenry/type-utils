@@ -1,7 +1,7 @@
 import type { TapOptions } from '../types/interfaces/HasTap.ts'
 import type { TapAsyncOptions } from '../types/interfaces/HasTapAsync.ts'
 import { handleTapError } from './handleTapError.ts'
-import { isPipeTransform } from './isPipeTransform.ts'
+import { checkPipeTransform } from './pipeTransformCheck.ts'
 import { isCallWithTransform } from '../callWith.ts'
 
 export class PipelineBox<T> {
@@ -31,8 +31,8 @@ export class PipelineBox<T> {
     }
     const result = fn(this._value)
     if (result instanceof PipelineBox || result instanceof AsyncPipelineBox) return result as PipelineBox<U> | AsyncPipelineBox<U>
-    if (isPipeTransform(result)) {
-      const inner = result.depipe()
+    if (checkPipeTransform(result)) {
+      const inner = (result as { depipe(): unknown }).depipe()
       if (inner instanceof PipelineBox || inner instanceof AsyncPipelineBox) return inner as PipelineBox<U> | AsyncPipelineBox<U>
       return new PipelineBox(inner as U) as PipelineBox<U>
     }
@@ -90,8 +90,8 @@ export class AsyncPipelineBox<T> {
       }
       const result = fn(v)
     if (result instanceof PipelineBox || result instanceof AsyncPipelineBox) return result.depipe()
-      if (isPipeTransform(result)) {
-        return result.depipe()
+      if (checkPipeTransform(result)) {
+        return (result as { depipe(): unknown }).depipe()
       }
     return result
   }))
