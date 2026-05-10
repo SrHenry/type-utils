@@ -7,6 +7,18 @@ import { getParametersLength } from '../curry/helpers.ts'
 import { pipe } from './pipe.ts'
 import { PipelineBox } from './core/PipelineBox.ts'
 
+/**
+ * @deprecated Use `pipe()` + `callWith()` / `apply()` instead.
+ * `enpipe` will be removed in a future release.
+ *
+ * Migration:
+ * - `enpipe(value)` → `pipe(value)`
+ * - `.pipe(enpipe(value))` (reverse-apply) → `.pipe(callWith(value))`
+ * - `enpipe(fn, ...args)` (partial application) → `apply(fn, ...args)`
+ * - `enpipe(fn)` (standalone chainable) → `pipe(fn)`
+ */
+
+/** @deprecated Use pipe() + callWith() / apply() instead. */
 function withDepipe<T>(transform: (incoming: unknown) => unknown, box: PipelineBox<T>): Pipe<T> {
   return Object.assign(transform, {
     depipe: () => box.depipe(),
@@ -14,15 +26,19 @@ function withDepipe<T>(transform: (incoming: unknown) => unknown, box: PipelineB
   }) as Pipe<T>
 }
 
+/** @deprecated Use pipe() + callWith() / apply() instead. */
 export function enpipe<TValue extends {}>(value: TValue): Pipe<TValue>
 
+/** @deprecated Use pipe() + callWith() / apply() instead. */
 export function enpipe<TFunc extends Func<any[], any>>(fn: TFunc): Pipe<ReturnType<TFunc>>
 
+/** @deprecated Use apply() instead. */
 export function enpipe<TFunc extends Func<any[], any>, TArgs extends Partial<Parameters<TFunc>>>(
   fn: TFunc,
   ...args: TArgs
 ): Pipe<CurryingTools.CurriedFunc<TFunc, TArgs>>
 
+/** @deprecated Use pipe() + callWith() / apply() instead. */
 export function enpipe<TValue extends {} | Func<any[], any>>(
   ..._args: [TValue | unknown, ...unknown[]]
 ): Pipe<any> {
