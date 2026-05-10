@@ -2,6 +2,7 @@ const uuid = () => Math.random().toString(36).slice(2) + Date.now().toString(36)
 
 import { getParametersLength } from '../Experimental/curry/helpers.ts'
 import { apply } from '../Experimental/pipeline/apply.ts'
+import { callWith } from '../Experimental/pipeline/callWith.ts'
 import { createPipeline } from '../Experimental/pipeline/createPipeline.ts'
 import { enpipe } from '../Experimental/pipeline/enpipe.ts'
 import { pipe } from '../Experimental/pipeline/pipe.ts'
@@ -200,13 +201,13 @@ describe('enpipe', () => {
         const len = <T = any>(s: string | ArrayLike<T>) => s.length
     const addPostCurried = (post: Record<string, any>) => (id: string) =>
       pipe(addPostFactory)
-      .pipe(fn => fn(db))
-      .pipe((fn: (uid: string, p: Record<string, any>) => Promise<boolean>) => fn(id, post))
+      .pipe(callWith(db))
+      .pipe(callWith(id, post))
       .depipe()
 
     const result = await pipe(addUserFactory)
-      .pipe(fn => fn(db))
-      .pipe(fn => fn({ name: 'Marcus', email: 'example@email.com' }))
+      .pipe(callWith(db))
+      .pipe(callWith({ name: 'Marcus', email: 'example@email.com' }))
  .pipeAsync(
  (addPostCurried({
  title: 'Hello World',
@@ -250,8 +251,8 @@ describe('enpipe', () => {
 
 const addPostCurried = (post: Record<string, any>) => (id: string) =>
   createPipeline(addPostFactory)
-  .pipe(fn => fn(db))
-  .pipe((fn: (uid: string, p: Record<string, any>) => Promise<boolean>) => fn(id, post))
+  .pipe(callWith(db))
+  .pipe(callWith(id, post))
       .pipeAsync(
         (r: unknown) =>
         new Promise<boolean>(resolve => setTimeout(() => resolve(r as boolean), Math.random() * 1000))
@@ -259,8 +260,8 @@ const addPostCurried = (post: Record<string, any>) => (id: string) =>
       .depipe()
 
 await createPipeline(addUserFactory)
-  .pipe(fn => fn(db))
-  .pipe(fn => fn(newUser))
+  .pipe(callWith(db))
+  .pipe(callWith(newUser))
       .pipeAsync(id => (expect(typeof id).toBe('string'), id))
       .pipeAsync(apply(addPostCurried, newPost))
       .pipeAsync(result => (expect(result).toBe(true), result))
@@ -340,14 +341,14 @@ describe('createPipeline', () => {
         str.split(sep)
 
     const pipeline = createPipeline(atob)
-      .pipe(fn => fn('aGVsbG8gd29ybGQ='))
+      .pipe(callWith('aGVsbG8gd29ybGQ='))
       .pipe(split())
       .depipe()
 
     expect(pipeline).toEqual(['hello', 'world'])
 
     const pipeline2 = createPipeline(atob)
-      .pipe(fn => fn('aGVsbG8gd29ybGQ='))
+      .pipe(callWith('aGVsbG8gd29ybGQ='))
       .pipe(enpipe(split, ' ').depipe())
  .depipe()
 

@@ -2,6 +2,7 @@ import type { TapOptions } from '../types/interfaces/HasTap.ts'
 import type { TapAsyncOptions } from '../types/interfaces/HasTapAsync.ts'
 import { handleTapError } from './handleTapError.ts'
 import { checkPipeTransform } from './pipeTransformCheck.ts'
+import { isCallWithTransform } from '../callWith.ts'
 
 export class PipelineBox<T> {
  protected constructor(protected readonly _value: T) {}
@@ -22,6 +23,12 @@ export class PipelineBox<T> {
   pipe<U>(fn: (value: T) => Exclude<U, Promise<any>>): PipelineBox<U>
   pipe<U>(fn: (value: T) => Promise<U>): AsyncPipelineBox<U>
   pipe<U>(fn: (value: T) => U | Promise<U>): PipelineBox<U> | AsyncPipelineBox<U> {
+    if (isCallWithTransform(fn)) {
+      const result = (this._value as (...args: any[]) => any)(...fn.__callWithArgs)
+      if (result instanceof PipelineBox || result instanceof AsyncPipelineBox) return result.depipe() as PipelineBox<U> | AsyncPipelineBox<U>
+      if (result instanceof Promise) return new AsyncPipelineBox(result as Promise<U>) as AsyncPipelineBox<U>
+      return new PipelineBox(result as U) as PipelineBox<U>
+    }
     const result = fn(this._value)
     if (result instanceof PipelineBox || result instanceof AsyncPipelineBox) return result as PipelineBox<U> | AsyncPipelineBox<U>
 	if (checkPipeTransform(result)) {
@@ -76,6 +83,11 @@ export class AsyncPipelineBox<T> {
   pipe<U>(fn: (value: T) => Promise<U>): AsyncPipelineBox<U>
   pipe<U>(fn: (value: T) => U | Promise<U>): AsyncPipelineBox<U> {
     return new AsyncPipelineBox(this._promise.then(v => {
+      if (isCallWithTransform(fn)) {
+        const result = (v as (...args: any[]) => any)(...fn.__callWithArgs)
+        if (result instanceof PipelineBox || result instanceof AsyncPipelineBox) return result.depipe()
+        return result
+      }
       const result = fn(v)
     if (result instanceof PipelineBox || result instanceof AsyncPipelineBox) return result.depipe()
 		if (checkPipeTransform(result)) {
