@@ -1,5 +1,9 @@
 import type Generics from '../../../Generics/index.ts'
-import type { ConstructorSignature, GetTypeGuard, TypeGuard } from '../../../TypeGuards/types/index.ts'
+import type {
+    ConstructorSignature,
+    GetTypeGuard,
+    TypeGuard,
+} from '../../../TypeGuards/types/index.ts'
 import type { Spread } from '../../../types/index.ts'
 import type { ArrayRule } from '../../rules/Array/index.ts'
 import type { NumberRule } from '../../rules/Number/index.ts'
@@ -256,16 +260,16 @@ export namespace V3 {
         ? readonly [V3.GenericStruct<T0>, ...TupleToStructMap<TRest>]
         : T
 
-export type TypeGuardTupleUnwrap<T extends readonly [...any]> = T extends readonly [
-  infer T0,
-  ...infer TRest,
-]
-  ? T0 extends TypeGuard<infer U>
-    ? [U, ...TypeGuardTupleUnwrap<TRest>]
-    : T0 extends StandardSchemaV1<infer U, any>
-      ? [U, ...TypeGuardTupleUnwrap<TRest>]
-      : [T0, ...TypeGuardTupleUnwrap<TRest>]
-  : T
+    export type TypeGuardTupleUnwrap<T extends readonly [...any]> = T extends readonly [
+        infer T0,
+        ...infer TRest,
+    ]
+        ? T0 extends TypeGuard<infer U>
+            ? [U, ...TypeGuardTupleUnwrap<TRest>]
+            : T0 extends StandardSchemaV1<infer U, any>
+              ? [U, ...TypeGuardTupleUnwrap<TRest>]
+              : [T0, ...TypeGuardTupleUnwrap<TRest>]
+        : T
 
     export type TupleStruct<
         T extends readonly [...any],

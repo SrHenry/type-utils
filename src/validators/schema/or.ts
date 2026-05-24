@@ -19,59 +19,56 @@ import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 
 type UnionSchemaEntry<T = any> = TypeGuard<T> | StandardSchemaV1<T, T>
 
-type GetUnionEntryType<T> = T extends TypeGuard<infer U>
-  ? U
-  : T extends StandardSchemaV1<infer U, any>
-    ? U
-    : never
+type GetUnionEntryType<T> =
+    T extends TypeGuard<infer U> ? U : T extends StandardSchemaV1<infer U, any> ? U : never
 
 type GetUnionEntryTypes<T extends any[]> = T extends []
-  ? []
-  : T extends [infer U, ...infer V]
-    ? [GetUnionEntryType<U>, ...GetUnionEntryTypes<V>]
-    : any[]
+    ? []
+    : T extends [infer U, ...infer V]
+      ? [GetUnionEntryType<U>, ...GetUnionEntryTypes<V>]
+      : any[]
 
 function _fn<T1, T2>(guard1: UnionSchemaEntry<T1>, guard2: UnionSchemaEntry<T2>): TypeGuard<T1 | T2>
 function _fn<TEntries extends UnionSchemaEntry[]>(
-  ...guards: TEntries
+    ...guards: TEntries
 ): TypeGuard<V3.TUnion<GetUnionEntryTypes<TEntries>>>
 
 function _fn(...guards: UnionSchemaEntry[]): TypeGuard<any> {
-  const normalized = guards.map(g => normalizeSchema(g))
-  const guard = (arg: unknown): arg is any => normalized.some(typeGuard => typeGuard(arg))
+    const normalized = guards.map(g => normalizeSchema(g))
+    const guard = (arg: unknown): arg is any => normalized.some(typeGuard => typeGuard(arg))
 
-  return setStructMetadata(
-    {
-      type: 'union',
-      schema: guard,
-      optional: false,
-      types: normalized.map(getStructMetadata),
-      rules: [],
-    },
-    setRuleMessage(normalized.map(getMessage).join(' | '), guard)
-  )
+    return setStructMetadata(
+        {
+            type: 'union',
+            schema: guard,
+            optional: false,
+            types: normalized.map(getStructMetadata),
+            rules: [],
+        },
+        setRuleMessage(normalized.map(getMessage).join(' | '), guard)
+    )
 }
 
 type OptionalizedOr = {
-  <T1, T2>(guard1: UnionSchemaEntry<T1>, guard2: UnionSchemaEntry<T2>): TypeGuard<T1 | T2>
-  <TEntries extends UnionSchemaEntry[]>(
-    ...guards: TEntries
-  ): TypeGuard<V3.TUnion<GetUnionEntryTypes<TEntries>>>
+    <T1, T2>(guard1: UnionSchemaEntry<T1>, guard2: UnionSchemaEntry<T2>): TypeGuard<T1 | T2>
+    <TEntries extends UnionSchemaEntry[]>(
+        ...guards: TEntries
+    ): TypeGuard<V3.TUnion<GetUnionEntryTypes<TEntries>>>
 }
 
 export const _or = optionalizeOverloadFactory(_fn).optionalize<OptionalizedOr>()
 
 type UnionSchema = CallableFunction & {
-  <T1, T2>(guard1: UnionSchemaEntry<T1>, guard2: UnionSchemaEntry<T2>): FluentSchema<T1 | T2>
-  <TEntries extends [UnionSchemaEntry<any>, UnionSchemaEntry<any>, ...UnionSchemaEntry[]]>(
-    guards: TEntries
-  ): FluentSchema<V3.TUnion<GetUnionEntryTypes<TEntries>>>
+    <T1, T2>(guard1: UnionSchemaEntry<T1>, guard2: UnionSchemaEntry<T2>): FluentSchema<T1 | T2>
+    <TEntries extends [UnionSchemaEntry<any>, UnionSchemaEntry<any>, ...UnionSchemaEntry[]]>(
+        guards: TEntries
+    ): FluentSchema<V3.TUnion<GetUnionEntryTypes<TEntries>>>
 }
 
 export const or: UnionSchema = ((
-  guard1: UnionSchemaEntry<any>,
-  guard2: UnionSchemaEntry<any>,
-  ...rest: UnionSchemaEntry<any>[]
+    guard1: UnionSchemaEntry<any>,
+    guard2: UnionSchemaEntry<any>,
+    ...rest: UnionSchemaEntry<any>[]
 ) => {
     const customRules: Custom<any[], string, any>[] = []
     const callStack: { [key: string]: boolean } = {}
@@ -125,7 +122,7 @@ export const or: UnionSchema = ((
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, any>) => addCall('use', [...rules])
-schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any>)
+    schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, any>>),

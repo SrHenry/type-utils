@@ -8,13 +8,14 @@ import type {
     GetCustomRuleHandler,
     GetCustomRuleName,
 } from '../types/index.ts'
+import { CUSTOM_RULE_BRAND as BRAND } from '../types/index.ts'
 import { getRuleSetterForCustomHandler } from './getRuleSetterForCustomHandler.ts'
 
 export function createRule<
     Handler extends CustomHandler,
     RName extends string = string,
     Message extends string = string,
-    Formator extends MessageFormator = MessageFormator
+    Formator extends MessageFormator = MessageFormator,
 >({
     name,
     message,
@@ -30,7 +31,7 @@ export function createRule<
     Message extends string = string,
     Formator extends MessageFormator = MessageFormator,
     RuleName extends string = GetCustomRuleName<CustomRule>,
-    Handler extends CustomHandler = GetCustomRuleHandler<CustomRule>
+    Handler extends CustomHandler = GetCustomRuleHandler<CustomRule>,
 >({
     name,
     message,
@@ -45,7 +46,7 @@ export function createRule<
     Handler extends CustomHandler,
     RName extends string = string,
     Message extends string = string,
-    Formator extends MessageFormator = MessageFormator
+    Formator extends MessageFormator = MessageFormator,
 >({
     name,
     message,
@@ -59,6 +60,10 @@ export function createRule<
     type Args = Parameters<ReturnType<Handler>>
     type Subject = Param0<Handler>
 
+    const formator: MessageFormator =
+        messageFormator ??
+        (message ? () => message : (...args: Args) => `${name}(${args.join(', ')})`)
+
     const wrapper = (subject: Subject) => {
         const getSetterWithSubject = getRuleSetterForCustomHandler(handler)
 
@@ -69,5 +74,13 @@ export function createRule<
         return handler(subject)
     }
 
-    return (...args: Args) => [name, args, wrapper]
+    return (...args: Args) => {
+        const result = [name, args, wrapper, formator] as unknown as Custom<Args, RName, Subject>
+        Object.defineProperty(result, BRAND, {
+            value: true,
+            enumerable: false,
+            configurable: false,
+        })
+        return result
+    }
 }

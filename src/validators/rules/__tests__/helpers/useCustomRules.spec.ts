@@ -1,33 +1,29 @@
-import type { Custom } from '../../types/index.ts'
-
 import { number } from '../../../schema/number.ts'
+import { createInlineRule } from '../../helpers/createInlineRule.ts'
 import { createRule } from '../../helpers/createRule.ts'
 import { useCustomRules } from '../../helpers/useCustomRules.ts'
 
 describe('useCustomRules', () => {
     it('should apply a simple custom rule', () => {
-        const ruleTuple = ['isEven', [], (n: number) => () => n % 2 === 0] as const as Custom<
-            [],
-            'isEven',
-            number
-        >
-        const validator = useCustomRules(number(), ruleTuple)
+        const isEven = createRule({
+            name: 'isEven',
+            handler: (n: number) => () => n % 2 === 0,
+        })
+        const validator = useCustomRules(number(), isEven())
         expect(validator(2)).toBe(true)
         expect(validator(3)).toBe(false)
     })
 
     it('should work with multiple custom rules', () => {
-        const isEven = ['isEven', [], (n: number) => () => n % 2 === 0] as const as Custom<
-            [],
-            'isEven',
-            number
-        >
-        const isPositive = ['isPositive', [], (n: number) => () => n > 0] as const as Custom<
-            [],
-            'isPositive',
-            number
-        >
-        const validator = useCustomRules(number(), isEven, isPositive)
+        const isEven = createRule({
+            name: 'isEven',
+            handler: (n: number) => () => n % 2 === 0,
+        })
+        const isPositive = createRule({
+            name: 'isPositive',
+            handler: (n: number) => () => n > 0,
+        })
+        const validator = useCustomRules(number(), isEven(), isPositive())
         expect(validator(4)).toBe(true)
         expect(validator(-2)).toBe(false)
         expect(validator(3)).toBe(false)
@@ -73,19 +69,21 @@ describe('useCustomRules', () => {
     })
 
     it('should work with a custom rule that always returns false', () => {
-        const alwaysFalse = ['never', [], () => () => false] as const as Custom<[], 'never', number>
-        const validator = useCustomRules(number(), alwaysFalse)
+        const never = createRule({
+            name: 'never',
+            handler: () => () => false,
+        })
+        const validator = useCustomRules(number(), never())
         expect(validator(1)).toBe(false)
         expect(validator(0)).toBe(false)
     })
 
     it('should work with a custom rule that uses arguments', () => {
-        const greaterThan = [
-            'greaterThan',
-            [10],
-            (n: number) => (min: number) => n > min,
-        ] as const as Custom<[number], 'greaterThan', number>
-        const validator = useCustomRules(number(), greaterThan)
+        const greaterThan = createRule({
+            name: 'greaterThan',
+            handler: (n: number) => (min: number) => n > min,
+        })
+        const validator = useCustomRules(number(), greaterThan(10))
         expect(validator(11)).toBe(true)
         expect(validator(10)).toBe(false)
         expect(validator(9)).toBe(false)
@@ -104,24 +102,25 @@ describe('useCustomRules', () => {
     })
 
     it('should work with a custom rule that returns true for all values', () => {
-        const alwaysTrue = ['always', [], () => () => true] as const as Custom<[], 'always', number>
-        const validator = useCustomRules(number(), alwaysTrue)
+        const always = createRule({
+            name: 'always',
+            handler: () => () => true,
+        })
+        const validator = useCustomRules(number(), always())
         expect(validator(1)).toBe(true)
         expect(validator(0)).toBe(true)
         expect(validator(-1)).toBe(true)
     })
 
     it('should work with a complex set of rules', () => {
-        const isEven = ['isEven', [], (n: number) => () => n % 2 === 0] as const as Custom<
-            [],
-            'isEven',
-            number
-        >
-        const isPositive = ['isPositive', [], (n: number) => () => n > 0] as const as Custom<
-            [],
-            'isPositive',
-            number
-        >
+        const isEven = createRule({
+            name: 'isEven',
+            handler: (n: number) => () => n % 2 === 0,
+        })
+        const isPositive = createRule({
+            name: 'isPositive',
+            handler: (n: number) => () => n > 0,
+        })
         const minRule = createRule({
             name: 'min',
             handler: (value: number) => (min: number) => value >= min,
@@ -132,11 +131,18 @@ describe('useCustomRules', () => {
             handler: (value: number) => (max: number) => value <= max,
             message: 'Value is above the maximum',
         })
-        const ruleTuple = [isEven, isPositive, minRule(2), maxRule(5)]
+        const ruleTuple = [isEven(), isPositive(), minRule(2), maxRule(5)]
         const validator = useCustomRules(number(), ...ruleTuple)
         expect(validator(4)).toBe(true) // even, positive, min <= 2, max >= 5
         expect(validator(3)).toBe(false) // odd
         expect(validator(1)).toBe(false) // below min
         expect(validator(6)).toBe(false) // above max
+    })
+
+    it('should work with a rule created by createInlineRule', () => {
+        const isEven = createInlineRule('isEven', (n: number) => n % 2 === 0)
+        const validator = useCustomRules(number(), isEven)
+        expect(validator(2)).toBe(true)
+        expect(validator(3)).toBe(false)
     })
 })

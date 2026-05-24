@@ -1,11 +1,11 @@
 import type { Custom } from '../types/index.ts'
-import { isCustomHandler } from './isCustomHandler.ts'
+import { CUSTOM_RULE_BRAND as BRAND } from '../types/index.ts'
 import { isRule } from './isRule.ts'
 
 export const isCustom = <
     Args extends any[] = unknown[],
     RuleName extends string = string,
-    Subject = unknown
+    Subject = unknown,
 >(
     arg: unknown
 ): arg is Custom<Args, RuleName, Subject> => {
@@ -13,8 +13,9 @@ export const isCustom = <
 
     const [, , handler] = arg
 
-    if (!handler) return false
-    if (!isCustomHandler(handler)) return false
+    if (typeof handler !== 'function') return false
+    if (handler.length > 1) return false
+    if (!(BRAND in arg) || (arg as any)[BRAND] !== true) return false
 
     return true
 }

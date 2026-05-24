@@ -1,8 +1,11 @@
-import type { Custom as CustomRule, Default as DefaultRules, Rule } from '../../rules/types/index.ts'
+import type {
+    Custom as CustomRule,
+    Default as DefaultRules,
+    Rule,
+} from '../../rules/types/index.ts'
 
 import { AND } from '../../../helpers/logic/index.ts'
 import { getRule } from '../../rules/helpers/getRule.ts'
-import { isCustomHandler } from '../../rules/helpers/isCustomHandler.ts'
 import { isRule } from '../../rules/helpers/isRule.ts'
 import { isRequired } from './isRequired.ts'
 
@@ -27,7 +30,7 @@ export function isFollowingRules(arg: unknown, rules: unknown[]): boolean {
             .filter(isRule)
             .filter(isRequired)
             .map(([rule, args, handler]) => {
-                if (isCustomHandler(handler)) return handler(arg).call(null, ...args)
+                if (typeof handler === 'function') return handler(arg)(...args)
 
                 return getRule<DefaultRules[0], Rule>(rule as DefaultRules[0]).call(
                     null,

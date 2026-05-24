@@ -32,79 +32,92 @@ function _fn<T>(schema: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T[]>
 function _fn(tree: {}): TypeGuard<{}[]>
 function _fn<T>(tree: ValidatorMap<T>): TypeGuard<T[]>
 function _fn<T>(
-  rules?: ArrayRule[] | TypeGuard<T> | StandardSchemaV1<T, T> | null | undefined,
-  schema?: TypeGuard<T> | StandardSchemaV1<T, T>
+    rules?: ArrayRule[] | TypeGuard<T> | StandardSchemaV1<T, T> | null | undefined,
+    schema?: TypeGuard<T> | StandardSchemaV1<T, T>
 ): TypeGuard<T[]>
 
 function _fn<T>(
-  this: unknown,
-  rules: ArrayRule[] | TypeGuard<T> | StandardSchemaV1<T, T> | null | undefined | ValidatorMap<T> = void 0,
-  _schema: TypeGuard<T> | StandardSchemaV1<T, T> = any()
+    this: unknown,
+    rules:
+        | ArrayRule[]
+        | TypeGuard<T>
+        | StandardSchemaV1<T, T>
+        | null
+        | undefined
+        | ValidatorMap<T> = void 0,
+    _schema: TypeGuard<T> | StandardSchemaV1<T, T> = any()
 ): TypeGuard<T[]> {
-  if (!!rules && typeof rules === 'object' && !Array.isArray(rules) && !isStandardSchema(rules))
-    return _fn(object(rules) as unknown as TypeGuard<T>)
+    if (!!rules && typeof rules === 'object' && !Array.isArray(rules) && !isStandardSchema(rules))
+        return _fn(object(rules) as unknown as TypeGuard<T>)
 
-  const normalizeIfSchema = (s: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T> =>
-    normalizeSchema(s)
+    const normalizeIfSchema = (s: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T> =>
+        normalizeSchema(s)
 
-  if (!rules || typeof rules === 'function' || isStandardSchema(rules)) {
-    const schema = rules ? normalizeIfSchema(rules as TypeGuard<T> | StandardSchemaV1<T, T>) : normalizeIfSchema(_schema)
+    if (!rules || typeof rules === 'function' || isStandardSchema(rules)) {
+        const schema = rules
+            ? normalizeIfSchema(rules as TypeGuard<T> | StandardSchemaV1<T, T>)
+            : normalizeIfSchema(_schema)
+        const guard = (arg: unknown): arg is T[] =>
+            Array.isArray(arg) && arg.every(item => schema(item))
+
+        return setStructMetadata<T[]>(
+            {
+                type: 'object',
+                schema: guard,
+                optional: false,
+                entries: getStructMetadata(schema) as V3.GenericStruct<T>,
+                rules: [],
+            } as V3.ArrayStruct<T>,
+            setRuleMessage(`Array<${getMessage(schema)}>`, guard)
+        )
+    }
+
+    const schema = normalizeIfSchema(_schema)
+
     const guard = (arg: unknown): arg is T[] =>
-      Array.isArray(arg) && arg.every(item => schema(item))
+        branchIfOptional(arg, rules) ||
+        (Array.isArray(arg) && isFollowingRules(arg, rules) && arg.every(item => schema(item)))
 
-    return setStructMetadata<T[]>(
-      {
-        type: 'object',
-        schema: guard,
-        optional: false,
-        entries: getStructMetadata(schema) as V3.GenericStruct<T>,
-        rules: [],
-      } as V3.ArrayStruct<T>,
-      setRuleMessage(`Array<${getMessage(schema)}>`, guard)
+    return setStructMetadata(
+        {
+            type: 'object',
+            schema: guard,
+            optional: false,
+            entries: getStructMetadata(schema) as V3.GenericStruct<T>,
+            rules: rules.map(getRuleStructMetadata<ArrayRule>),
+        },
+        setRuleMessage(`Array<${getMessage(schema)}>`, guard, rules)
     )
-  }
-
-  const schema = normalizeIfSchema(_schema)
-
-  const guard = (arg: unknown): arg is T[] =>
-    branchIfOptional(arg, rules) ||
-    (Array.isArray(arg) && isFollowingRules(arg, rules) && arg.every(item => schema(item)))
-
-  return setStructMetadata(
-    {
-      type: 'object',
-      schema: guard,
-      optional: false,
-      entries: getStructMetadata(schema) as V3.GenericStruct<T>,
-      rules: rules.map(getRuleStructMetadata<ArrayRule>),
-    },
-    setRuleMessage(`Array<${getMessage(schema)}>`, guard, rules)
-  )
 }
 
 type OptionalizedArray = CallableFunction & {
-  (): TypeGuard<any[] | undefined>
-  (rules: ArrayRule[]): TypeGuard<any[] | undefined>
-  <T>(rules: ArrayRule[], schema: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T[] | undefined>
-  <T>(schema: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T[] | undefined>
-  (tree: {}): TypeGuard<{}[] | undefined>
-  <T>(tree: ValidatorMap<T>): TypeGuard<T[] | undefined>
+    (): TypeGuard<any[] | undefined>
+    (rules: ArrayRule[]): TypeGuard<any[] | undefined>
+    <T>(
+        rules: ArrayRule[],
+        schema: TypeGuard<T> | StandardSchemaV1<T, T>
+    ): TypeGuard<T[] | undefined>
+    <T>(schema: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T[] | undefined>
+    (tree: {}): TypeGuard<{}[] | undefined>
+    <T>(tree: ValidatorMap<T>): TypeGuard<T[] | undefined>
 }
 
 export const _array = optionalizeOverloadFactory(_fn).optionalize<OptionalizedArray>()
 
-export const array: ArraySchema = ((tree_schema?: TypeGuard<any> | ValidatorMap<any> | StandardSchemaV1<any, any>) => {
+export const array: ArraySchema = ((
+    tree_schema?: TypeGuard<any> | ValidatorMap<any> | StandardSchemaV1<any, any>
+) => {
     const rules: ArrayRule[] = []
     const customRules: Custom<any[], string, any[]>[] = []
     const callStack: { [key: string]: boolean } = {}
 
-  const getGuard = () => {
-    const resolver = callStack['optional'] ? _array.optional : _array
-    if (!tree_schema) return resolver(rules)
-    if (typeof tree_schema === 'function') return resolver(rules, tree_schema)
-    if (isStandardSchema(tree_schema)) return resolver(rules, tree_schema)
-    return resolver(rules, object(tree_schema))
-  }
+    const getGuard = () => {
+        const resolver = callStack['optional'] ? _array.optional : _array
+        if (!tree_schema) return resolver(rules)
+        if (typeof tree_schema === 'function') return resolver(rules, tree_schema)
+        if (isStandardSchema(tree_schema)) return resolver(rules, tree_schema)
+        return resolver(rules, object(tree_schema))
+    }
 
     const schema = (arg: unknown) => {
         const guard = getGuard()
@@ -162,7 +175,7 @@ export const array: ArraySchema = ((tree_schema?: TypeGuard<any> | ValidatorMap<
     schema.max = (n: number) => addCall('max', [ArrayRules.max(n)])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, any[]>) => addCall('use', [...rules])
-schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any[]>)
+    schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any[]>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, any>>),

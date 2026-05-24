@@ -6,21 +6,21 @@ import { isStandardSchema } from '../../validators/standard-schema/isStandardSch
 
 export function is<Interface>(value: unknown, validator: TypeGuard<Interface>): value is Interface
 export function is<Interface>(
-  value: unknown,
-  validator: (value: unknown) => boolean
+    value: unknown,
+    validator: (value: unknown) => boolean
 ): value is Interface
 export function is<Interface>(
-  value: unknown,
-  validator: StandardSchemaV1<Interface>
+    value: unknown,
+    validator: StandardSchemaV1<Interface>
 ): value is Interface
 
 export function is<Interface>(
-  value: unknown,
-  validator: ((value: unknown) => boolean) | StandardSchemaV1<Interface>
+    value: unknown,
+    validator: ((value: unknown) => boolean) | StandardSchemaV1<Interface>
 ): value is Interface {
-  if (isStandardSchema(validator)) {
-    return fromStandardSchema(validator)(value)
-  }
+    if (isStandardSchema(validator)) {
+        return fromStandardSchema(validator)(value)
+    }
 
-  return (validator as (value: unknown) => boolean)(value)
+    return (validator as (value: unknown) => boolean)(value)
 }

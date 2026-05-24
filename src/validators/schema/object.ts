@@ -41,21 +41,21 @@ function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, an
         )
     }
 
-  const keys = Object.keys(tree)
+    const keys = Object.keys(tree)
 
-  const normalizedTree = Object.fromEntries(
-    Object.entries(tree).map(([k, v]) => [k, normalizeSchema(v)])
-  ) as NormalizedValidatorMap<T>
+    const normalizedTree = Object.fromEntries(
+        Object.entries(tree).map(([k, v]) => [k, normalizeSchema(v)])
+    ) as NormalizedValidatorMap<T>
 
-  const optional = keys.filter(key => hasOptionalFlag(normalizedTree[key]))
-  const required = keys.filter(key => !hasOptionalFlag(normalizedTree[key]))
+    const optional = keys.filter(key => hasOptionalFlag(normalizedTree[key]))
+    const required = keys.filter(key => !hasOptionalFlag(normalizedTree[key]))
 
-  const config = { validators: normalizedTree, required, optional }
+    const config = { validators: normalizedTree, required, optional }
 
-  const guard = (arg: unknown): arg is T =>
-    branchIfOptional(arg, []) || BaseValidator.hasValidProperties(arg, config)
+    const guard = (arg: unknown): arg is T =>
+        branchIfOptional(arg, []) || BaseValidator.hasValidProperties(arg, config)
 
-  const message = pipe(Object.entries(normalizedTree))
+    const message = pipe(Object.entries(normalizedTree))
         .pipe(
             map(
                 ([k, v]) =>
@@ -152,7 +152,7 @@ export const object: ObjectSchema = ((tree?: ValidatorMap<any>) => {
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, object>) => addCall('use', [...rules])
-schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<object>)
+    schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<object>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, object>>),

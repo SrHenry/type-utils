@@ -20,62 +20,84 @@ import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 
 type IntersectionSchemaEntry<T = any> = TypeGuard<T> | StandardSchemaV1<T, T>
 
-type GetIntersectionEntryType<T> = T extends TypeGuard<infer U>
-  ? U
-  : T extends StandardSchemaV1<infer U, any>
-    ? U
-    : never
+type GetIntersectionEntryType<T> =
+    T extends TypeGuard<infer U> ? U : T extends StandardSchemaV1<infer U, any> ? U : never
 
 type GetIntersectionEntryTypes<T extends any[]> = T extends []
-  ? []
-  : T extends [infer U, ...infer V]
-    ? [GetIntersectionEntryType<U>, ...GetIntersectionEntryTypes<V>]
-    : any[]
+    ? []
+    : T extends [infer U, ...infer V]
+      ? [GetIntersectionEntryType<U>, ...GetIntersectionEntryTypes<V>]
+      : any[]
 
-function _fn<T1, T2>(guard1: IntersectionSchemaEntry<T1>, guard2: IntersectionSchemaEntry<T2>): TypeGuard<Merge<T1, T2>>
-function _fn<TEntries extends [IntersectionSchemaEntry<any>, IntersectionSchemaEntry<any>, ...IntersectionSchemaEntry[]]>(
-  ...guards: TEntries
-): TypeGuard<V3.TIntersection<GetIntersectionEntryTypes<TEntries>>>
+function _fn<T1, T2>(
+    guard1: IntersectionSchemaEntry<T1>,
+    guard2: IntersectionSchemaEntry<T2>
+): TypeGuard<Merge<T1, T2>>
+function _fn<
+    TEntries extends [
+        IntersectionSchemaEntry<any>,
+        IntersectionSchemaEntry<any>,
+        ...IntersectionSchemaEntry[],
+    ],
+>(...guards: TEntries): TypeGuard<V3.TIntersection<GetIntersectionEntryTypes<TEntries>>>
 
 function _fn(...guards: IntersectionSchemaEntry<any>[]): TypeGuard<any> {
-  if (guards.length < 2)
-    throw new Error('At least two guards are required in a intersection schema')
+    if (guards.length < 2)
+        throw new Error('At least two guards are required in a intersection schema')
 
-  const normalized = guards.map(g => normalizeSchema(g))
-  const guard = (arg: unknown): arg is any => normalized.every(typeGuard => typeGuard(arg))
+    const normalized = guards.map(g => normalizeSchema(g))
+    const guard = (arg: unknown): arg is any => normalized.every(typeGuard => typeGuard(arg))
 
-  return setStructMetadata(
-    {
-      type: 'intersection',
-      schema: guard,
-      optional: false,
-      types: normalized.map(getStructMetadata<any>),
-      rules: [],
-    },
-    setRuleMessage(normalized.map(getMessage).join(' & '), guard)
-  )
+    return setStructMetadata(
+        {
+            type: 'intersection',
+            schema: guard,
+            optional: false,
+            types: normalized.map(getStructMetadata<any>),
+            rules: [],
+        },
+        setRuleMessage(normalized.map(getMessage).join(' & '), guard)
+    )
 }
 
 type OptionalizedAnd = {
-  <T1, T2>(guard1: IntersectionSchemaEntry<T1>, guard2: IntersectionSchemaEntry<T2>): TypeGuard<undefined | Merge<T1, T2>>
-  <TEntries extends [IntersectionSchemaEntry<any>, IntersectionSchemaEntry<any>, ...IntersectionSchemaEntry[]]>(
-    ...guards: TEntries
-  ): TypeGuard<undefined | V3.TIntersection<GetIntersectionEntryTypes<TEntries>>>
+    <T1, T2>(
+        guard1: IntersectionSchemaEntry<T1>,
+        guard2: IntersectionSchemaEntry<T2>
+    ): TypeGuard<undefined | Merge<T1, T2>>
+    <
+        TEntries extends [
+            IntersectionSchemaEntry<any>,
+            IntersectionSchemaEntry<any>,
+            ...IntersectionSchemaEntry[],
+        ],
+    >(
+        ...guards: TEntries
+    ): TypeGuard<undefined | V3.TIntersection<GetIntersectionEntryTypes<TEntries>>>
 }
 
 export const _and = optionalizeOverloadFactory(_fn).optionalize<OptionalizedAnd>()
 
 type IntersectionSchema = CallableFunction & {
-  <T1, T2>(guard1: IntersectionSchemaEntry<T1>, guard2: IntersectionSchemaEntry<T2>): FluentSchema<T1 & T2>
-  <TEntries extends [IntersectionSchemaEntry<any>, IntersectionSchemaEntry<any>, ...IntersectionSchemaEntry[]]>(
-    ...guards: TEntries
-  ): FluentSchema<V3.TIntersection<GetIntersectionEntryTypes<TEntries>>>
+    <T1, T2>(
+        guard1: IntersectionSchemaEntry<T1>,
+        guard2: IntersectionSchemaEntry<T2>
+    ): FluentSchema<T1 & T2>
+    <
+        TEntries extends [
+            IntersectionSchemaEntry<any>,
+            IntersectionSchemaEntry<any>,
+            ...IntersectionSchemaEntry[],
+        ],
+    >(
+        ...guards: TEntries
+    ): FluentSchema<V3.TIntersection<GetIntersectionEntryTypes<TEntries>>>
 }
 
 export const and: IntersectionSchema = ((
-  guard1: IntersectionSchemaEntry<any>,
-  guard2: IntersectionSchemaEntry<any>,
-  ...rest: IntersectionSchemaEntry<any>[]
+    guard1: IntersectionSchemaEntry<any>,
+    guard2: IntersectionSchemaEntry<any>,
+    ...rest: IntersectionSchemaEntry<any>[]
 ) => {
     const customRules: Custom<any[], string, any>[] = []
     const callStack: { [key: string]: boolean } = {}
@@ -130,7 +152,7 @@ export const and: IntersectionSchema = ((
     schema.optional = () => addCall('optional')
     schema.use = (...rules: Custom<any[], string, any>) => addCall('use', [...rules])
     schema.validator = (throwOnError: boolean = true) => addCall('validator', [], { throwOnError })
-schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any>)
+    schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, any>>),

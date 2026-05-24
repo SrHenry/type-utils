@@ -9,35 +9,31 @@ import { setOptionalFlag } from '../schema/helpers/optionalFlag.ts'
 import { fromStandardSchema } from './fromStandardSchema.ts'
 import { isStandardSchema } from './isStandardSchema.ts'
 
-export function normalizeSchema<T>(
-  schema: TypeGuard<T> | StandardSchemaV1<T, T>
-): TypeGuard<T> {
-  if (isTypeGuard(schema)) return schema
+export function normalizeSchema<T>(schema: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T> {
+    if (isTypeGuard(schema)) return schema
 
-  if (isStandardSchema(schema)) {
-    const guard = fromStandardSchema(schema)
+    if (isStandardSchema(schema)) {
+        const guard = fromStandardSchema(schema)
 
-    const vendor = (schema as StandardSchemaV1<T, T>)['~standard'].vendor
+        const vendor = (schema as StandardSchemaV1<T, T>)['~standard'].vendor
 
-    setStructMetadata<T>(
-      {
-        type: 'custom',
-        schema: guard,
-        optional: false,
-        kind: 'standard-schema-external',
-        rules: [],
-      } as V3.CustomStruct<T>,
-      setMessage(`<${vendor}>`, guard)
-    )
+        setStructMetadata<T>(
+            {
+                type: 'custom',
+                schema: guard,
+                optional: false,
+                kind: 'standard-schema-external',
+                rules: [],
+            } as V3.CustomStruct<T>,
+            setMessage(`<${vendor}>`, guard)
+        )
 
-    if (guard(undefined)) {
-      setOptionalFlag(guard)
+        if (guard(undefined)) {
+            setOptionalFlag(guard)
+        }
+
+        return guard
     }
 
-    return guard
-  }
-
-  throw new TypeError(
-    `Expected a TypeGuard or StandardSchemaV1, got ${typeof schema}`
-  )
+    throw new TypeError(`Expected a TypeGuard or StandardSchemaV1, got ${typeof schema}`)
 }

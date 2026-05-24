@@ -192,7 +192,7 @@ export const string = ((matcher?: string | RegExp) => {
     schema.email = () => addCall('email', [StringRules.email()])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, string>) => addCall('use', [...rules])
-schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<string>)
+    schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<string>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, string>>),
