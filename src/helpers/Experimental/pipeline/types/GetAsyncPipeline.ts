@@ -1,3 +1,3 @@
-import type { GetPipeline } from './GetPipeline.ts'
+import type { AsyncPipelineBox } from '../core/PipelineBox.ts'
 
-export type GetAsyncPipeline<T> = GetPipeline<Promise<T>>
+export type GetAsyncPipeline<T> = AsyncPipelineBox<T>
