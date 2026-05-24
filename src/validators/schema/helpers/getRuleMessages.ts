@@ -4,6 +4,7 @@ import { getMessageFormator } from '../../../TypeGuards/helpers/getMessageFormat
 import { mapDefaultOrCustomRules } from './mappers/mapDefaultOrCustomRules.ts'
 
 export const getRuleMessages = (rules: Array<DefaultRules | CustomRules>) =>
-    rules
-        .map(mapDefaultOrCustomRules)
-        .map(({ rule, args }) => `${getMessageFormator(rule)(...args)}`)
+    rules.map(mapDefaultOrCustomRules).map(mapped => {
+        if (mapped.type === 'custom') return mapped.formator(...mapped.args)
+        return `${getMessageFormator(mapped.rule)(...mapped.args)}`
+    })

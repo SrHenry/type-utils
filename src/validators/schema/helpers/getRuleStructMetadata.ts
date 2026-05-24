@@ -29,8 +29,8 @@ export function getRuleStructMetadata(rule: RuleSet): RuleStruct<RuleSet> {
     }
 
     if (isCustom(rule)) {
-        const [name, args, handler] = rule
-        return { type: 'custom', rule: name, args, handler } as RuleStruct<
+        const [name, args, handler, formator] = rule
+        return { type: 'custom', rule: name, args, handler, formator } as RuleStruct<
             CustomRuleSet<any[], string, any>
         >
     }

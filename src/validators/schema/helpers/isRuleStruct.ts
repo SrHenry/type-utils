@@ -21,6 +21,7 @@ export function isRuleStruct(struct: unknown): struct is RuleStruct<AllRules> {
             if (!('rule' in struct) || typeof struct.rule !== 'string') return false
             if (!('args' in struct) || !Array.isArray(struct.args)) return false
             if (!('handler' in struct) || typeof struct.handler !== 'function') return false
+            if (!('formator' in struct) || typeof struct.formator !== 'function') return false
 
             break
     }

@@ -17,20 +17,20 @@ export function useCustomRules<T, U extends Custom<any[], string, any>>(
 export function useCustomRules<
     T,
     U1 extends Custom<any[], string, any>,
-    U2 extends Custom<any[], string, any>
+    U2 extends Custom<any[], string, any>,
 >(guard: TypeGuard<T>, rule: U1, rule2: U2): typeof guard
 export function useCustomRules<
     T,
     U1 extends Custom<any[], string, any>,
     U2 extends Custom<any[], string, any>,
-    U3 extends Custom<any[], string, any>
+    U3 extends Custom<any[], string, any>,
 >(guard: TypeGuard<T>, rule: U1, rule2: U2, rule3: U3): typeof guard
 export function useCustomRules<
     T,
     U1 extends Custom<any[], string, any>,
     U2 extends Custom<any[], string, any>,
     U3 extends Custom<any[], string, any>,
-    U4 extends Custom<any[], string, any>
+    U4 extends Custom<any[], string, any>,
 >(guard: TypeGuard<T>, rule: U1, rule2: U2, rule3: U3, rule4: U4): typeof guard
 export function useCustomRules<
     T,
@@ -38,7 +38,7 @@ export function useCustomRules<
     U2 extends Custom<any[], string, any>,
     U3 extends Custom<any[], string, any>,
     U4 extends Custom<any[], string, any>,
-    U5 extends Custom<any[], string, any>
+    U5 extends Custom<any[], string, any>,
 >(guard: TypeGuard<T>, rule: U1, rule2: U2, rule3: U3, rule4: U4, rule5: U5): typeof guard
 export function useCustomRules<
     T,
@@ -47,7 +47,7 @@ export function useCustomRules<
     U3 extends Custom<any[], string, any>,
     U4 extends Custom<any[], string, any>,
     U5 extends Custom<any[], string, any>,
-    U extends Custom<any[], string, any>
+    U extends Custom<any[], string, any>,
 >(
     guard: TypeGuard<T>,
     rule1: U1,

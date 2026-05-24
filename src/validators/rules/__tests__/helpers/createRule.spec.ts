@@ -1,3 +1,4 @@
+import { CUSTOM_RULE_BRAND } from '../../types/index.ts'
 import { createRule } from '../../helpers/createRule.ts'
 
 describe('createRule', () => {
@@ -6,17 +7,28 @@ describe('createRule', () => {
     const mockMessage = 'Valor inválido'
     const mockMessageFormator = (v: any) => `Valor ${v} inválido`
 
-    it('should return a CustomFactory that includes name, args and wrapper', () => {
+    it('should return a CustomFactory that includes name, args, wrapper and formator', () => {
         const factory = createRule({
             name: mockName,
             handler: mockHandler as any,
             message: mockMessage,
         })
 
-        const [name, args, wrapper] = factory(5)
+        const [name, args, wrapper, formator] = factory(5)
         expect(name).toBe(mockName)
         expect(args).toEqual([5])
         expect(typeof wrapper).toBe('function')
+        expect(typeof formator).toBe('function')
+    })
+
+    it('should attach the CUSTOM_RULE_BRAND symbol to the tuple', () => {
+        const factory = createRule({
+            name: mockName,
+            handler: mockHandler as any,
+        })
+
+        const result = factory(5)
+        expect((result as any)[CUSTOM_RULE_BRAND]).toBe(true)
     })
 
     it('wrapper should use messageFormator if provided', () => {
@@ -62,7 +74,6 @@ describe('createRule', () => {
         })
         const [, , wrapper] = factory(8)
         const result = wrapper(5)
-        // Since the actual return is a mock, just check if the formator is used
         expect(result).toBeDefined()
     })
 
@@ -76,5 +87,34 @@ describe('createRule', () => {
         const [, args, wrapper] = factory(2)
         expect(wrapper(3)(...args)).toBe(true)
         expect(wrapper(1)(...args)).toBe(false)
+    })
+
+    it('should use default formator based on name when no message/formator provided', () => {
+        const factory = createRule({
+            name: 'min',
+            handler: mockHandler as any,
+        })
+        const [, , , formator] = factory(5)
+        expect(formator(5)).toBe('min(5)')
+    })
+
+    it('should use message as formator when message is provided', () => {
+        const factory = createRule({
+            name: 'min',
+            handler: mockHandler as any,
+            message: 'too small',
+        })
+        const [, , , formator] = factory(5)
+        expect(formator(5)).toBe('too small')
+    })
+
+    it('should use messageFormator when messageFormator is provided', () => {
+        const factory = createRule({
+            name: 'min',
+            handler: mockHandler as any,
+            messageFormator: (v: any) => `Value ${v} is too small`,
+        })
+        const [, , , formator] = factory(5)
+        expect(formator(5)).toBe('Value 5 is too small')
     })
 })
