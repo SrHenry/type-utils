@@ -6,8 +6,8 @@ import { HasDepipe } from './interfaces/HasDepipe.ts'
 export type Pipable<T> = T extends Unpipable
     ? T
     : T extends Promise<any>
-    ? internal.BaseAsyncPipable<T>
-    : internal.BasePipable<T>
+      ? internal.BaseAsyncPipable<T>
+      : internal.BasePipable<T>
 
 export namespace internal {
     export type AsyncPipe<T> = <U>(
@@ -20,9 +20,7 @@ export namespace internal {
     }
 
     export interface BaseAsyncPipable<T>
-        extends HasPipe<T>,
-            HasPipeAsync<T>,
-            HasDepipe<Promise<Awaited<T>>> {}
+        extends HasPipe<T>, HasPipeAsync<T>, HasDepipe<Promise<Awaited<T>>> {}
 
     export interface HasPipe<T> {
         readonly pipe: Pipe<T>

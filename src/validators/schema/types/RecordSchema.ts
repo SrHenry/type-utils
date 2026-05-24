@@ -6,13 +6,12 @@ import type { FluentSchema } from './FluentSchema.ts'
 type Rules = Omit<typeof RecordRules, 'optional'>
 
 export type RecordSchema = CallableFunction & {
-  (): FluentSchema<Record<string, any>, Rules>
-  <K extends string | number | symbol, V>(
-    keySchema: TypeGuard<K> | StandardSchemaV1<K, K>,
-    valueSchema: TypeGuard<V> | StandardSchemaV1<V, V>
-  ): FluentSchema<Record<K, V>, Rules>
-  <K extends string | number | symbol>(keySchema: TypeGuard<K> | StandardSchemaV1<K, K>): FluentSchema<
-    Record<K, any>,
-    Rules
-  >
+    (): FluentSchema<Record<string, any>, Rules>
+    <K extends string | number | symbol, V>(
+        keySchema: TypeGuard<K> | StandardSchemaV1<K, K>,
+        valueSchema: TypeGuard<V> | StandardSchemaV1<V, V>
+    ): FluentSchema<Record<K, V>, Rules>
+    <K extends string | number | symbol>(
+        keySchema: TypeGuard<K> | StandardSchemaV1<K, K>
+    ): FluentSchema<Record<K, any>, Rules>
 }

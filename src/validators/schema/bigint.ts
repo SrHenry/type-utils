@@ -124,7 +124,7 @@ export const bigint: BigIntSchema = (() => {
     schema.min = (n: bigint) => addCall('min', [NumberRules.min(n)])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, bigint>) => addCall('use', [...rules])
-schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<bigint>)
+    schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<bigint>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, bigint>>),

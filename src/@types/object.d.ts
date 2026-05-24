@@ -1,10 +1,10 @@
 type ObjectKeys<T> = T extends object
     ? (keyof T)[]
     : T extends number
-    ? []
-    : T extends Array<any> | string
-    ? string[]
-    : never
+      ? []
+      : T extends Array<any> | string
+        ? string[]
+        : never
 
 type Fallback<T, TO, Includes = never> = T extends never | Includes ? TO : T
 
@@ -18,10 +18,10 @@ type Entries<T> = T extends any[] ? T : T extends {} ? ObjectEntries<T> : [strin
 type ObjectValue<T> = T extends any[]
     ? T
     : T extends {}
-    ? ObjectEntry<T> extends [any, infer TValue]
-        ? TValue
-        : never
-    : never
+      ? ObjectEntry<T> extends [any, infer TValue]
+          ? TValue
+          : never
+      : never
 
 type ObjectValues<T extends {}> = ObjectValue<T>[]
 type Value<T> = T extends any[] ? T : T extends {} ? ObjectValue<T> : any[]

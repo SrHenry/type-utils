@@ -5,34 +5,34 @@ import { isTypeGuard } from './isTypeGuard.ts'
 
 export function getMetadata<T extends string | symbol, U>(key: T, from: U): any | undefined
 export function getMetadata<T extends string | symbol, U, V extends TypeGuard>(
-	key: T,
-	from: U,
-	schema: V
+    key: T,
+    from: U,
+    schema: V
 ): GetTypeGuard<V> | undefined
 export function getMetadata<T extends string | symbol>(
-	key: T
+    key: T
 ): {
-	<U>(from: U): any | undefined
-	<U, V extends TypeGuard>(from: U, schema: V): any | undefined
+    <U>(from: U): any | undefined
+    <U, V extends TypeGuard>(from: U, schema: V): any | undefined
 }
 
 export function getMetadata<T extends string | symbol, U, V extends TypeGuard>(
-	key: T,
-	from?: U,
-	schema?: V
+    key: T,
+    from?: U,
+    schema?: V
 ): GetTypeGuard<V> | undefined
 
 export function getMetadata(
-	key: string | symbol,
-	from: Object | symbol = __curry_param__,
-	schema?: TypeGuard
+    key: string | symbol,
+    from: Object | symbol = __curry_param__,
+    schema?: TypeGuard
 ): unknown | undefined {
-	if (from === __curry_param__)
-		return (from: Object, schema?: TypeGuard): unknown => getMetadata(key, from, schema)
+    if (from === __curry_param__)
+        return (from: Object, schema?: TypeGuard): unknown => getMetadata(key, from, schema)
 
-	const metadata = getOwnMetadata(key, from as object)
+    const metadata = getOwnMetadata(key, from as object)
 
-	if (isTypeGuard(schema) && !schema(metadata)) return void 0
+    if (isTypeGuard(schema) && !schema(metadata)) return void 0
 
-	return metadata
+    return metadata
 }

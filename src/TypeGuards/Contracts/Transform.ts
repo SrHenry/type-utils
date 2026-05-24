@@ -1,5 +1,4 @@
-export interface TransformContract<TransformData, InputTypes, OutputType>
-{
+export interface TransformContract<TransformData, InputTypes, OutputType> {
     inputTypes: string[]
     outputType: OutputType
 
@@ -8,5 +7,4 @@ export interface TransformContract<TransformData, InputTypes, OutputType>
     to<T>(...types: T[]): TransformContract<TransformData, InputTypes, T>
 
     transform(): OutputType
-
 }

@@ -17,39 +17,36 @@ export type RequiredProps<T> = Omit<T, OptionalKeys<T>>
 export type OptionalProps<T> = Pick<T, OptionalKeys<T>>
 
 export type ValidatorMap<T> = {
-  [K in keyof T]-?: TypeGuard<T[K]> | StandardSchemaV1<T[K], T[K]>
+    [K in keyof T]-?: TypeGuard<T[K]> | StandardSchemaV1<T[K], T[K]>
 }
 
 /** @internal */
 export type NormalizedValidatorMap<T> = {
-  [K in keyof T]-?: TypeGuard<T[K]>
+    [K in keyof T]-?: TypeGuard<T[K]>
 }
 
-export type GetTypeFromValidatorMap<T extends ValidatorMap<any>> = T extends ValidatorMap<infer U>
-  ? Sanitize<U>
-  : never
+export type GetTypeFromValidatorMap<T extends ValidatorMap<any>> =
+    T extends ValidatorMap<infer U> ? Sanitize<U> : never
 
 export type ValidatorArgs<T> = {
-  validators: NormalizedValidatorMap<T>
-  required?: Array<keyof T>
-  optional?: Array<keyof T>
+    validators: NormalizedValidatorMap<T>
+    required?: Array<keyof T>
+    optional?: Array<keyof T>
 }
 
 export type ValidatorMessageMap<T> = T extends (infer U)[]
     ? ValidatorMessageMap<U>
     : T extends Generics.PrimitiveType
-    ? string | MessageFormator
-    : Partial<{
-          [K in keyof T]: ValidatorMessageMap<T[K]>
-      }>
+      ? string | MessageFormator
+      : Partial<{
+            [K in keyof T]: ValidatorMessageMap<T[K]>
+        }>
 
-export type UnpackSchema<T extends ValidatorMap<any>> = T extends ValidatorMap<infer U>
-    ? Sanitize<U>
-    : never
+export type UnpackSchema<T extends ValidatorMap<any>> =
+    T extends ValidatorMap<infer U> ? Sanitize<U> : never
 
-export type Unpack<T extends ValidatorMap<any>> = T extends ValidatorMap<infer U>
-    ? Sanitize<U>
-    : never
+export type Unpack<T extends ValidatorMap<any>> =
+    T extends ValidatorMap<infer U> ? Sanitize<U> : never
 
 export type Optionalize<T extends {}> = {
     [P in keyof T]+?: T[P]

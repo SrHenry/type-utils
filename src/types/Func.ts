@@ -33,14 +33,14 @@ export type FourParamsFunc<
     Param2 = any,
     Param3 = any,
     Param4 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Func<[Param1, Param2, Param3, Param4], ReturnType>
 export type Func4<
     Param1 = any,
     Param2 = any,
     Param3 = any,
     Param4 = any,
-    ReturnType = void
+    ReturnType = void,
 > = FourParamsFunc<Param1, Param2, Param3, Param4, ReturnType>
 
 export type FiveParamsFunc<
@@ -49,7 +49,7 @@ export type FiveParamsFunc<
     Param3 = any,
     Param4 = any,
     Param5 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Func<[Param1, Param2, Param3, Param4, Param5], ReturnType>
 export type Func5<
     Param1 = any,
@@ -57,7 +57,7 @@ export type Func5<
     Param3 = any,
     Param4 = any,
     Param5 = any,
-    ReturnType = void
+    ReturnType = void,
 > = FiveParamsFunc<Param1, Param2, Param3, Param4, Param5, ReturnType>
 export type Func6<
     Param1 = any,
@@ -66,7 +66,7 @@ export type Func6<
     Param4 = any,
     Param5 = any,
     Param6 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Func<[Param1, Param2, Param3, Param4, Param5, Param6], ReturnType>
 export type Func7<
     Param1 = any,
@@ -76,7 +76,7 @@ export type Func7<
     Param5 = any,
     Param6 = any,
     Param7 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Func<[Param1, Param2, Param3, Param4, Param5, Param6, Param7], ReturnType>
 
 export type Func8<
@@ -88,7 +88,7 @@ export type Func8<
     Param6 = any,
     Param7 = any,
     Param8 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Func<[Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8], ReturnType>
 export type Func9<
     Param1 = any,
@@ -100,7 +100,7 @@ export type Func9<
     Param7 = any,
     Param8 = any,
     Param9 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Func<[Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8, Param9], ReturnType>
 export type Func10<
     Param1 = any,
@@ -113,7 +113,7 @@ export type Func10<
     Param8 = any,
     Param9 = any,
     Param10 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Func<
     [Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8, Param9, Param10],
     ReturnType
@@ -131,25 +131,24 @@ export type Factory<Args extends any[], ReturnType> = Func<Args, ReturnType>
 export type Fn<Params extends number | any[] = 0, ReturnType = void> = Params extends number
     ? Fn<TupleTools.CreateTuple<Params>, ReturnType>
     : Params extends [...any]
-    ? (...args: Params) => ReturnType
-    : never
+      ? (...args: Params) => ReturnType
+      : never
 
 export type AsyncFn<Params extends number | any[] = 0, ReturnType = void> = Params extends number
     ? AsyncFn<TupleTools.CreateTuple<Params>, ReturnType>
     : Params extends [...any]
-    ? (...args: Params) => Promise<ReturnType>
-    : never
+      ? (...args: Params) => Promise<ReturnType>
+      : never
 
 export type ThrowableFn<
     TException extends Error,
     Params extends number | [...any] = 0,
-    ReturnType = void
+    ReturnType = void,
 > = Tag<Fn<Params, ReturnType>, 'throws', TException>
 
 export { ThrowableFn as ThrowFn }
-export type GetThrowableException<T> = T extends ThrowableFn<infer TException, any[], any>
-    ? TException
-    : never
+export type GetThrowableException<T> =
+    T extends ThrowableFn<infer TException, any[], any> ? TException : never
 
 export type Fn0<ReturnType = void> = () => ReturnType
 export type AsyncFn0<ReturnType = void> = () => Promise<ReturnType>
@@ -177,7 +176,7 @@ export type AsyncFn4<
     Param2 = any,
     Param3 = any,
     Param4 = any,
-    ReturnType = void
+    ReturnType = void,
 > = AsyncFn<[Param1, Param2, Param3, Param4], ReturnType>
 export type Fn5<
     Param1 = any,
@@ -185,7 +184,7 @@ export type Fn5<
     Param3 = any,
     Param4 = any,
     Param5 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Fn<[Param1, Param2, Param3, Param4, Param5], ReturnType>
 export type AsyncFn5<
     Param1 = any,
@@ -193,7 +192,7 @@ export type AsyncFn5<
     Param3 = any,
     Param4 = any,
     Param5 = any,
-    ReturnType = void
+    ReturnType = void,
 > = AsyncFn<[Param1, Param2, Param3, Param4, Param5], ReturnType>
 export type Fn6<
     Param1 = any,
@@ -202,7 +201,7 @@ export type Fn6<
     Param4 = any,
     Param5 = any,
     Param6 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Fn<[Param1, Param2, Param3, Param4, Param5, Param6], ReturnType>
 export type AsyncFn6<
     Param1 = any,
@@ -211,7 +210,7 @@ export type AsyncFn6<
     Param4 = any,
     Param5 = any,
     Param6 = any,
-    ReturnType = void
+    ReturnType = void,
 > = AsyncFn<[Param1, Param2, Param3, Param4, Param5, Param6], ReturnType>
 export type Fn7<
     Param1 = any,
@@ -221,7 +220,7 @@ export type Fn7<
     Param5 = any,
     Param6 = any,
     Param7 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Fn<[Param1, Param2, Param3, Param4, Param5, Param6, Param7], ReturnType>
 export type AsyncFn7<
     Param1 = any,
@@ -231,7 +230,7 @@ export type AsyncFn7<
     Param5 = any,
     Param6 = any,
     Param7 = any,
-    ReturnType = void
+    ReturnType = void,
 > = AsyncFn<[Param1, Param2, Param3, Param4, Param5, Param6, Param7], ReturnType>
 export type Fn8<
     Param1 = any,
@@ -242,7 +241,7 @@ export type Fn8<
     Param6 = any,
     Param7 = any,
     Param8 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Fn<[Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8], ReturnType>
 export type AsyncFn8<
     Param1 = any,
@@ -253,7 +252,7 @@ export type AsyncFn8<
     Param6 = any,
     Param7 = any,
     Param8 = any,
-    ReturnType = void
+    ReturnType = void,
 > = AsyncFn<[Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8], ReturnType>
 export type Fn9<
     Param1 = any,
@@ -265,7 +264,7 @@ export type Fn9<
     Param7 = any,
     Param8 = any,
     Param9 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Fn<[Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8, Param9], ReturnType>
 export type AsyncFn9<
     Param1 = any,
@@ -277,7 +276,7 @@ export type AsyncFn9<
     Param7 = any,
     Param8 = any,
     Param9 = any,
-    ReturnType = void
+    ReturnType = void,
 > = AsyncFn<[Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8, Param9], ReturnType>
 export type Fn10<
     Param1 = any,
@@ -290,7 +289,7 @@ export type Fn10<
     Param8 = any,
     Param9 = any,
     Param10 = any,
-    ReturnType = void
+    ReturnType = void,
 > = Fn<
     [Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8, Param9, Param10],
     ReturnType
@@ -306,7 +305,7 @@ export type AsyncFn10<
     Param8 = any,
     Param9 = any,
     Param10 = any,
-    ReturnType = void
+    ReturnType = void,
 > = AsyncFn<
     [Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8, Param9, Param10],
     ReturnType
@@ -315,7 +314,7 @@ export type AsyncFn10<
 /** A wrapper for the `Parameters<T>` type helper */
 export type Param<
     Index extends keyof Parameters<Fn>,
-    Fn extends Func<any[], any>
+    Fn extends Func<any[], any>,
 > = Parameters<Fn>[Index]
 
 /** Returns the first parameter of a function type */
