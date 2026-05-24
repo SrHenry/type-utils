@@ -1,6 +1,6 @@
 import type { TypeGuard } from '../TypeGuards/types/index.ts'
 
-import { Generics } from '../Generics/index.ts'
+import type { Generics } from '../Generics/index.ts'
 import { createRule } from '../validators/rules/helpers/createRule.ts'
 import { getRule } from '../validators/rules/helpers/getRule.ts'
 import { SchemaValidator as Validator } from '../validators/SchemaValidator.ts'
@@ -18,7 +18,7 @@ import { isInstanceOf } from '../TypeGuards/helpers/isInstanceOf.ts'
 import { setMetadata } from '../TypeGuards/helpers/setMetadata.ts'
 import { setValidatorMessage } from '../TypeGuards/helpers/setValidatorMessage.ts'
 import { TypeGuardError } from '../TypeGuards/TypeErrors.ts'
-import { asEnum, asNull, or, Validators } from '../validators/index.ts'
+import { asEnum, asNull, or, type Validators } from '../validators/index.ts'
 import { hasOptionalFlag } from '../validators/schema/helpers/optionalFlag.ts'
 
 function prettier(e: unknown): string {
@@ -112,7 +112,7 @@ console.log(
 )
 
 const __metadata__ = Symbol('__metadata__')
-const f1 = setMetadata(__metadata__, { a: 1 }, function () {
+const f1 = setMetadata(__metadata__, { a: 1 }, () => {
     void 0
 })
 
@@ -172,7 +172,7 @@ if (!is(aaa, preEnvSchema)) throw new Error('Missing required environment variab
 const tryParse = (value: string, to: Exclude<Generics.Primitives, 'symbol' | 'undefined'>) => {
     switch (to) {
         case 'number':
-            if (isNaN(Number(value))) throw new Error(`${value} is not a number`)
+            if (Number.isNaN(Number(value))) throw new Error(`${value} is not a number`)
             return Number(value)
         case 'boolean':
             if (!['true', 'false'].includes(value)) throw new Error(`${value} is not a boolean`)
@@ -249,7 +249,7 @@ if (sku instanceof ValidationError) {
         or(
             isInstanceOf(ValidationErrors),
             array(
-                (e): e is ValidationError<typeof e, typeof isValidSKU> =>
+                (e: unknown): e is ValidationError<typeof e, typeof isValidSKU> =>
                     e instanceof ValidationError
             )
         )
@@ -490,49 +490,49 @@ const ____b = {
 }
 
 const GuidSchema = string(/[{(]?[0-9A-F]{8}[-]?(?:[0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?$/i)
-function isCPF(cpf: string = '') {
+function isCPF(cpf = '') {
     cpf = cpf.replace(/[^\d]+/g, '')
-    if (cpf == '') return false
+    if (cpf === '') return false
     // Elimina CPFs invalidos conhecidos
     if (
-        cpf.length != 11 ||
-        cpf == '00000000000' ||
-        cpf == '11111111111' ||
-        cpf == '22222222222' ||
-        cpf == '33333333333' ||
-        cpf == '44444444444' ||
-        cpf == '55555555555' ||
-        cpf == '66666666666' ||
-        cpf == '77777777777' ||
-        cpf == '88888888888' ||
-        cpf == '99999999999'
+        cpf.length !== 11 ||
+        cpf === '00000000000' ||
+        cpf === '11111111111' ||
+        cpf === '22222222222' ||
+        cpf === '33333333333' ||
+        cpf === '44444444444' ||
+        cpf === '55555555555' ||
+        cpf === '66666666666' ||
+        cpf === '77777777777' ||
+        cpf === '88888888888' ||
+        cpf === '99999999999'
     )
         return false
     // Valida 1o digito
     let add = 0
 
-    for (let i = 0; i < 9; i++) add += parseInt(cpf.charAt(i)) * (10 - i)
+    for (let i = 0; i < 9; i++) add += parseInt(cpf.charAt(i), 10) * (10 - i)
 
     let rev = 11 - (add % 11)
 
-    if (rev == 10 || rev == 11) rev = 0
+    if (rev === 10 || rev === 11) rev = 0
 
-    if (rev != parseInt(cpf.charAt(9))) return false
+    if (rev !== parseInt(cpf.charAt(9), 10)) return false
 
     // Valida 2o digito
     add = 0
 
-    for (let i = 0; i < 10; i++) add += parseInt(cpf.charAt(i)) * (11 - i)
+    for (let i = 0; i < 10; i++) add += parseInt(cpf.charAt(i), 10) * (11 - i)
 
     rev = 11 - (add % 11)
 
-    if (rev == 10 || rev == 11) rev = 0
+    if (rev === 10 || rev === 11) rev = 0
 
-    if (rev != parseInt(cpf.charAt(10))) return false
+    if (rev !== parseInt(cpf.charAt(10), 10)) return false
 
     return true
 }
-const CPFFormat = /^(\d{11}|\d{3}\.\d{3}\.\d{3}\-\d{2})$/
+const CPFFormat = /^(\d{11}|\d{3}\.\d{3}\.\d{3}-\d{2})$/
 const createCPFRule = createRule({
     name: 'custom.CPF',
     message: '[rule: must pass CPF algorithm]',

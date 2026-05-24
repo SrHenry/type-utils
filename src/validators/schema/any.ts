@@ -22,9 +22,7 @@ function _fn(): TypeGuard<any> {
 
 export const _any = optionalize(_fn)
 
-type AnySchema = CallableFunction & {
-    (): FluentSchema<any>
-}
+type AnySchema = CallableFunction & (() => FluentSchema<any>)
 
 export const any: AnySchema = (() => {
     const customRules: Custom<any[], string, any>[] = []

@@ -67,11 +67,11 @@ export namespace Generics {
                     ? 'undefined'
                     : never
     export declare type FinalType = FinalType[] | PrimitiveType
-    export declare type IsFunction<T> = T extends Function ? T : never
-    export declare type IsNotFunction<T> = T extends Function ? never : T
+    export declare type IsFunction<T> = T extends (...args: unknown[]) => unknown ? T : never
+    export declare type IsNotFunction<T> = T extends (...args: unknown[]) => unknown ? never : T
     export type FunctionPropertyNames<T> = {
         // [P in keyof T]: Generics.IsFunction<P>
-        [P in keyof T]: T[P] extends Function ? P : never
+        [P in keyof T]: T[P] extends (...args: unknown[]) => unknown ? P : never
     }[keyof T]
     export type ConstructorPropertyNames<T> = {
         [P in keyof T]: T[P] extends new (...args: any[]) => any ? P : never

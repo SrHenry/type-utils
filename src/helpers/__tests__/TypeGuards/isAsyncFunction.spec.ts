@@ -8,11 +8,11 @@ import { isAsyncFunction } from '../../isAsyncFunction.ts'
             }
 
             expect(run(async () => {})).toBe(true)
-            expect(run(async function () {})).toBe(true)
+            expect(run(async () => {})).toBe(true)
         })
         it('should return false if value is not an async function', () => {
             expect(isAsyncFunction(() => {})).toBe(false)
-            expect(isAsyncFunction(function () {})).toBe(false)
+            expect(isAsyncFunction(() => {})).toBe(false)
             expect(isAsyncFunction(function* () {})).toBe(false)
             expect(isAsyncFunction(async function* () {})).toBe(false)
             expect(isAsyncFunction(undefined)).toBe(false)
@@ -31,7 +31,7 @@ import { isAsyncFunction } from '../../isAsyncFunction.ts'
             expect(isAsyncFunction([])).toBe(false)
             expect(isAsyncFunction(new Date())).toBe(false)
             expect(isAsyncFunction(/abc/)).toBe(false)
-            expect(isAsyncFunction(new RegExp('abc'))).toBe(false)
+            expect(isAsyncFunction(/abc/)).toBe(false)
             expect(isAsyncFunction(Symbol('abc'))).toBe(false)
             expect(isAsyncFunction(new Error())).toBe(false)
             expect(isAsyncFunction(new TypeError())).toBe(false)

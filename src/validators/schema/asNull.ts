@@ -23,9 +23,7 @@ function _fn(): TypeGuard<null> {
 
 export const _null = optionalize(_fn)
 
-type NullSchema = CallableFunction & {
-    (): FluentSchema<null>
-}
+type NullSchema = CallableFunction & (() => FluentSchema<null>)
 
 export const asNull: NullSchema = (() => {
     const customRules: Custom<any[], string, null>[] = []

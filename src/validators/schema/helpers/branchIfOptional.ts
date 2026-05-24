@@ -1,4 +1,4 @@
-import { All as AllRules } from '../../rules/types/index.ts'
+import type { All as AllRules } from '../../rules/types/index.ts'
 
 import { getRule } from '../../rules/helpers/getRule.ts'
 import { isOptional } from './isOptional.ts'

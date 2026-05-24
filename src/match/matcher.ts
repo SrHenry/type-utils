@@ -43,5 +43,5 @@ export function matcher(
     }
 }
 
-matcher['NO_PARAM'] = NO_PARAM
-matcher['noExpr'] = noExpr
+matcher.NO_PARAM = NO_PARAM
+matcher.noExpr = noExpr

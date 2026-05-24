@@ -6,11 +6,6 @@ import type { V3 } from '../types/index.ts'
 import { setMetadata } from '../../../TypeGuards/helpers/setMetadata.ts'
 import { attachStandardSchema } from '../../standard-schema/attachStandardSchema.ts'
 import { __metadata__ } from './constants.ts'
-
-export function setStructMetadata<TSource>(
-    struct: V3.GenericStruct<TSource, false>,
-    guard: TypeGuard<TSource>
-): typeof guard
 export function setStructMetadata<TSource extends Generics.PrimitiveType>(
     struct: V3.EnumStruct<TSource>,
     guard: TypeGuard<TSource>
@@ -34,7 +29,7 @@ export function setStructMetadata<TSource extends {}>(
     guard: TypeGuard<TSource>
 ): typeof guard
 export function setStructMetadata<TSource>(
-    struct: V3.ArrayStruct<TypeFromArray<TSource>>,
+    struct: V3.ArrayStruct<TypeFromArray<TSource>> | V3.GenericStruct<TSource, false>,
     guard: TypeGuard<TSource>
 ): typeof guard
 

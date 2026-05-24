@@ -26,7 +26,7 @@ export class Email {
     }
 
     public static validate(value: string): boolean {
-        return this.regex.test(value)
+        return Email.regex.test(value)
     }
 
     [Symbol.toPrimitive](hint: string): string {

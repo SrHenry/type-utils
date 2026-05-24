@@ -5,8 +5,6 @@ import type { V3 } from '../types/index.ts'
 import { getStructMetadata } from './getStructMetadata.ts'
 import { hasStructMetadata } from './hasStructMetadata.ts'
 import { setStructMetadata } from './setStructMetadata.ts'
-
-export function copyStructMetadata<T, Target>(source: TypeGuard<T>, target: Target): Target
 export function copyStructMetadata<Target>(
     source: TypeGuard<any>,
     target: Target,
@@ -20,7 +18,7 @@ export function copyStructMetadata<Target>(
 export function copyStructMetadata<T, Target>(
     source: TypeGuard<T>,
     target: Target,
-    update: Partial<V3.GenericStruct<T>>
+    update?: Partial<V3.GenericStruct<T>>
 ): Target
 
 export function copyStructMetadata<T, Target>(

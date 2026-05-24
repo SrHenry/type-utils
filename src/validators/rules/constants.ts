@@ -81,6 +81,6 @@ export const bindings = {
 
     [keys['Record.nonEmpty']]: setMessageFormator(recordNonEmptyFormator, recordNonEmptyHandler),
 
-    [keys['optional']]: optionalHandler,
+    [keys.optional]: optionalHandler,
 } as const
 export type bindings = typeof bindings

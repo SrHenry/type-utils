@@ -96,7 +96,7 @@ function _fn<K extends PropertyKey, T>(
 
     if (isPartialRulesObject(keyGuard_or_rules)) return handleRulesObject(keyGuard_or_rules)
 
-    if (Array.isArray<RecordRule>(keyGuard_or_rules)) {
+    if (Array.isArray(keyGuard_or_rules)) {
         const guard = (arg: unknown): arg is Record<string, any> =>
             branchIfOptional(arg, keyGuard_or_rules) ||
             (typeof arg === 'object' && isFollowingRules(arg, keyGuard_or_rules))

@@ -1,7 +1,7 @@
 import { isPromise } from '../../helpers/isPromise.ts'
-import { AsyncFunc, Func } from '../../types/Func.ts'
-import { AsyncLambda, Lambda } from '../../types/Lambda.ts'
-import { AsyncResult, ErrorResult, Result, SucessfulResult } from '../../types/Result.ts'
+import type { AsyncFunc, Func } from '../../types/Func.ts'
+import type { AsyncLambda, Lambda } from '../../types/Lambda.ts'
+import type { AsyncResult, ErrorResult, Result, SucessfulResult } from '../../types/Result.ts'
 import { lambda } from './lambda/index.ts'
 
 export function run<TParams extends any[], ReturnType>(

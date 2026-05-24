@@ -11,18 +11,18 @@ export function setMetadata(key: string | symbol): {
 export function setMetadata(
     key: string | symbol,
     metadata: unknown | symbol = __curry_param__,
-    into: Object | Symbol = __curry_param__
-): Object {
+    into: object | symbol = __curry_param__
+): object | symbol {
     if (into === __curry_param__) {
         if (metadata === __curry_param__)
-            return (metadata: unknown, into: Object | symbol = __curry_param__) => {
+            return (metadata: unknown, into: object | symbol = __curry_param__) => {
                 if (into === __curry_param__)
-                    return (into: Object) => setMetadata(key, metadata, into)
+                    return (into: object) => setMetadata(key, metadata, into)
 
                 return setMetadata(key, metadata, into)
             }
 
-        return (into: Object): Object => setMetadata(key, metadata, into)
+        return (into: object): object | symbol => setMetadata(key, metadata, into)
     }
 
     defineMetadata(key, metadata, into as object)

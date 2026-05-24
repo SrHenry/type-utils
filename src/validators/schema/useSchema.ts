@@ -15,9 +15,7 @@ function _fn<T>(schema: TypeGuard<T>): TypeGuard<T> {
 
 export const _useSchema = optionalize(_fn)
 
-type DelegateSchema = CallableFunction & {
-    <T>(schema: TypeGuard<T>): FluentSchema<T>
-}
+type DelegateSchema = CallableFunction & (<T>(schema: TypeGuard<T>) => FluentSchema<T>)
 
 export const useSchema: DelegateSchema = ((_schema: TypeGuard<any>) => {
     const customRules: Custom<any[], string, any>[] = []

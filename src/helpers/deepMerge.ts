@@ -66,7 +66,7 @@ function isPlainObject(v: any): v is Record<string, any> {
  *
  * Note: runtime can't produce perfect typed guarantees, so we cast to Merge<A,B>.
  */
-export function deepMerge<A extends any, B extends any>(a: A, b: B): Merge<A, B> {
+export function deepMerge<A, B>(a: A, b: B): Merge<A, B> {
     // If both are arrays -> concat
     if (Array.isArray(a) && Array.isArray(b)) {
         // preserve readonly at runtime not meaningful — we return a normal array

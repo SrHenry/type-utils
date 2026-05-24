@@ -42,9 +42,8 @@ function _fn<T extends Generics.PrimitiveType>(values: T[]): TypeGuard<T> {
 
 export const _enum = optionalize(_fn)
 
-type EnumSchema = CallableFunction & {
-    <const T extends [...Generics.PrimitiveType[]]>(values: T): FluentSchema<T[number]>
-}
+type EnumSchema = CallableFunction &
+    (<const T extends [...Generics.PrimitiveType[]]>(values: T) => FluentSchema<T[number]>)
 
 export const asEnum: EnumSchema = ((values: any[]) => {
     const customRules: Custom<any[], string, Generics.PrimitiveType>[] = []

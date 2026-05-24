@@ -9,7 +9,7 @@ export function isCurried<TLambda extends Lambda<any[], any>>(
 export function isCurried<TFunc extends Func<any[], any>>(
     fn: unknown
 ): fn is CurriedFunc<TFunc, boolean>
-export function isCurried<TParams extends any[], TReturn extends any>(
+export function isCurried<TParams extends any[], TReturn>(
     fn: unknown
 ): fn is Curried<Func<TParams, TReturn>, boolean>
 export function isCurried(fn: unknown): fn is Curried<Func<any[], any>, boolean>
@@ -23,7 +23,7 @@ export function isPartialApply<TLambda extends Lambda<any[], any>>(
 export function isPartialApply<TFunc extends Func<any[], any>>(
     fn: unknown
 ): fn is CurriedFunc<TFunc, true>
-export function isPartialApply<TParams extends any[], TReturn extends any>(
+export function isPartialApply<TParams extends any[], TReturn>(
     fn: unknown
 ): fn is Curried<Func<TParams, TReturn>, true>
 export function isPartialApply(fn: unknown): fn is Curried<Func<any[], any>, true>
@@ -37,7 +37,7 @@ export function getParametersLength<TLambda extends Lambda<any[], any>>(
 export function getParametersLength<TFunc extends Func<any[], any>>(
     fn: CurriedFunc<TFunc, true>
 ): number | null
-export function getParametersLength<TParams extends any[], TReturn extends any>(
+export function getParametersLength<TParams extends any[], TReturn>(
     fn: Curried<Func<TParams, TReturn>, true>
 ): number | null
 export function getParametersLength(fn: CallableFunction): number | null

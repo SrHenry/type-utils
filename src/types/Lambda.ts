@@ -102,14 +102,14 @@ type _SpreadTParams<
               TIsLambda
           > &
               _SpreadTParams<TRestParams, TReturn, [...TConsumedParams, TParam0], TIsLambda>
-    : { (): TReturn }
+    : () => TReturn
 
 type CurryStepFunc<
     TParams extends any[],
     TReturn,
     TIsLambda extends boolean = false,
 > = TParams extends []
-    ? { (): TReturn }
+    ? () => TReturn
     : {
           (...args: TParams): TReturn
           (): TIsLambda extends true
@@ -163,7 +163,7 @@ export type CurriedLambdaFn<TLambda extends Func<any[], any>> = {
     <spread extends boolean>(partialApply: spread): CurriedLambda<TLambda, spread>
 }
 
-interface IUncurryableLambdaProps<TOrigFunc extends Func<any[], any>> {
+type IUncurryableLambdaProps<TOrigFunc extends Func<any[], any>> = {
     invoke: TOrigFunc
 }
 
@@ -181,7 +181,7 @@ type ILambdaProps<TOrigFunc extends Func<any[], any>> =
 
 type ILambda<Params extends any[] = [], ReturnType = void> = ILambdaProps<Func<Params, ReturnType>>
 
-interface ILambdaTypeGuard<Type = any> {
+type ILambdaTypeGuard<Type = any> = {
     invoke: (arg: unknown) => arg is Type
 }
 

@@ -23,15 +23,19 @@ import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
 import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 
+// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 function _fn<T extends {}>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
 // function _fn<T extends ValidatorMap<any>>(tree: T): TypeGuard<GetTypeFromValidatorMap<T>>
 
 function _fn(): TypeGuard<Record<any, any>>
+// biome-ignore lint/complexity/noBannedTypes: {} used as wildcard object type for overload
 function _fn(tree: {}): TypeGuard<{}>
+// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, any> | {}> {
     const isBlankObject = (arg: unknown) =>
         typeof arg === 'object' && !!arg && Object.keys(arg).length === 0
     if (!tree || isBlankObject(tree)) {
+        // biome-ignore lint/complexity/noBannedTypes: {} used as type for empty object guard
         const guard = (arg: unknown): arg is Record<any, any> | {} =>
             tree !== null && typeof arg === 'object'
 
@@ -70,6 +74,7 @@ function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, an
         type: 'object' as const,
         schema: guard,
         optional: false,
+        // biome-ignore lint/nursery/useReduceTypeParameter: type assertion needed for mapped type inference
         tree: Object.entries(normalizedTree)
             .map(([k, v]) => ({ [k]: getStructMetadata(v) as V3.StructType }))
             .reduce(
@@ -83,17 +88,21 @@ function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, an
 }
 
 type OptionalizedObject = {
+    // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
     <T extends {}>(tree: ValidatorMap<T>): TypeGuard<undefined | Sanitize<T>>
 
     (): TypeGuard<undefined | Record<any, any>>
+    // biome-ignore lint/complexity/noBannedTypes: {} used as wildcard object type for overload
     (tree: {}): TypeGuard<undefined | {}>
 }
 
 export const _object = optionalizeOverloadFactory(_fn).optionalize<OptionalizedObject>()
 
 type ObjectSchema = CallableFunction & {
+    // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
     <T extends {}>(tree: ValidatorMap<T>): FluentSchema<Sanitize<T>>
     (): FluentSchema<Record<any, any>>
+    // biome-ignore lint/complexity/noBannedTypes: {} used as wildcard object type for overload
     (tree: {}): FluentSchema<{}>
 }
 

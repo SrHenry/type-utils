@@ -6,6 +6,7 @@ import { getStructMetadata } from '../validators/schema/helpers/getStructMetadat
 import { object } from '../validators/schema/object.ts'
 
 export type ReplacedKeysTree<
+    // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
     TOrigin extends {},
     TReplace extends Partial<Record<keyof TOrigin, any>>,
 > = {
@@ -29,6 +30,7 @@ export type ReplacedKeysTree<
  *
  * @throws {TypeError} If the schema is not a type guard or if the schema is not an object schema.
  */
+// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 export function replaceSchemaTree<
     TOrigin extends {},
     TReplace extends Partial<Record<keyof TOrigin, any>>,
@@ -48,14 +50,16 @@ export function replaceSchemaTree<
     )
         .filter(([key]) => !(key in tree))
         .map(([key, value]) => ({
-            [key]: value.schema,
+            [key]: value['schema'],
         })) as unknown as Record<string, TypeGuard>[]
 
-    Object.entries<Record<string, TypeGuard>>(tree).forEach(([k, v]) => baseTree.push({ [k]: v }))
+    Object.entries<Record<string, TypeGuard>>(tree).forEach(([k, v]) => {
+        baseTree.push({ [k]: v })
+    })
 
-    const newTree = baseTree.reduce(
+    const newTree = baseTree.reduce<Record<string, TypeGuard>>(
         (o, branch) => Object.assign(o, branch),
-        {} as Record<string, TypeGuard>
+        {}
     )
 
     return object(newTree) as TypeGuard<Prettify<Omit<TOrigin, keyof TReplace> & TReplace>>

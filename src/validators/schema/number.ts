@@ -29,7 +29,7 @@ function _fn(rules: Partial<Rules>): TypeGuard<number>
 function _fn(rules: NumberRule[]): TypeGuard<number>
 
 function _fn(rules: Partial<Rules> | NumberRule[] = []): TypeGuard<number> {
-    if (Array.isArray<NumberRule>(rules)) {
+    if (Array.isArray(rules)) {
         const guard = (arg: unknown): arg is number =>
             branchIfOptional(arg, rules as NumberRule[]) ||
             (typeof arg === 'number' && isFollowingRules(arg, rules as NumberRule[]))

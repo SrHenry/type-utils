@@ -30,9 +30,7 @@ function _fn(): TypeGuard<Generics.PrimitiveType> {
 
 export const _primitive = optionalize(_fn)
 
-type PrimitiveSchema = CallableFunction & {
-    (): FluentSchema<Generics.PrimitiveType>
-}
+type PrimitiveSchema = CallableFunction & (() => FluentSchema<Generics.PrimitiveType>)
 
 export const primitive: PrimitiveSchema = (() => {
     const customRules: Custom<any[], string, Generics.PrimitiveType>[] = []

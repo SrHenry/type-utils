@@ -2,7 +2,7 @@ import { keys } from '../../rules/constants.ts'
 import { isCustom } from '../../rules/helpers/isCustomRule.ts'
 import { isDefaultRule } from '../../rules/helpers/isDefaultRule.ts'
 
-import {
+import type {
     Custom as CustomRuleSet,
     Default as DefaultRuleSet,
     All as RuleSet,

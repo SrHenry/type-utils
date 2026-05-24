@@ -146,7 +146,7 @@ export type ThrowableFn<
     ReturnType = void,
 > = Tag<Fn<Params, ReturnType>, 'throws', TException>
 
-export { ThrowableFn as ThrowFn }
+export type { ThrowableFn as ThrowFn }
 export type GetThrowableException<T> =
     T extends ThrowableFn<infer TException, any[], any> ? TException : never
 

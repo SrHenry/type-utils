@@ -3,9 +3,9 @@ import { isFunction } from '../../isFunction.ts'
 describe('isFunction', () => {
     it('should return true if value is a function', () => {
         expect(isFunction(() => {})).toBe(true)
-        expect(isFunction(function () {})).toBe(true)
+        expect(isFunction(() => {})).toBe(true)
         expect(isFunction(async () => {})).toBe(true)
-        expect(isFunction(async function () {})).toBe(true)
+        expect(isFunction(async () => {})).toBe(true)
         expect(isFunction(function* () {})).toBe(true)
         expect(isFunction(async function* () {})).toBe(true)
     })
@@ -26,7 +26,7 @@ describe('isFunction', () => {
         expect(isFunction([])).toBe(false)
         expect(isFunction(new Date())).toBe(false)
         expect(isFunction(/abc/)).toBe(false)
-        expect(isFunction(new RegExp('abc'))).toBe(false)
+        expect(isFunction(/abc/)).toBe(false)
         expect(isFunction(Symbol('abc'))).toBe(false)
         expect(isFunction(new Error())).toBe(false)
         expect(isFunction(new TypeError())).toBe(false)

@@ -126,16 +126,10 @@ function validate<T, Name extends string, Parent>(
     const metadata = getStructMetadata(schema) as V3.StructType
     const errors: ValidationError[] = []
     let name: Name | undefined
+    ;({ name, parent = NO_PARENT } =
+        typeof name_or_options === 'string' ? { name: name_or_options } : (name_or_options ?? {}))
 
-    // Sanitize name and parent
-    {
-        ;({ name, parent = NO_PARENT } =
-            typeof name_or_options === 'string'
-                ? { name: name_or_options }
-                : (name_or_options ?? {}))
-
-        if (parent === NO_PARENT) name ??= '$' as Name
-    }
+    if (parent === NO_PARENT) name ??= '$' as Name
 
     const pushNewError = pushNewErrorFactory(errors, { schema, value: arg, name, parent })
 
@@ -179,6 +173,7 @@ function validate<T, Name extends string, Parent>(
                         if (metadata.optional && arg === undefined) break
 
                         if ('className' in metadata) {
+                            // biome-ignore lint/suspicious/noShadowRestrictedNames: destructured class constructor reference
                             const { constructor, className } = metadata
 
                             if (!(arg instanceof constructor)) {
@@ -269,7 +264,9 @@ function validate<T, Name extends string, Parent>(
                                         ))
                                 )
                             })
-                            .forEach(([, e]) => errors.push(...e.errors))
+                            .forEach(([, e]) => {
+                                errors.push(...e.errors)
+                            })
                     } else if ('entries' in metadata) {
                         const { entries, optional } = metadata
 
@@ -332,7 +329,7 @@ function validate<T, Name extends string, Parent>(
                             })
 
                     switch (keyMetadata.type) {
-                        case 'enum':
+                        case 'enum': {
                             if (
                                 !keyMetadata.types.every(({ type: enumInnerType }) =>
                                     Generics.PropertyKeyTypes.includes(enumInnerType)
@@ -401,6 +398,7 @@ function validate<T, Name extends string, Parent>(
 
                             errors.push(...recordValidationResult)
                             break
+                        }
                         case 'string':
                         case 'number':
                         case 'symbol':
@@ -423,6 +421,7 @@ function validate<T, Name extends string, Parent>(
                                 break
                             }
 
+                            // biome-ignore lint/nursery/noUnnecessaryConditions: switch(true) pattern for pattern matching
                             switch (true) {
                                 case keyMetadata.type === 'number':
                                     Object.getOwnPropertyNames(arg).forEach(k => {
@@ -614,7 +613,7 @@ function validate<T, Name extends string, Parent>(
 
                     if (intersectionErrors.length === 0) break
 
-                    const intersectionErrorList = intersectionErrors.map(item => [...item]).flat()
+                    const intersectionErrorList = intersectionErrors.flatMap(item => [...item])
 
                     pushNewError({
                         message: 'Value does not match all intersection types',
@@ -667,7 +666,7 @@ function validate<T, Name extends string, Parent>(
                         .filter(e => e !== arg)
 
                     if (unionErrors.length === unionResults.length) {
-                        const unionErrorList = unionErrors.map(e => Array.from(e)).flat()
+                        const unionErrorList = unionErrors.flatMap(e => Array.from(e))
 
                         pushNewError({
                             message: 'Value does not match any of the union types',
@@ -751,7 +750,9 @@ function validate<T, Name extends string, Parent>(
                                     )
                                 )
                                 .filter(isInstanceOf(ValidationErrors))
-                                .forEach(innerErrors => errors.push(...innerErrors))
+                                .forEach(innerErrors => {
+                                    errors.push(...innerErrors)
+                                })
 
                             break
                         case 'primitive':
@@ -768,7 +769,7 @@ function validate<T, Name extends string, Parent>(
                                     },
                                 })
                             break
-                        case 'enum':
+                        case 'enum': {
                             if (metadata.types.length < 2)
                                 throw new TypeError(
                                     'An enum schema must have at least two values to match'
@@ -815,6 +816,7 @@ function validate<T, Name extends string, Parent>(
                                 })
 
                             break
+                        }
                         case 'null':
                             if (arg !== null)
                                 pushNewError({
@@ -878,6 +880,7 @@ function validate<T, Name extends string, Parent>(
 }
 
 type ISchemaValidator<T, Throws extends boolean = DefaultThrowsParam> = Merge<
+    // biome-ignore lint/complexity/noBannedTypes: {} used as base type for Merge utility
     {},
     Throws extends true
         ? {
@@ -888,7 +891,7 @@ type ISchemaValidator<T, Throws extends boolean = DefaultThrowsParam> = Merge<
           }
 >
 
-interface ISchemaValidatorConstructor {
+type ISchemaValidatorConstructor = {
     new <T>(schema: TypeGuard<T>): SchemaValidator<T, DefaultThrowsParam>
     new <T, Throws extends true>(schema: TypeGuard<T>, throws: Throws): SchemaValidator<T, true>
     new <T, Throws extends false>(schema: TypeGuard<T>, throws: Throws): SchemaValidator<T, false>
@@ -958,12 +961,12 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
                     "Cannot set validator message mapper for class instance schema's properties"
                 )
 
-            Object.entries(message).forEach(([k, item]) =>
+            Object.entries(message).forEach(([k, item]) => {
                 __SchemaValidator.setValidatorMessage<Value<T>>(
                     item as ValidatorMessageMap<Value<T>>,
                     metadata.tree[k as keyof T].schema as TypeGuard<Value<T>>
                 )
-            )
+            })
         } else if ('entries' in metadata)
             __SchemaValidator.setValidatorMessage(
                 message,

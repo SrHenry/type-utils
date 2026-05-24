@@ -1,1 +1,1 @@
-export type Unpipable = null | void | undefined | never
+export type Unpipable = null | undefined | undefined | never

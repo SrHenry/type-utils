@@ -1,7 +1,7 @@
 import Generics from '../../../Generics/index.ts'
 import { isTypeGuard } from '../../../TypeGuards/helpers/index.ts'
-import { TypeGuard } from '../../../TypeGuards/types/index.ts'
-import { GenericStruct } from '../types/index.ts'
+import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
+import type { GenericStruct } from '../types/index.ts'
 import { isRuleStruct } from './isRuleStruct.ts'
 
 export function isStruct(struct: unknown): struct is GenericStruct<any>
@@ -21,10 +21,10 @@ export function isStruct(struct: unknown, schema?: TypeGuard): struct is Generic
     )
         return false
     if (!('optional' in struct) || typeof struct.optional !== 'boolean') return false
-    if (!('schema' in struct) || !isTypeGuard(struct.schema)) return false
-    if (!('rules' in struct) || !Array.isArray(struct.rules) || !struct.rules.every(isRuleStruct))
+    if (!('schema' in struct && isTypeGuard(struct.schema))) return false
+    if (!('rules' in struct && Array.isArray(struct.rules) && struct.rules.every(isRuleStruct)))
         return false
-    if (!!schema && (struct as any).schema !== schema) return false
+    if (schema && (struct as any).schema !== schema) return false
 
     return true
 }

@@ -2,7 +2,7 @@ const handler = (arg: string) => {
     try {
         new URL(arg)
         return true
-    } catch (e) {
+    } catch (_e) {
         return false
     }
 }

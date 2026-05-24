@@ -33,13 +33,11 @@ function addPartialApplySignature(fn: CallableFunction) {
     }) as unknown as Lambda
 }
 
-function addCustomLength(fn: CallableFunction): Lambda
-
 /**
  * @param fn
  * @param length if negative number is passed, its ammount will be subtracted to the given function length
  */
-function addCustomLength(fn: CallableFunction, length: number): Lambda
+function addCustomLength(fn: CallableFunction, length?: number): Lambda
 
 function addCustomLength(fn: CallableFunction, length: number | null = null) {
     if (length === null) length = fn.length
@@ -52,15 +50,13 @@ function addCustomLength(fn: CallableFunction, length: number | null = null) {
         value: length,
     }) as unknown as Lambda
 }
-
-export function curry<TFunc extends Func<any[], any>>(fn: TFunc): Curried<TFunc, false>
 export function curry<TFunc extends Func<any[], any>>(
     fn: TFunc,
     partialApply: true
 ): Curried<TFunc, true>
 export function curry<TFunc extends Func<any[], any>>(
     fn: TFunc,
-    partialApply: false
+    partialApply?: false
 ): Curried<TFunc, false>
 export function curry<TFunc extends Func<any[], any>, partialApply extends boolean>(
     fn: TFunc,
@@ -72,12 +68,7 @@ export function curry<TFunc extends Func<any[], any>, partialApply extends boole
  */
 export function curry(fn: CallableFunction, partialApply: boolean, args: any[]): CallableFunction
 
-export function curry(
-    this: any,
-    fn: CallableFunction,
-    partialApply: boolean = false,
-    args: any[] = []
-) {
+export function curry(this: any, fn: CallableFunction, partialApply = false, args: any[] = []) {
     if (isCurried(fn)) return fn
 
     // const paramsLength = getParametersLength(fn) ?? this?.length ?? fn.length

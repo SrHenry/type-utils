@@ -93,7 +93,7 @@ function fnv1aHash(str: string): string {
         hash ^= str.charCodeAt(i)
         hash = (hash * 0x01000193) >>> 0
     }
-    return ('0000000' + hash.toString(16)).slice(-8)
+    return `0000000${hash.toString(16)}`.slice(-8)
 }
 
 expect.extend({
@@ -118,5 +118,3 @@ declare global {
         }
     }
 }
-
-export {}

@@ -1,6 +1,6 @@
 import { setStructMetadata } from '../../validators/schema/helpers/setStructMetadata.ts'
-import { V3 } from '../../validators/schema/types/index.ts'
-import { ConstructorSignature } from '../types/index.ts'
+import type { V3 } from '../../validators/schema/types/index.ts'
+import type { ConstructorSignature } from '../types/index.ts'
 import { __curry_param__ } from './constants.ts'
 
 export function isInstanceOf<Instance, Constructor extends ConstructorSignature>(

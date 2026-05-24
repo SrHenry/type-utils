@@ -1,6 +1,6 @@
-import { Factory } from '../../../types/Func.ts'
-import { keys } from '../constants.ts'
-import { RuleTuple } from './RuleTuple.ts'
+import type { Factory } from '../../../types/Func.ts'
+import type { keys } from '../constants.ts'
+import type { RuleTuple } from './RuleTuple.ts'
 
 export type RuleFactory<
     RuleName extends keyof keys = keyof keys,

@@ -53,7 +53,7 @@ export const equals = (a: any, b: any, deepObject: boolean): boolean => {
  *
  * @returns The number of occurrences of the element in the array
  */
-export const count = (element: unknown, arr: unknown[], deepObject: boolean = true) => {
+export const count = (element: unknown, arr: unknown[], deepObject = true) => {
     if (arr.length === 0) return 0
 
     return arr.filter(item => equals(item, element, deepObject)).length

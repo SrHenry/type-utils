@@ -4,12 +4,10 @@ import type { Custom as CustomRules, Default as DefaultRules } from '../../rules
 import { setMessage } from '../../../TypeGuards/helpers/setMessage.ts'
 import { getRule } from '../../rules/helpers/getRule.ts'
 import { getRuleMessages } from './getRuleMessages.ts'
-
-export function setRuleMessage<T>(prepend: string, guard: TypeGuard<T>): typeof guard
 export function setRuleMessage<T>(
     prepend: string,
     guard: TypeGuard<T>,
-    rules: Array<DefaultRules | CustomRules>
+    rules?: Array<DefaultRules | CustomRules>
 ): typeof guard
 export function setRuleMessage<T>(
     prepend: string,

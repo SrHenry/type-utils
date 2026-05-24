@@ -41,7 +41,7 @@ export function lambda<TGuard extends TypeGuard<any>>(
     guard: TGuard
 ): LambdaTypeGuard<GetTypeGuard<TGuard>>
 export function lambda<TFunc extends (...args: any) => any>(lambda: TFunc): AsLambda<TFunc>
-export function lambda(lambda: Function): Lambda<any[], any>
+export function lambda(lambda: (...args: unknown[]) => unknown): Lambda<any[], any>
 
 export function lambda<TFunc extends (...args: any) => any>(lambda: TFunc): AsLambda<TFunc> {
     try {

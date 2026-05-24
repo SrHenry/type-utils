@@ -24,9 +24,7 @@ function _fn(): TypeGuard<boolean> {
 
 export const _boolean = optionalize(_fn)
 
-type BooleanSchema = CallableFunction & {
-    (): FluentSchema<any>
-}
+type BooleanSchema = CallableFunction & (() => FluentSchema<any>)
 
 export const boolean: BooleanSchema = (() => {
     const customRules: Custom<any[], string, boolean>[] = []

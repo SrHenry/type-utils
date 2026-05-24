@@ -13,13 +13,11 @@ describe('boolean', () => {
         {},
         [],
         () => void 0,
-        function () {
-            return void 0
-        },
+        () => void 0,
         class {},
         new Date(),
         /a/,
-        new RegExp('a'),
+        /a/,
         new Error(),
         new Map(),
         new Set(),

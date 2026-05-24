@@ -55,7 +55,7 @@ export abstract class BaseValidator {
 
     public static hasValidProperties<T>(arg: unknown, vargs: ValidatorArgs<T>): arg is T {
         try {
-            this.validateProperties(arg, vargs)
+            BaseValidator.validateProperties(arg, vargs)
 
             return true
         } catch {
@@ -69,7 +69,7 @@ export abstract class BaseValidator {
     ): Promise<U> {
         return new Promise((resolve, reject) => {
             try {
-                resolve(this.validateProperties(arg, { validators, required, optional }))
+                resolve(BaseValidator.validateProperties(arg, { validators, required, optional }))
             } catch (e: unknown) {
                 reject(e)
             }
@@ -78,7 +78,7 @@ export abstract class BaseValidator {
 
     public static isValidArray<T>(arg: unknown, args: ValidatorArgs<T>): arg is Array<T> {
         try {
-            this.validateArray(arg, args)
+            BaseValidator.validateArray(arg, args)
 
             return true
         } catch {
@@ -90,7 +90,7 @@ export abstract class BaseValidator {
         if (!Array.isArray(arg)) throw new TypeGuardError(`Invalid type for array`, arg, Array)
 
         for (const item of arg) {
-            this.validateProperties(item, args)
+            BaseValidator.validateProperties(item, args)
         }
 
         return arg as U[]
@@ -107,7 +107,7 @@ export abstract class BaseValidator {
         defaultValue: U | undefined = undefined
     ): U | undefined {
         if (typeof args === 'function') return is(arg, args) ? arg : (defaultValue ?? void 0)
-        return this.hasValidProperties(arg, args) ? arg : (defaultValue ?? void 0)
+        return BaseValidator.hasValidProperties(arg, args) ? arg : (defaultValue ?? void 0)
     }
 
     public static validate<T, U>(arg: T, schema: TypeGuard<U>): U {

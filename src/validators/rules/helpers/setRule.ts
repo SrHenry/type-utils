@@ -1,5 +1,5 @@
 import { setMessageFormator } from '../../../TypeGuards/helpers/setMessageFormator.ts'
-import { Rule } from '../types/index.ts'
+import type { Rule } from '../types/index.ts'
 
 export const setRule = (rule: Rule) => {
     const setErrorMessageFormator = (messageFormator: (...args: any[]) => string) =>

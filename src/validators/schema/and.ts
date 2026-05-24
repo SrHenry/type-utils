@@ -151,7 +151,7 @@ export const and: IntersectionSchema = ((
 
     schema.optional = () => addCall('optional')
     schema.use = (...rules: Custom<any[], string, any>) => addCall('use', [...rules])
-    schema.validator = (throwOnError: boolean = true) => addCall('validator', [], { throwOnError })
+    schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any>)
 
     return copyStructMetadata(getGuard(), schema, {

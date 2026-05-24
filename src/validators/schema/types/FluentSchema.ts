@@ -15,6 +15,7 @@ import type { FluentOptionalSchema } from './FluentOptionalSchema.ts'
 
 export type FluentSchema<
     T,
+    // biome-ignore lint/complexity/noBannedTypes: {} used as default for rules record type
     TRules extends { [x: string]: Fn<any[], any> } = {},
     TCalledRules extends [...(keyof TRules)[]] = [],
     TUsedCustomRules extends [...Custom<any[], string, T>[]] = [],
@@ -30,17 +31,10 @@ export type FluentSchema<
     use<TCustomRules extends [Custom<any[], string, T>, ...Custom<any[], string, T>[]]>(
         ...rules: TCustomRules
     ): FluentSchema<T, TRules, TCalledRules, [...TUsedCustomRules, ...typeof rules]>
-
-    validator(): ThrowFn<ValidationErrors, [arg: unknown], T> & {
+    validator(throwOnError?: true): ThrowFn<ValidationErrors, [arg: unknown], T> & {
         validate: ThrowFn<ValidationErrors, [arg: unknown], T>
     }
-    validator(throwOnError: true): ThrowFn<ValidationErrors, [arg: unknown], T> & {
-        validate: ThrowFn<ValidationErrors, [arg: unknown], T>
-    }
-    validator(throwOnError: false): Fn<[arg: unknown], ValidateReturn<T>> & {
-        validate: Fn<[arg: unknown], ValidateReturn<T>>
-    }
-    validator(throwOnError: boolean): Fn<[arg: unknown], ValidateReturn<T>> & {
+    validator(throwOnError: boolean | false): Fn<[arg: unknown], ValidateReturn<T>> & {
         validate: Fn<[arg: unknown], ValidateReturn<T>>
     }
 } & {

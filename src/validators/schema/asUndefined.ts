@@ -23,9 +23,7 @@ function _fn(): TypeGuard<undefined> {
 
 export const _undefined = optionalize(_fn)
 
-type UndefinedSchema = CallableFunction & {
-    (): FluentSchema<undefined>
-}
+type UndefinedSchema = CallableFunction & (() => FluentSchema<undefined>)
 
 export const asUndefined: UndefinedSchema = (() => {
     const customRules: Custom<any[], string, undefined>[] = []

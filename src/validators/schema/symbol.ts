@@ -30,15 +30,11 @@ function _fn(): TypeGuard<symbol> {
     )
 }
 
-type OptionalizedSymbol = {
-    (): TypeGuard<undefined | symbol>
-}
+type OptionalizedSymbol = () => TypeGuard<undefined | symbol>
 
 export const _symbol = optionalizeOverloadFactory(_fn).optionalize<OptionalizedSymbol>()
 
-type SymbolSchema = CallableFunction & {
-    (): FluentSchema<symbol>
-}
+type SymbolSchema = CallableFunction & (() => FluentSchema<symbol>)
 
 export const symbol: SymbolSchema = (() => {
     const customRules: Custom<any[], string, symbol>[] = []

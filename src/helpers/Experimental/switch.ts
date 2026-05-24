@@ -6,70 +6,43 @@ import { lambda } from './lambda/index.ts'
 interface ICase<TSwitchArg, TSwitchResultAggregate = never> extends CallableFunction {
     <TMatch extends TSwitchArg, TResult>(
         predicate: Predicate<TSwitchArg, TMatch>,
-        resolver: Func1<TSwitchArg, TResult>
-    ): Lambda0<TSwitchResultAggregate | TResult> &
-        ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(
-        predicate: Predicate<TSwitchArg, TMatch>,
-        result: TResult
+        result: TResult | Func1<TSwitchArg, TResult>
     ): Lambda0<TSwitchResultAggregate | TResult> &
         ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
     <TMatch extends TSwitchArg, TResult>(
         match: TMatch,
-        resolver: Func1<TMatch, TResult>
-    ): Lambda0<TSwitchResultAggregate | TResult> &
-        ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(
-        match: TMatch,
-        result: TResult
+        result: TResult | Func1<TMatch, TResult>
     ): Lambda0<TSwitchResultAggregate | TResult> &
         ISwitch<TSwitchArg, TSwitchResultAggregate | TResult>
 }
 
 interface IStaticCase<TSwitchArg, TSwitchResultAggregate = never> extends CallableFunction {
     <TMatch extends TSwitchArg, TResult>(
-        predicate: Predicate<TSwitchArg, TMatch>,
-        resolver: Func1<TMatch, TResult>
-    ): Lambda<[arg: TSwitchArg], TSwitchResultAggregate | TResult> &
-        IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(
-        predicate: Predicate<TSwitchArg, TMatch>,
-        result: TResult
-    ): Lambda<[arg: TSwitchArg], TSwitchResultAggregate | TResult> &
-        IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(
-        match: TMatch,
-        resolver: Func1<TMatch, TResult>
-    ): Lambda<[arg: TSwitchArg], TSwitchResultAggregate | TResult> &
-        IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
-    <TMatch extends TSwitchArg, TResult>(
-        match: TMatch,
-        result: TResult
+        match: TMatch | Predicate<TSwitchArg, TMatch>,
+        result: TResult | Func1<TMatch, TResult>
     ): Lambda<[arg: TSwitchArg], TSwitchResultAggregate | TResult> &
         IStaticSwitch<TSwitchArg, TSwitchResultAggregate | TResult>
 }
 
 interface IDefault<TArg, TSwitchResultAggregate = never> extends CallableFunction {
-    <TDefault>(result: Func1<TArg, TDefault>): Lambda0<TSwitchResultAggregate | TDefault>
-    <TDefault>(result: Func0<TDefault>): Lambda0<TSwitchResultAggregate | TDefault>
-    <TDefault>(result: TDefault): Lambda0<TSwitchResultAggregate | TDefault>
+    <TDefault>(
+        result: TDefault | Func0<TDefault> | Func1<TArg, TDefault>
+    ): Lambda0<TSwitchResultAggregate | TDefault>
 }
 
 interface IStaticDefault<TArg, TSwitchResultAggregate = never> extends CallableFunction {
     <TDefault>(
-        result: Func1<TArg, TDefault>
+        result: TDefault | Func0<TDefault> | Func1<TArg, TDefault>
     ): Lambda<[arg: TArg], TSwitchResultAggregate | TDefault>
-    <TDefault>(result: Func0<TDefault>): Lambda<[arg: TArg], TSwitchResultAggregate | TDefault>
-    <TDefault>(result: TDefault): Lambda<[arg: TArg], TSwitchResultAggregate | TDefault>
 }
 
-interface ISwitch<TArg, TResultAggregate = never> {
+type ISwitch<TArg, TResultAggregate = never> = {
     case: ICase<TArg, TResultAggregate>
 
     default: IDefault<TArg, TResultAggregate>
 }
 
-interface IStaticSwitch<TArg, TResultAggregate = never> {
+type IStaticSwitch<TArg, TResultAggregate = never> = {
     case: IStaticCase<TArg, TResultAggregate>
     default: IStaticDefault<TArg, TResultAggregate>
 }

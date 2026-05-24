@@ -29,7 +29,7 @@ const guardFactory =
 
         if (arg.length !== schemas.length) return false
 
-        for (let i = 0; i < arg.length; i++) if (!schemas[i]!(arg[i])) return false
+        for (let i = 0; i < arg.length; i++) if (!schemas[i]?.(arg[i])) return false
 
         return true
     }
