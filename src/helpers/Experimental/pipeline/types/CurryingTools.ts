@@ -8,8 +8,8 @@ export namespace CurryingTools {
     type TupleTail<T extends any[], N extends number, C extends any[] = []> = C['length'] extends N
         ? T
         : T extends [any, ...infer Rest]
-        ? TupleTail<Rest, N, [...C, any]>
-        : []
+          ? TupleTail<Rest, N, [...C, any]>
+          : []
 
     /**
      * Recursively converts a tuple of parameters P into a chained unary curried function.

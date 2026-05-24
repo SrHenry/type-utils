@@ -106,8 +106,8 @@ export abstract class BaseValidator {
         args: ValidatorArgs<U> | TypeGuard<U>,
         defaultValue: U | undefined = undefined
     ): U | undefined {
-        if (typeof args === 'function') return is(arg, args) ? arg : defaultValue ?? void 0
-        return this.hasValidProperties(arg, args) ? arg : defaultValue ?? void 0
+        if (typeof args === 'function') return is(arg, args) ? arg : (defaultValue ?? void 0)
+        return this.hasValidProperties(arg, args) ? arg : (defaultValue ?? void 0)
     }
 
     public static validate<T, U>(arg: T, schema: TypeGuard<U>): U {

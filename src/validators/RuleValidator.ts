@@ -56,8 +56,7 @@ export function* createRulesValidationGenerator<Value, Schema, Parent = unknown>
             const passed = ruleFunction(...ruleStruct.args)
             if (passed) continue
 
-            const messageFormator = getMessageFormator(ruleFunction)
-            const message = messageFormator(...ruleStruct.args)
+            const message = ruleStruct.formator(...ruleStruct.args)
 
             yield new ValidationError<Value, Schema, string, Parent, RuleContext>({
                 schema,

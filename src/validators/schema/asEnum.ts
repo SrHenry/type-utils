@@ -101,11 +101,12 @@ export const asEnum: EnumSchema = ((values: any[]) => {
         })
     }
 
-  schema.optional = () => addCall('optional')
-  schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-  schema.use = (...rules: Custom<any[], string, Generics.PrimitiveType>) =>
-    addCall('use', [...rules])
-  schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<Generics.PrimitiveType>)
+    schema.optional = () => addCall('optional')
+    schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
+    schema.use = (...rules: Custom<any[], string, Generics.PrimitiveType>) =>
+        addCall('use', [...rules])
+    schema.toStandardSchema = () =>
+        toStandardSchema(schema as unknown as TypeGuard<Generics.PrimitiveType>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(

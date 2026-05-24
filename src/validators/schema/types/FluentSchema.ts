@@ -44,7 +44,7 @@ export type FluentSchema<
         validate: Fn<[arg: unknown], ValidateReturn<T>>
     }
 } & {
-  optional(): TypeGuard<undefined | T> &
-    FluentOptionalSchema<T, TRules, TCalledRules, TUsedCustomRules>
-  toStandardSchema(): StandardSchemaV1<T, T>
+    optional(): TypeGuard<undefined | T> &
+        FluentOptionalSchema<T, TRules, TCalledRules, TUsedCustomRules>
+    toStandardSchema(): StandardSchemaV1<T, T>
 }

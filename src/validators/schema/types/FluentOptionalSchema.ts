@@ -32,9 +32,9 @@ export type FluentOptionalSchema<
     validator(throwOnError: false): Fn<[arg: unknown], ValidateReturn<undefined | T>> & {
         validate: ThrowFn<ValidationErrors, [arg: unknown], undefined | T>
     }
-  validator(throwOnError: boolean): Fn<[arg: unknown], ValidateReturn<undefined | T>> & {
-    validate: Fn<[arg: unknown], ValidateReturn<undefined | T>>
-  }
+    validator(throwOnError: boolean): Fn<[arg: unknown], ValidateReturn<undefined | T>> & {
+        validate: Fn<[arg: unknown], ValidateReturn<undefined | T>>
+    }
 } & {
-  toStandardSchema(): StandardSchemaV1<undefined | T, undefined | T>
+    toStandardSchema(): StandardSchemaV1<undefined | T, undefined | T>
 }

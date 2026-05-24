@@ -125,7 +125,7 @@ export const number: NumberSchema = (() => {
     schema.min = (n: number) => addCall('min', [NumberRules.min(n)])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.use = (...rules: Custom<any[], string, number>) => addCall('use', [...rules])
-schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<number>)
+    schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<number>)
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, number>>),

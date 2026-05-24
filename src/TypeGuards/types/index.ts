@@ -8,13 +8,13 @@ export type GetTypeGuard<T> = T extends TypeGuard<infer U> ? U : never
 export type GetTypeGuards<T extends any[]> = T extends []
     ? []
     : T extends [infer U, ...infer V]
-    ? [GetTypeGuard<U>, ...GetTypeGuards<V>]
-    : TypeGuard<any>[]
+      ? [GetTypeGuard<U>, ...GetTypeGuards<V>]
+      : TypeGuard<any>[]
 export type MapToTypeGuards<Types extends any[]> = Types extends []
     ? []
     : Types extends [infer T, ...infer U]
-    ? [TypeGuard<T>, ...MapToTypeGuards<U>]
-    : TypeGuard<any>[]
+      ? [TypeGuard<T>, ...MapToTypeGuards<U>]
+      : TypeGuard<any>[]
 
 export type ResolveIfTypeGuard<T> = T extends TypeGuard<infer U> ? U : T
 
