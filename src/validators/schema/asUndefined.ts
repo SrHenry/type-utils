@@ -2,6 +2,7 @@ import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
 import type { FluentSchema } from './types/FluentSchema.ts'
 
+import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
 import { SchemaValidator } from '../SchemaValidator.ts'
 import { branchIfOptional } from './helpers/branchIfOptional.ts'
@@ -79,10 +80,11 @@ export const asUndefined: UndefinedSchema = (() => {
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
-    schema.use = (...customRules: Custom<any[], string, undefined>) =>
-        addCall('use', [...customRules])
+schema.use = (...customRules: Custom<any[], string, undefined>) =>
+  addCall('use', [...customRules])
+schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<undefined>)
 
-    return copyStructMetadata(getGuard(), schema, {
+return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, undefined>>),
     })
 }) as unknown as UndefinedSchema

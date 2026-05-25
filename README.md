@@ -149,6 +149,8 @@ import { boolean } from '@srhenry/type-utils'
 const isBoolean = boolean()
 ```
 
+Supports the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
+
 #### [`Schema.object`](https://srhenry.github.io/type-utils/variables/object.html)
 
 It represents a well defined object to typescript's type infers and runtime validation, which its properties are also described using the Schema helpers
@@ -268,7 +270,7 @@ import { asUndefined } from '@srhenry/type-utils'
 const isUndefined = asUndefined()
 ```
 
-Supports `.optional()`, `.validator()`, and `.use()`. Note: `.toStandardSchema()` is not available on this schema.
+Supports the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
 
 #### [`Schema.primitive`](https://srhenry.github.io/type-utils/variables/primitive.html)
 
@@ -280,6 +282,8 @@ import { primitive } from '@srhenry/type-utils'
 const isSymbol = primitive()
 ```
 
+Supports the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
+
 #### [`Schema.any`](https://srhenry.github.io/type-utils/variables/any.html)
 
 It represents a 'any' value to typescript's type infers and runtime validation. It does nothing to validate a narrowed type but can be useful to improve readability in more complex schemas.
@@ -289,6 +293,9 @@ import { any, object } from '@srhenry/type-utils'
 
 const isAny = any()
 const objectHasFoo = object({ foo: isAny }) //it checks if is object and if has `foo` property but doesn't care checking its type
+```
+
+Supports the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
 ```
 
 #### `Schema.optional`
