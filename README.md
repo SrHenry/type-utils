@@ -10,76 +10,92 @@
 [![Npm package version](https://badgen.net/npm/v/@srhenry/type-utils)][npm]
 [![Npm package total downloads](https://badgen.net/npm/dt/@srhenry/type-utils)][npm]
 [![Npm package license](https://badgen.net/npm/license/@srhenry/type-utils)][npm]
+[![Biome](https://badgen.net/badge/lint/Biome/60a5fa?icon=techreport)](https://biomejs.dev)
+[![Vitest](https://badgen.net/badge/tested%20with/Vitest/6da13f)](https://vitest.dev)
 
 </div>
 
 ## Table of Contents
 
 - [Type Utils](#type-utils)
-  - [Table of Contents](#table-of-contents)
-  - [Installing](#installing)
-  - [Docs](#docs)
-    - [Schema types](#schema-types)
-      - [`Schema.string`](#schemastring)
-      - [`Schema.number`](#schemanumber)
-      - [`Schema.boolean`](#schemaboolean)
-      - [`Schema.object`](#schemaobject)
-      - [`Schema.array`](#schemaarray)
-      - [`Schema.symbol`](#schemasymbol)
-      - [`Schema.asEnum`](#schemaasenum)
-      - [`Schema.asNull`](#schemaasnull)
-      - [`Schema.primitive`](#schemaprimitive)
-      - [`Schema.any`](#schemaany)
-      - [`Schema.optional`](#schemaoptional)
-    - [Schema helpers](#schema-helpers)
-      - [`Schema.and`](#schemaand)
-      - [`Schema.or`](#schemaor)
-      - [`Schema.useSchema`](#schemauseschema)
-    - [Validation rules](#validation-rules)
-      - [`Number.nonZero`](#numbernonzero)
-      - [`Number.max`](#numbermax)
-      - [`Number.min`](#numbermin)
-      - [`Array.max`](#arraymax)
-      - [`Array.min`](#arraymin)
-      - [`Array.unique`](#arrayunique)
-      - [`String.max`](#stringmax)
-      - [`String.min`](#stringmin)
-      - [`String.regex`](#stringregex)
-      - [`String.nonEmpty`](#stringnonempty)
-      - [`String.url`](#stringurl)
-      - [`String.email`](#stringemail)
-      - [`Record.nonEmpty`](#recordnonempty)
-      - [`Schema.use`](#schemause)
-    - [Available validations](#available-validations)
-      - [`is`](#is)
-      - [`ensureInterface`](#ensureinterface)
-    - [Match Pattern](#match-pattern)
-      -[`match()`](#match)
-    - [Util types](#util-types)
-      - [`Fn`](#fn)
-      - [`AsyncFn`](#asyncfn)
-      - [`Action`](#action)
-      - [`Predicate`](#predicate)
-      - [`Result`](#result)
-      - [`AsyncResult`](#asyncresult)
-      - [`TupleSlice`](#tupleslice)
-      - [`Param`](#param)
-      - [`Infer`](#infer)
-  - [Experimental Features](#experimental-features)
-    - [Lambda](#lambda)
-    - [Function/Lambda Currying](#functionlambda-currying)
-    - [Pipelines/Pipes](#pipelinespipes)
-  - [pipe(value) / createPipeline(fn?)](#pipevalue--createpipelinefn)
-  - [.pipe(transform)](#pipetransform)
-  - [.pipe(callWith(...args))](#pipecallwithargs)
-  - [.pipe(apply(fn, ...args))](#pipeapplyfn-args)
-  - [tap / tapAsync](#tapfn-options--tapasyncfn-options)
-  - [enpipe(value) / enpipe(fn, ...args)](#enpipevalue--enpipefn-args)
-  - [Realistic async pipeline example](#realistic-async-pipeline-example)
-    - [Switch Expression](#switch-expression)
-      - [Reusable switcher](#reusable-switcher)
-      - [Stored switcher](#stored-switcher)
-      - [more complex matching logic / runtime branch evaluation](#more-complex-matching-logic--runtime-branch-evaluation)
+- [Table of Contents](#table-of-contents)
+- [Installing](#installing)
+- [Docs](#docs)
+- [Schema types](#schema-types)
+- [`Schema.string`](#schemastring)
+- [`Schema.number`](#schemanumber)
+- [`Schema.boolean`](#schemaboolean)
+- [`Schema.object`](#schemaobject)
+- [`Schema.array`](#schemaarray)
+- [`Schema.tuple`](#schematuple)
+- [`Schema.record`](#schemarecord)
+- [`Schema.symbol`](#schemasymbol)
+- [`Schema.bigint`](#schemabigint)
+- [`Schema.asEnum`](#schemaasenum)
+- [`Schema.asNull`](#schemaasnull)
+- [`Schema.asUndefined`](#schemaasundefined)
+- [`Schema.primitive`](#schemaprimitive)
+- [`Schema.any`](#schemaany)
+- [`Schema.optional`](#schemaoptional)
+- [Schema helpers](#schema-helpers)
+- [`Schema.and`](#schemaand)
+- [`Schema.or`](#schemaor)
+- [`Schema.useSchema`](#schemauseschema)
+- [Validation rules](#validation-rules)
+- [`Number.nonZero`](#numbernonzero)
+- [`Number.max`](#numbermax)
+- [`Number.min`](#numbermin)
+- [`Array.max`](#arraymax)
+- [`Array.min`](#arraymin)
+- [`Array.unique`](#arrayunique)
+- [`String.max`](#stringmax)
+- [`String.min`](#stringmin)
+- [`String.regex`](#stringregex)
+- [`String.nonEmpty`](#stringnonempty)
+- [`String.url`](#stringurl)
+- [`String.email`](#stringemail)
+- [`Record.nonEmpty`](#recordnonempty)
+- [`BigInt.nonZero`](#bigintnonzero)
+- [`BigInt.max`](#bigintmax)
+- [`BigInt.min`](#bigintmin)
+- [`Schema.use`](#schemause)
+- [Standard Schema Interop](#standard-schema-interop)
+- [`toStandardSchema(guard)`](#tostandardschemaguard)
+- [`fromStandardSchema(schema)`](#fromstandardschemaschema)
+- [`normalizeSchema(schema)`](#normalizeschemaschema)
+- [`isStandardSchema(value)`](#isstandardschemavalue)
+- [`StandardSchemaV1` type](#standardschemav1-type)
+- [Available validations](#available-validations)
+- [`is`](#is)
+- [`ensureInterface`](#ensureinterface)
+- [Match Pattern](#match-pattern)
+-[`match()`](#match)
+- [Util types](#util-types)
+- [`Fn`](#fn)
+- [`AsyncFn`](#asyncfn)
+- [`Action`](#action)
+- [`Predicate`](#predicate)
+- [`Result`](#result)
+- [`AsyncResult`](#asyncresult)
+- [`TupleSlice`](#tupleslice)
+- [`Param`](#param)
+- [`Infer`](#infer)
+- [`Tag`](#tag)
+- [Experimental Features](#experimental-features)
+- [Lambda](#lambda)
+- [Function/Lambda Currying](#functionlambda-currying)
+- [Pipelines/Pipes](#pipelinespipes)
+- [pipe(value) / createPipeline(fn?)](#pipevalue--createpipelinefn)
+- [.pipe(transform)](#pipetransform)
+- [.pipe(callWith(...args))](#pipecallwithargs)
+- [.pipe(apply(fn, ...args))](#pipeapplyfn-args)
+- [tap / tapAsync](#tapfn-options--tapasyncfn-options)
+- [enpipe(value) / enpipe(fn, ...args)](#enpipevalue--enpipefn-args)
+- [Realistic async pipeline example](#realistic-async-pipeline-example)
+- [Switch Expression](#switch-expression)
+- [Reusable switcher](#reusable-switcher)
+- [Stored switcher](#stored-switcher)
+- [more complex matching logic / runtime branch evaluation](#more-complex-matching-logic--runtime-branch-evaluation)
 
 ## Installing
 
@@ -159,6 +175,37 @@ const isMyObjArray = array(object({ foo: string('bar') }))
 const isMyObjArray2 = array({ foo: string('bar') })
 ```
 
+#### [`Schema.tuple`](https://srhenry.github.io/type-utils/variables/tuple.html)
+
+It represents a fixed-length tuple to typescript's type infers and runtime validation. Each element is validated by its own schema.
+
+```typescript
+import { tuple, string, number } from '@srhenry/type-utils'
+
+const isTuple = tuple(string(), number(), string())
+// TypeGuard<[string, number, string]>
+
+// Also accepts an array of schemas:
+const isPoint = tuple([number(), number()])
+// TypeGuard<[number, number]>
+```
+
+Tuples support `StandardSchemaV1` inputs as entries and the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
+
+#### [`Schema.record`](https://srhenry.github.io/type-utils/variables/record.html)
+
+It represents a record (key-value map) to typescript's type infers and runtime validation. Key and value guards can be specified for type-safe records.
+
+```typescript
+import { record, string, number } from '@srhenry/type-utils'
+
+const isRecord = record()                        // Record<string, any>
+const isStringMap = record(string(), string())    // Record<string, string>
+const isNumKeyed = record(number(), number())     // Record<number, number>
+```
+
+Records support `string | number | symbol` key types, `StandardSchemaV1` inputs for key/value guards, and the fluent `.nonEmpty()`, `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
+
 #### [`Schema.symbol`](https://srhenry.github.io/type-utils/variables/symbol.html)
 
 It represents a symbol to typescript's type infers and runtime validation
@@ -168,6 +215,20 @@ import { symbol } from '@srhenry/type-utils'
 
 const isSymbol = symbol()
 ```
+
+#### [`Schema.bigint`](https://srhenry.github.io/type-utils/variables/bigint.html)
+
+It represents a `bigint` to typescript's type infers and runtime validation.
+
+```typescript
+import { bigint } from '@srhenry/type-utils'
+
+const isBigint = bigint()
+const isPositiveBigint = bigint().min(0n)
+const isNonZeroBigint = bigint().nonZero()
+```
+
+Supports the fluent `.nonZero()`, `.max(n: bigint)`, `.min(n: bigint)`, `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
 
 #### [`Schema.asEnum`](https://srhenry.github.io/type-utils/variables/asEnum.html)
 
@@ -196,6 +257,18 @@ import { asNull } from '@srhenry/type-utils'
 
 const isNull = asNull()
 ```
+
+#### [`Schema.asUndefined`](https://srhenry.github.io/type-utils/variables/asUndefined.html)
+
+It represents an `undefined` literal to typescript's type infers and runtime validation.
+
+```typescript
+import { asUndefined } from '@srhenry/type-utils'
+
+const isUndefined = asUndefined()
+```
+
+Supports `.optional()`, `.validator()`, and `.use()`. Note: `.toStandardSchema()` is not available on this schema.
 
 #### [`Schema.primitive`](https://srhenry.github.io/type-utils/variables/primitive.html)
 
@@ -410,6 +483,36 @@ import { record } from '@srhenry/type-utils'
 const isNonEmptyRecord = record().nonEmpty()
 ```
 
+#### [`BigInt.nonZero`](https://srhenry.github.io/type-utils/variables/BigIntRules.html#nonZero)
+
+It constraints a bigint to be different from 0n.
+
+```typescript
+import { bigint } from '@srhenry/type-utils'
+
+const isNonZeroBigint = bigint().nonZero()
+```
+
+#### [`BigInt.max`](https://srhenry.github.io/type-utils/variables/BigIntRules.html#max)
+
+It constraints a bigint to be lesser than or equal to a given bigint.
+
+```typescript
+import { bigint } from '@srhenry/type-utils'
+
+const isMaxBigint = bigint().max(100n)
+```
+
+#### [`BigInt.min`](https://srhenry.github.io/type-utils/variables/BigIntRules.html#min)
+
+It constraints a bigint to be greater than or equal to a given bigint.
+
+```typescript
+import { bigint } from '@srhenry/type-utils'
+
+const isMinBigint = bigint().min(1n)
+```
+
 #### `Schema.use`
 
 > Since [`v0.6.0`](https://github.com/SrHenry/type-utils/releases/tag/v0.6.0)
@@ -451,6 +554,70 @@ const isStringNumberOrObject = or(
         bar: string().optional()
     }));
 ```
+
+### Standard Schema Interop
+
+> Since [`v0.7.0`](https://github.com/SrHenry/type-utils/releases/tag/v0.7.0)
+
+type-utils implements the [Standard Schema v1](https://github.com/standard-schema/standard-schema) specification for interoperability with other validation libraries (Zod, Valibot, ArkType, etc.).
+
+```typescript
+import { toStandardSchema, fromStandardSchema, normalizeSchema, isStandardSchema } from '@srhenry/type-utils/standard-schema'
+import type { StandardSchemaV1, InferInput, InferOutput } from '@srhenry/type-utils/standard-schema'
+```
+
+#### [`toStandardSchema(guard)`](https://srhenry.github.io/type-utils/functions/toStandardSchema.html)
+
+Converts a `TypeGuard<T>` into a `StandardSchemaV1<T, T>`. Also available as a fluent method on all schemas:
+
+```typescript
+import { string } from '@srhenry/type-utils'
+import { toStandardSchema } from '@srhenry/type-utils/standard-schema'
+
+const guard = string()
+const standard = toStandardSchema(guard)
+// or using the fluent API:
+const standard2 = string().toStandardSchema()
+
+const result = standard['~standard'].validate('hello')
+// { success: true, value: 'hello' }
+```
+
+#### [`fromStandardSchema(schema)`](https://srhenry.github.io/type-utils/functions/fromStandardSchema.html)
+
+Converts a `StandardSchemaV1<Input>` into a synchronous `TypeGuard<Input>`. Throws if the external schema's `validate()` returns a `Promise` (async schemas cannot be converted to synchronous type guards).
+
+```typescript
+import { fromStandardSchema } from '@srhenry/type-utils/standard-schema'
+import { z } from 'zod'
+
+const zodString = z.string()
+const guard = fromStandardSchema(zodString)
+// TypeGuard<string>
+```
+
+#### [`normalizeSchema(schema)`](https://srhenry.github.io/type-utils/functions/normalizeSchema.html)
+
+Accepts either a `TypeGuard<T>` or a `StandardSchemaV1<T, T>` and returns a `TypeGuard<T>`. Useful when building APIs that accept both type-utils guards and external Standard Schema validators:
+
+```typescript
+import { normalizeSchema } from '@srhenry/type-utils/standard-schema'
+import { object, string } from '@srhenry/type-utils'
+import { z } from 'zod'
+
+const schema = object({
+  name: normalizeSchema(string()),
+  age: normalizeSchema(z.number()),
+})
+```
+
+#### [`isStandardSchema(value)`](https://srhenry.github.io/type-utils/functions/isStandardSchema.html)
+
+Type guard that checks if a value implements the `StandardSchemaV1` interface (has the `'~standard'` property).
+
+#### [`StandardSchemaV1` type](https://srhenry.github.io/type-utils/types/StandardSchemaV1.html)
+
+The core type representing a Standard Schema v1 compliant validator. Includes the `StandardSchemaV1` namespace with `Props`, `Result`, `SuccessResult`, `FailureResult`, `Issue`, and `Options` types. Utility types `InferInput<T>` and `InferOutput<T>` extract the input/output types from a `StandardSchemaV1`.
 
 ### Available validations
 
@@ -681,6 +848,26 @@ declare const res2: Infer<(a: unknown) => a is string[]> // res2: string[]
 declare const res3: Infer<typeof isArray> // res3: any[]
 ```
 
+#### [`Tag`](https://srhenry.github.io/type-utils/types/Tag.html)
+
+It creates a nominal/branded type by attaching a unique tag to a base type. Useful for distinguishing types that share the same underlying structure.
+
+```typescript
+import type { Tag } from '@srhenry/type-utils'
+
+type UserId = Tag<string, 'UserId'>
+type OrderId = Tag<string, 'OrderId'>
+
+declare function getUser(id: UserId): void
+declare function getOrder(id: OrderId): void
+
+const userId = 'abc' as UserId
+getUser(userId) // ok
+// getOrder(userId) // type error — UserId is not OrderId
+```
+
+It has two required type parameters: the base type and the tag name (a `PropertyKey`). An optional third parameter `Metadata` defaults to `void`.
+
 ## Experimental Features
 
 ### [Lambda](https://srhenry.github.io/type-utils/functions/Experimental.lambda.html)
@@ -868,6 +1055,8 @@ const result = pipe('hello')
 
 #### `enpipe(value)` / `enpipe(fn, ...args)`
 
+> **Deprecated** since v0.8.0 — use [`callWith()`](#pipecallwithargs) and [`apply()`](#pipeapplyfn-args) instead for clearer, more type-safe transforms.
+
 Creates a dual-callable `Pipe<T>` — works as both a standalone chainable and a `.pipe()` transform. When used in a pipeline, the boxed function is called with the incoming value (reverse-apply). When called standalone, it returns its boxed value:
 
 ```typescript
@@ -887,8 +1076,6 @@ With partial application:
 const curried = enpipe(addUserFactory, db) // curries first arg
 curried.depipe() // the curried function
 ```
-
-> **Note:** For most `.pipe()` use cases, `callWith()` and `apply()` are clearer and more type-safe than `enpipe`. Use `enpipe` when you need the dual-callable pattern.
 
 #### Realistic async pipeline example
 
