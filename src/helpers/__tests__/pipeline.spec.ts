@@ -333,7 +333,7 @@ describe('pipeAsync', () => {
         const result2 = await pipe(Promise.resolve('foo'))
             .pipeAsync(arg => [arg] as const)
             .pipeAsync(async ([_]) => {
-                return new Promise<string>((_, reject) => reject(new Error('error')))
+                return new Promise<string>((_resolve, reject) => reject(new Error('error')))
             })
             .depipe()
             .catch((error: Error) => error.message)

@@ -207,6 +207,7 @@ export namespace V3 {
         ClassNameStr = string,
         Rules extends CustomRule<any[], string, T> = CustomRule<any[], string, T>,
     > = BaseStruct<'object', T> &
+        // biome-ignore lint/complexity/noBannedTypes: {} as generic constraint for non-nullish is idiomatic TS
         ObjectTree<{}> &
         ClassInstanceRef<T, ClassNameStr> &
         WithRulesStruct<Rules>

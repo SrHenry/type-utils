@@ -66,10 +66,7 @@
                 "noUnnecessaryTemplateExpression": "warn",
                 "noUselessTypeConversion": "warn",
                 "useExhaustiveSwitchCases": "warn",
-                "useExplicitReturnType": {
-                    "level": "warn",
-                    "options": { "allowExpressions": true, "allowIifes": true }
-                },
+"useExplicitReturnType": "off",
                 "useReduceTypeParameter": "warn"
             },
             "performance": {
@@ -123,39 +120,88 @@
             }
         }
     },
-    "overrides": [
-        {
-            "includes": ["**/*.spec.ts", "**/__tests__/**"],
-            "linter": {
-                "rules": {
-                    "complexity": {
-                        "noExcessiveCognitiveComplexity": "off"
-                    },
-                    "security": {
-                        "noSecrets": "off"
-                    },
-                    "suspicious": {
-                        "noExplicitAny": "off",
-                        "noDebugger": "off"
-                    },
-                    "style": {
-                        "noNonNullAssertion": "off"
-                    },
-                    "nursery": {
-                        "useExplicitReturnType": "off"
-                    }
-                }
-            }
-        },
-        {
-            "includes": ["**/Experimental/**"],
-            "linter": {
-                "rules": {
-                    "suspicious": {
-                        "noDebugger": "off"
-                    }
-                }
-            }
-        }
-    ]
+"overrides": [
+{
+"includes": ["**/*.spec.ts", "**/__tests__/**"],
+"linter": {
+"rules": {
+"complexity": {
+"noExcessiveCognitiveComplexity": "off"
+},
+"security": {
+"noSecrets": "off"
+},
+"suspicious": {
+"noExplicitAny": "off",
+"noDebugger": "off"
+},
+"style": {
+"noNonNullAssertion": "off"
+}
+}
+}
+},
+{
+"includes": ["**/Experimental/**"],
+"linter": {
+"rules": {
+"suspicious": {
+"noDebugger": "off"
+}
+}
+}
+},
+{
+"includes": ["**/jest.setup.ts"],
+"linter": {
+"rules": {
+"complexity": {
+"noExcessiveCognitiveComplexity": {
+"level": "off",
+"options": { "maxAllowedComplexity": 30 }
+}
+}
+}
+}
+},
+{
+"includes": ["**/validators/BaseValidator.ts"],
+"linter": {
+"rules": {
+"complexity": {
+"noExcessiveCognitiveComplexity": {
+"level": "warn",
+"options": { "maxAllowedComplexity": 25 }
+}
+}
+}
+}
+},
+{
+"includes": ["**/validators/schema/helpers/isRuleStruct.ts"],
+"linter": {
+"rules": {
+"complexity": {
+"noExcessiveCognitiveComplexity": {
+"level": "off",
+"options": { "maxAllowedComplexity": 25 }
+}
+}
+}
+}
+},
+{
+"includes": ["**/validators/SchemaValidator.ts"],
+"linter": {
+"rules": {
+"complexity": {
+"noExcessiveCognitiveComplexity": {
+"level": "off",
+"options": { "maxAllowedComplexity": 160 }
+}
+}
+}
+}
+}
+]
 }

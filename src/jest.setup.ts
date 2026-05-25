@@ -19,6 +19,7 @@ function normalize(obj: any, seen = new WeakMap<any, string>(), path = '$'): any
         return `[Symbol ${String(obj.description) || 'anonymous'}]`
     }
     if (seen.has(obj)) {
+        // biome-ignore lint/style/noNonNullAssertion: has() guarantees existence, WeakMap.get() doesn't narrow
         const circularPath = seen.get(obj)!
         return `[Circular ${circularPath}]`
     }

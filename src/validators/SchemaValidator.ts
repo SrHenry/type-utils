@@ -142,6 +142,7 @@ function validate<T, Name extends string, Parent>(
 
             let { message } = e
 
+            // biome-ignore lint/style/noNonNullAssertion: hasValidatorMessage() guarantees existence
             if (hasValidatorMessage(schema)) message = getValidatorMessage(schema)!
 
             pushNewError({
@@ -360,16 +361,16 @@ function validate<T, Name extends string, Parent>(
                                             keyMetadata.types
                                                 .map(
                                                     ({
-                                                        schema,
-                                                        type,
+                                                        schema: keySchema,
+                                                        type: keyType,
                                                     }): TypeGuard<string> | TypeGuard<symbol> =>
-                                                        type === 'number'
+                                                        keyType === 'number'
                                                             ? asTypeGuard<string>(
                                                                   (input: string) =>
                                                                       Number.isNaN(Number(input)) &&
-                                                                      schema(Number(input))
+                                                                      keySchema(Number(input))
                                                               )
-                                                            : schema
+                                                            : keySchema
                                                 )
                                                 .some(typeGuard => typeGuard(_i)),
                                         {
@@ -627,11 +628,11 @@ function validate<T, Name extends string, Parent>(
                         context: {
                             types: metadata.types.filter((_, i) =>
                                 intersectionResults
-                                    .map((r, i) => [i, r])
+                                    .map((r, idx) => [idx, r] as const)
                                     .filter(
                                         ([, r]) => isInstanceOf(r, ValidationError) && r !== arg
                                     )
-                                    .map(([i]) => i)
+                                    .map(([idx]) => idx)
                                     .includes(i)
                             ),
                             errors: intersectionErrorList,
@@ -920,34 +921,42 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
     public constructor(schema: TypeGuard<T>, throws: Throws)
     public constructor(
         protected schema: TypeGuard<T>,
+        // biome-ignore lint/nursery/noShadow: constructor param shadows module-level symbol
         protected throws = defaults['throws']
     ) {}
 
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static validate<T>(
         arg: unknown,
         schema: TypeGuard<T>,
+        // biome-ignore lint/nursery/noShadow: param shadows module-level function
         shouldThrow: boolean = defaults['throws']
     ): ValidateReturn<T> {
         return validate.bind(setThrows(shouldThrow))(arg, schema)
     }
 
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>,
         schema: TypeGuard<T>
     ): TypeGuard<T>
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>
     ): (schema: TypeGuard<T>) => TypeGuard<T>
 
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>,
         schema?: TypeGuard<T> | typeof NO_ARG
     ): TypeGuard<T> | (<U = T>(schema: TypeGuard<U>) => TypeGuard<U>)
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>,
         schema: TypeGuard<T> | typeof NO_ARG = NO_ARG
     ) {
         if (schema === NO_ARG)
+            // biome-ignore lint/nursery/noShadow: currying param intentionally shadows outer param
             return (schema: TypeGuard<T>) => __SchemaValidator.setValidatorMessage(message, schema)
 
         if (typeof message === 'string') return setValidatorMessage(message, schema)

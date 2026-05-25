@@ -13,22 +13,12 @@ export abstract class BaseValidator {
     ): U {
         const o = ensureInstanceOf(arg, Object) as Record<string, unknown>
 
-        if (required.length === 0 && optional.length === 0) {
-            for (const [prop, validator] of Object.entries<TypeGuard>(validators)) {
-                if (!(prop in o)) throw new TypeGuardError(`Property ${prop} is not defined`, o)
+        const effectiveRequired =
+            required.length || optional.length
+                ? required
+                : (Object.keys(validators) as (keyof typeof validators)[])
 
-                if (!validator(o[prop]))
-                    throw new TypeGuardError(
-                        `Property '${prop}' failed validation`,
-                        o[prop],
-                        validator
-                    )
-            }
-
-            return o as U
-        }
-
-        for (const key of required) {
+        for (const key of effectiveRequired) {
             if (!(key in o))
                 throw new TypeGuardError(`Missing required key ${String(key)}`, o, validators[key])
 

@@ -594,7 +594,7 @@ console.log(is(___a, ___schema))
 
 console.log(is('039.684.102-38', isCPF as any))
 console.log(is('03968410238', string().nonEmpty().min(11).max(14).regex(CPFFormat)))
-console.log(is('03968410238', (a: any) => CPFRule[2](a)()))
+console.log(is('03968410238', (val: any) => CPFRule[2](val)()))
 console.log(CPFSchema('03968410238'))
 console.log(CPFSchema('039.684.102-38'))
 
