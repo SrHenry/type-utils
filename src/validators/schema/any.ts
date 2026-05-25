@@ -79,10 +79,10 @@ export const any: AnySchema = (() => {
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
-schema.use = (...customRules: Custom<any[], string, any>) => addCall('use', [...customRules])
-schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any>)
+    schema.use = (...customRules: Custom<any[], string, any>) => addCall('use', [...customRules])
+    schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any>)
 
-return copyStructMetadata(getGuard(), schema, {
+    return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, any>>),
     })
 }) as unknown as AnySchema
