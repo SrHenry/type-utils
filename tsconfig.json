@@ -16,9 +16,10 @@
       "./src/@types",
       "./node_modules/@types"
     ],
-    "types": [
-      "*"
-    ],
+	"types": [
+		"*",
+		"vitest/globals"
+	],
     "noEmit": true,
     "stripInternal": true,
     "esModuleInterop": true,
