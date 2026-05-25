@@ -20,12 +20,16 @@ err()   { printf "${RED}[ERROR]${NC} %s\n" "$*" >&2; }
 
 usage() {
   cat <<EOF
-${BOLD}Usage${NC}: $(basename "$0") <version> [options]
+${BOLD}Usage${NC}: $(basename "$0") [<version> | --bump [major|minor|patch]] [options]
 
 ${BOLD}Arguments${NC}
   <version>            Semver version to release (e.g. 0.9.0, 0.8.1)
+                       Required unless --bump is used
 
 ${BOLD}Options${NC}
+  --bump [level]       Auto-calculate version bump from package.json (default: patch)
+                       Level must be one of: major, minor, patch
+                       Mutually exclusive with <version>
   --dry-run            Validate and generate changelog only, no mutations
   --auto               Enable AI-assisted README update via harness
   --strict             Compose with --auto to abort on harness failure
@@ -43,6 +47,7 @@ EOF
 die() { err "$@"; exit 1; }
 
 VERSION=""
+BUMP=""
 DRY_RUN=false
 AUTO=false
 STRICT=false
@@ -50,26 +55,48 @@ HARNESS_OVERRIDE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --dry-run)  DRY_RUN=true; shift ;;
-    --auto)     AUTO=true; shift ;;
-    --strict)   STRICT=true; shift ;;
-    --harness)  [[ $# -lt 2 ]] && die "--harness requires a value"; HARNESS_OVERRIDE="$2"; shift 2 ;;
-    -h|--help)  usage ;;
-    -*)         die "Unknown flag: $1" ;;
-    *)          [[ -n "$VERSION" ]] && die "Version already set to $VERSION, unexpected: $1"; VERSION="$1"; shift ;;
+    --bump)
+      if [[ $# -ge 2 ]] && [[ "$2" != --* ]]; then
+        BUMP="$2"; shift 2
+      else
+        BUMP="patch"; shift
+      fi
+      ;;
+    --dry-run) DRY_RUN=true; shift ;;
+    --auto) AUTO=true; shift ;;
+    --strict) STRICT=true; shift ;;
+    --harness) [[ $# -lt 2 ]] && die "--harness requires a value"; HARNESS_OVERRIDE="$2"; shift 2 ;;
+    -h|--help) usage ;;
+    -*) die "Unknown flag: $1" ;;
+    *) [[ -n "$VERSION" ]] && die "Version already set to $VERSION, unexpected: $1"; VERSION="$1"; shift ;;
   esac
 done
 
-[[ -z "$VERSION" ]] && die "Missing required argument: <version>"
+if [[ -n "$BUMP" && -n "$VERSION" ]]; then
+  die "Cannot use both <version> and --bump — they are mutually exclusive"
+fi
+
+if [[ -z "$BUMP" && -z "$VERSION" ]]; then
+  die "Missing required argument: <version> (or use --bump to auto-calculate)"
+fi
+
+if [[ -n "$BUMP" ]]; then
+  case "$BUMP" in
+    major|minor|patch) ;;
+    *) die "Invalid --bump level: '$BUMP' — must be one of: major, minor, patch" ;;
+  esac
+fi
 
 if [[ "$STRICT" == true && "$AUTO" != true ]]; then
   die "--strict requires --auto (it composes with --auto to enforce strict harness behavior)"
 fi
 
 SEMVER_REGEX='^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?(\+[a-zA-Z0-9.]+)?$'
-[[ "$VERSION" =~ $SEMVER_REGEX ]] || die "Invalid semver: $VERSION"
 
-[[ "$VERSION" =~ ^[0-9] ]] || die "Version must not start with 'v' prefix: $VERSION"
+if [[ -n "$VERSION" ]]; then
+  [[ "$VERSION" =~ $SEMVER_REGEX ]] || die "Invalid semver: $VERSION"
+  [[ "$VERSION" =~ ^[0-9] ]] || die "Version must not start with 'v' prefix: $VERSION"
+fi
 
 if [[ -f "$ENV_FILE" ]]; then
   set -a
@@ -86,13 +113,24 @@ cd "$PROJECT_ROOT"
 
 CURRENT_VERSION=$(node -e "console.log(require('./package.json').version)")
 
-node -e "
-  const cur = '$CURRENT_VERSION'.split('.').map(Number);
-  const newV = '$VERSION'.split('.').map(Number);
-  const curN = cur[0]*1e6 + cur[1]*1e3 + cur[2];
-  const newN = newV[0]*1e6 + newV[1]*1e3 + newV[2];
-  if (newN <= curN) { console.error('New version $VERSION must be greater than current $CURRENT_VERSION'); process.exit(1); }
-" || die "Version $VERSION is not a valid bump from $CURRENT_VERSION"
+if [[ -n "$BUMP" ]]; then
+  VERSION=$(node -e "
+    const cur = '$CURRENT_VERSION'.split('.').map(Number);
+    const level = '$BUMP';
+    if (level === 'major') console.log((cur[0]+1) + '.0.0');
+    else if (level === 'minor') console.log(cur[0] + '.' + (cur[1]+1) + '.0');
+    else console.log(cur[0] + '.' + cur[1] + '.' + (cur[2]+1));
+  ") || die "Failed to calculate bump version"
+  info "Auto-bump: $BUMP → v${VERSION} (from v${CURRENT_VERSION})"
+else
+  node -e "
+    const cur = '$CURRENT_VERSION'.split('.').map(Number);
+    const newV = '$VERSION'.split('.').map(Number);
+    const curN = cur[0]*1e6 + cur[1]*1e3 + cur[2];
+    const newN = newV[0]*1e6 + newV[1]*1e3 + newV[2];
+    if (newN <= curN) { console.error('New version $VERSION must be greater than current $CURRENT_VERSION'); process.exit(1); }
+  " || die "Version $VERSION is not a valid bump from $CURRENT_VERSION"
+fi
 
 [[ "$(git rev-parse --is-inside-work-tree)" == "true" ]] || die "Not inside a git work tree"
 
@@ -122,7 +160,11 @@ TARBALL_NAME="type-utils-${VERSION}.tgz"
 TODAY=$(date +%Y-%m-%d)
 
 info "Release checklist:"
-echo "  Version:       v${VERSION} (from v${CURRENT_VERSION})"
+if [[ -n "$BUMP" ]]; then
+  echo "  Version:       v${VERSION} (auto-bump: ${BUMP} from v${CURRENT_VERSION})"
+else
+  echo "  Version:       v${VERSION} (from v${CURRENT_VERSION})"
+fi
 echo "  Previous tag:  ${PREV_TAG}"
 echo "  Branch:        ${BRANCH}"
 echo "  Remotes:       ${REMOTES[*]}"
@@ -198,7 +240,11 @@ fi
 
 info "Step 3/7: Bumping version to ${VERSION}..."
 if [[ "$DRY_RUN" == true ]]; then
-  echo "  Would bump: ${CURRENT_VERSION} → ${VERSION} in package.json"
+  if [[ -n "$BUMP" ]]; then
+    echo "  Would bump: ${CURRENT_VERSION} → ${VERSION} (${BUMP})"
+  else
+    echo "  Would bump: ${CURRENT_VERSION} → ${VERSION}"
+  fi
 else
   node -e "
     const fs = require('fs');

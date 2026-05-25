@@ -202,12 +202,13 @@ Commit or stash your changes before running `release.sh`. The script requires a 
 ## Script reference
 
 ```
-workflows/release.sh <version> [--dry-run] [--auto] [--strict] [--harness <binary>] [-h|--help]
+workflows/release.sh [<version> | --bump [major|minor|patch]] [--dry-run] [--auto] [--strict] [--harness <binary>] [-h|--help]
 ```
 
 | Flag | Description |
 |---|---|
-| `<version>` | Semver version to release (e.g. `0.9.0`) |
+| `<version>` | Semver version to release (e.g. `0.9.0`). Required unless `--bump` is used |
+| `--bump [level]` | Auto-calculate version bump from current `package.json` version. Level: `major`, `minor`, or `patch` (default). Mutually exclusive with `<version>` |
 | `--dry-run` | Validate and generate changelog only, no mutations |
 | `--auto` | Enable AI README update; warn and continue on harness failure |
 | `--strict` | Compose with `--auto` to abort release on harness failure |
