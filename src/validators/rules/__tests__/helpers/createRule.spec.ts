@@ -2,10 +2,13 @@ import { CUSTOM_RULE_BRAND } from '../../types/index.ts'
 import { createRule } from '../../helpers/createRule.ts'
 
 describe('createRule', () => {
-    const mockHandler = (value: number) => (min: number) => value >= min
+    const mockHandler =
+        (value: number) =>
+        (min: number): boolean =>
+            value >= min
     const mockName = 'min'
     const mockMessage = 'Valor inválido'
-    const mockMessageFormator = (v: any) => `Valor ${v} inválido`
+    const mockMessageFormator = (v: any): string => `Valor ${v} inválido`
 
     it('should return a CustomFactory that includes name, args, wrapper and formator', () => {
         const factory = createRule({
@@ -66,7 +69,7 @@ describe('createRule', () => {
     })
 
     it('should allow messageFormator to return dynamic messages', () => {
-        const dynamicFormator = (v: any) => `Custom error for value: ${v}`
+        const dynamicFormator = (v: any): string => `Custom error for value: ${v}`
         const factory = createRule({
             name: 'dynamic',
             handler: mockHandler as any,

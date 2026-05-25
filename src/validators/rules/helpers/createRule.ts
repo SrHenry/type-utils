@@ -62,14 +62,14 @@ export function createRule<
 
     const formator: MessageFormator =
         messageFormator ??
-        (message ? () => message : (...args: Args) => `${name}(${args.join(', ')})`)
+        (message ? (): string => message : (...args: Args): string => `${name}(${args.join(', ')})`)
 
     const wrapper = (subject: Subject) => {
         const getSetterWithSubject = getRuleSetterForCustomHandler(handler)
 
-        if (!!messageFormator)
+        if (messageFormator)
             return getSetterWithSubject(subject).setErrorMessageFormator(messageFormator)
-        if (!!message) return getSetterWithSubject(subject).setErrorMessage(message)
+        if (message) return getSetterWithSubject(subject).setErrorMessage(message)
 
         return handler(subject)
     }

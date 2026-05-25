@@ -3,7 +3,7 @@
  * @param n the number to format
  * @param precision the decimal part output size
  */
-export const round = (n: number, precision: number = 0): string => {
+export const round = (n: number, precision = 0): string => {
     let integer = Math.floor(n)
     let r = n - integer
     for (let c = 0; c < precision; c++) r *= 10

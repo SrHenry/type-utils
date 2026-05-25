@@ -1,4 +1,4 @@
-export interface TransformContract<TransformData, InputTypes, OutputType> {
+export type TransformContract<TransformData, InputTypes, OutputType> = {
     inputTypes: string[]
     outputType: OutputType
 

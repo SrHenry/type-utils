@@ -1,32 +1,26 @@
-import type { GetTypeGuard, MessageFormator, TypeGuard } from '../TypeGuards/types/index.ts'
+import type { MessageFormator, TypeGuard } from '../TypeGuards/types/index.ts'
 import type { Merge } from '../types/index.ts'
-import type { Custom as CustomRules, RuleStruct } from './rules/types/index.ts'
 import type { GenericStruct, V3 } from './schema/types/index.ts'
 import type { ValidatorMessageMap } from './types/index.ts'
 
-import Generics from '../Generics/index.ts'
-import { AutoBind } from '../helpers/decorators/stage-2/AutoBind.ts'
 import { asTypeGuard } from '../TypeGuards/helpers/asTypeGuard.ts'
-import { ensureInterface } from '../TypeGuards/helpers/ensureInterface.ts'
-import { getMessage } from '../TypeGuards/helpers/getMessage.ts'
 import { getMetadata } from '../TypeGuards/helpers/getMetadata.ts'
-import { getValidatorMessage } from '../TypeGuards/helpers/getValidatorMessage.ts'
-import { hasValidatorMessage } from '../TypeGuards/helpers/hasValidatorMessage.ts'
-import { isInstanceOf } from '../TypeGuards/helpers/isInstanceOf.ts'
+import { getStructMetadata } from './schema/helpers/getStructMetadata.ts'
+import { hasStructMetadata } from './schema/helpers/hasStructMetadata.ts'
 import { setMetadata } from '../TypeGuards/helpers/setMetadata.ts'
 import { setValidatorMessage } from '../TypeGuards/helpers/setValidatorMessage.ts'
 import { setValidatorMessageFormator } from '../TypeGuards/helpers/setValidatorMessageFormator.ts'
-import { TypeGuardError } from '../TypeGuards/TypeErrors.ts'
-import { isValidObject } from './helpers/isValidObject.ts'
-import { nonEmpty as nonEmptyRecordRuleFactory } from './rules/Record/factories/nonEmpty.ts'
-import { doesNotMatchRules, validateRules } from './RuleValidator.ts'
-import { getRuleStructMetadata } from './schema/helpers/getRuleStructMetadata.ts'
-import { getStructMetadata } from './schema/helpers/getStructMetadata.ts'
-import { hasStructMetadata } from './schema/helpers/hasStructMetadata.ts'
-import { isStruct } from './schema/helpers/isStruct.ts'
-import { updateStructMetadata } from './schema/helpers/updateStructMetadata.ts'
-import { type ValidationArgs, ValidationError } from './ValidationError.ts'
+import { AutoBind } from '../helpers/decorators/stage-2/AutoBind.ts'
+import { ValidationError, type ValidationArgs } from './ValidationError.ts'
 import { ValidationErrors } from './ValidationErrors.ts'
+import {
+    validateWithoutMetadata,
+    validateObject,
+    validateRecord,
+    validateIntersection,
+    validateUnion,
+    validateDefault,
+} from './schema/helpers/validate/index.ts'
 
 export type ValidateReturn<T> =
     | T
@@ -122,749 +116,61 @@ function validate<T, Name extends string, Parent>(
     name_or_options?: Name | ValidateOptionalArgs<Name, Parent>,
     parent: Parent | NO_PARENT = NO_PARENT
 ): ValidateReturn<T> {
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
     const throws = shouldThrow(this)
     const metadata = getStructMetadata(schema) as V3.StructType
     const errors: ValidationError[] = []
     let name: Name | undefined
+    ;({ name, parent = NO_PARENT } =
+        typeof name_or_options === 'string' ? { name: name_or_options } : (name_or_options ?? {}))
 
-    // Sanitize name and parent
-    {
-        ;({ name, parent = NO_PARENT } =
-            typeof name_or_options === 'string'
-                ? { name: name_or_options }
-                : (name_or_options ?? {}))
-
-        if (parent === NO_PARENT) name ??= '$' as Name
-    }
+    if (parent === NO_PARENT) name ??= '$' as Name
 
     const pushNewError = pushNewErrorFactory(errors, { schema, value: arg, name, parent })
 
+    const baseCtx = {
+        arg,
+        schema,
+        name,
+        parent,
+        errors,
+        pushNewError,
+    }
+
     if (!hasStructMetadata(schema)) {
-        try {
-            ensureInterface(arg, schema)
-        } catch (e) {
-            if (!(e instanceof TypeGuardError)) throw e
-
-            let { message } = e
-
-            if (hasValidatorMessage(schema)) message = getValidatorMessage(schema)!
-
-            pushNewError({
-                message,
-                context: {
-                    hasStructMetadata: false,
-                },
-            })
-        }
+        validateWithoutMetadata({ ...baseCtx, metadata })
     } else {
         switch (metadata.type) {
             case 'object':
-                {
-                    if (metadata.optional && arg === undefined) break
-
-                    if (!isValidObject(arg)) {
-                        pushNewError(getMessage(schema) ?? `Expected object, got ${typeof arg}`)
-
-                        break
-                    }
-
-                    // Validate object's own rules before the tree/entries
-                    {
-                        const ruleErrors = validateRules(arg, metadata.rules, schema, name, parent)
-
-                        errors.push(...ruleErrors)
-                    }
-
-                    if ('tree' in metadata) {
-                        if (metadata.optional && arg === undefined) break
-
-                        if ('className' in metadata) {
-                            const { constructor, className } = metadata
-
-                            if (!(arg instanceof constructor)) {
-                                pushNewError({
-                                    message:
-                                        getMessage(schema) ??
-                                        `Expected ${className} instance, got ${arg}`,
-                                    context: { structMetadata: metadata, constructor, className },
-                                })
-                            }
-
-                            break
-                        }
-
-                        const entries = Object.entries(arg)
-                        const { tree } = metadata
-
-                        const results = Object.entries(tree)
-                            .map(e => {
-                                const [, { schema, rules: objectEntryRules }] = e
-
-                                updateStructMetadata(schema, {
-                                    rules: objectEntryRules as RuleStruct<CustomRules>[],
-                                })
-
-                                return e
-                            })
-                            .map(
-                                ([k, { schema, optional }]): [
-                                    (typeof tree)[Exclude<keyof typeof tree, symbol>]['schema'],
-                                    (
-                                        | GetTypeGuard<
-                                              (typeof tree)[Exclude<
-                                                  keyof typeof tree,
-                                                  symbol
-                                              >]['schema']
-                                          >
-                                        | ValidationError<
-                                              typeof arg,
-                                              (typeof tree)[Exclude<
-                                                  keyof typeof tree,
-                                                  symbol
-                                              >]['schema']
-                                          >[]
-                                        | undefined
-                                    ),
-                                ] => {
-                                    if (entries.some(([key]) => key === k))
-                                        return [
-                                            schema,
-                                            validate.bind(mustNotThrow())(
-                                                arg[k],
-                                                schema,
-                                                [name, k].filter(Boolean).join('.'),
-                                                arg
-                                            ),
-                                        ]
-
-                                    if (optional) return [schema, void 0]
-
-                                    return [
-                                        schema,
-                                        new ValidationErrors([
-                                            new ValidationError({
-                                                schema,
-                                                value: arg[k],
-                                                message: `Missing key '${k}'`,
-                                                name,
-                                                parent,
-                                                context: {
-                                                    structMetadata: metadata,
-                                                    missingKey: k,
-                                                },
-                                            }),
-                                        ]),
-                                    ]
-                                }
-                            )
-
-                        results
-                            .filter((result): result is [TypeGuard<T>, ValidationErrors] => {
-                                const [, item] = result
-                                return (
-                                    item instanceof ValidationErrors ||
-                                    (Array.isArray(item) &&
-                                        item.every(
-                                            predicate => predicate instanceof ValidationError
-                                        ))
-                                )
-                            })
-                            .forEach(([, e]) => errors.push(...e.errors))
-                    } else if ('entries' in metadata) {
-                        const { entries, optional } = metadata
-
-                        if (optional && arg === void 0) break
-
-                        if (!Array.isArray(arg)) {
-                            pushNewError({
-                                message: `Expected array, got <${arg}>${JSON.stringify(arg)}`,
-                                context: { structMetadata: metadata },
-                            })
-
-                            break
-                        }
-
-                        const results = arg.map((item, i) =>
-                            validate.bind(mustNotThrow())(item, entries.schema, {
-                                name: [name, `[${i}]`].filter(Boolean).join(''),
-                                parent: arg,
-                            })
-                        )
-
-                        results.filter(isInstanceOf(ValidationErrors)).forEach(item => {
-                            errors.push(...item)
-                        })
-                    } else {
-                        pushNewError({
-                            message: 'Invalid metadata for object',
-                            context: {
-                                structMetadata: metadata,
-                                expectedMetadataProperties: {
-                                    xor: [
-                                        { key: 'tree', type: 'object' },
-                                        { key: 'entries', type: 'object' },
-                                    ],
-                                },
-                            },
-                        })
-                    }
-                }
+                validateObject(
+                    { ...baseCtx, metadata: metadata as V3.ObjectStruct<any> },
+                    validate,
+                    mustNotThrow()
+                )
                 break
             case 'record':
-                {
-                    if (metadata.optional && arg === undefined) break
-
-                    const { keyMetadata, valueMetadata, rules } = metadata
-                    const recordEntriesCount =
-                        Object.getOwnPropertyNames(arg).length +
-                        Object.getOwnPropertySymbols(arg).length
-
-                    if (rules.includes(getRuleStructMetadata(nonEmptyRecordRuleFactory())))
-                        if (typeof arg !== 'object' || arg === null || recordEntriesCount === 0)
-                            pushNewError({
-                                message:
-                                    'Value must be a not-null object and a non-empty record object!',
-                                context: {
-                                    structMetadata: metadata,
-                                    isNull: arg === null,
-                                    isEmpty: !(recordEntriesCount > 0),
-                                },
-                            })
-
-                    switch (keyMetadata.type) {
-                        case 'enum':
-                            if (
-                                !keyMetadata.types.every(({ type: enumInnerType }) =>
-                                    Generics.PropertyKeyTypes.includes(enumInnerType)
-                                )
-                            )
-                                throw new TypeError(
-                                    "Invalid metadata for record key guard enum. record key guard enum must be of type 'string', 'number', or 'symbol'"
-                                )
-
-                            // for (const { type, schema: keySchema, rules: keyRules } of keyMetadata.types) {}
-                            ///! TODO: Add proper record validation for Enum key guard case
-
-                            const ownKeys = [
-                                Object.getOwnPropertyNames(arg),
-                                Object.getOwnPropertySymbols(arg),
-                            ].flat() //as const
-
-                            const recordValidationResult = ownKeys
-                                .flatMap(k => [
-                                    validate.bind(mustNotThrow())<string | symbol>(
-                                        k,
-                                        (_i: unknown): _i is string | symbol =>
-                                            keyMetadata.types
-                                                .map(
-                                                    ({
-                                                        schema,
-                                                        type,
-                                                    }): TypeGuard<string> | TypeGuard<symbol> =>
-                                                        type === 'number'
-                                                            ? asTypeGuard<string>(
-                                                                  (input: string) =>
-                                                                      Number.isNaN(Number(input)) &&
-                                                                      schema(Number(input))
-                                                              )
-                                                            : schema
-                                                )
-                                                .some(typeGuard => typeGuard(_i)),
-                                        {
-                                            name: [
-                                                name,
-                                                `[@@Object.{getOwnPropertyNames|getOwnPropertySymbols} @key: ${k.toString()}]`,
-                                            ]
-                                                .filter(Boolean)
-                                                .join(''),
-                                            parent: arg,
-                                        }
-                                    ),
-                                    validate.bind(mustNotThrow())(
-                                        (arg as Record<PropertyKey, unknown>)[
-                                            k as keyof typeof arg
-                                        ],
-                                        valueMetadata.schema,
-                                        {
-                                            name: [
-                                                name,
-                                                `[@values:at: @@Object.{getOwnPropertyNames|getOwnPropertySymbols}]`,
-                                            ]
-                                                .filter(Boolean)
-                                                .join(''),
-                                            parent: arg,
-                                        }
-                                    ),
-                                ])
-                                .filter(isInstanceOf(ValidationErrors))
-                                .flatMap(errors => errors.errors)
-
-                            errors.push(...recordValidationResult)
-                            break
-                        case 'string':
-                        case 'number':
-                        case 'symbol':
-                        case 'custom':
-                            updateStructMetadata<string | number | symbol>(keyMetadata.schema, {
-                                rules: keyMetadata.rules as RuleStruct<CustomRules>[],
-                            })
-
-                            if (typeof arg !== 'object' || arg === null) {
-                                pushNewError({
-                                    message: 'Value must be a not-null object!',
-                                    context: {
-                                        structMetadata: metadata,
-                                        expectedMetadataProperties: {
-                                            key: Generics.PropertyKeyTypes,
-                                        },
-                                    },
-                                })
-
-                                break
-                            }
-
-                            switch (true) {
-                                case keyMetadata.type === 'number':
-                                    Object.getOwnPropertyNames(arg).forEach(k => {
-                                        if (!Number.isNaN(Number(k)))
-                                            pushNewError({
-                                                message: `Value's key must be a number or number string`,
-                                                context: {
-                                                    structMetadata: metadata,
-
-                                                    expectedKeyType: keyMetadata.type,
-                                                    actualKeyType: typeof k,
-
-                                                    isNumberString: !Number.isNaN(Number(k)),
-                                                    isNumberLiteral: typeof k === 'number',
-                                                },
-                                            })
-
-                                        const recordKeyValidationResult = validate.bind(
-                                            mustNotThrow()
-                                        )(Number(k), keyMetadata.schema, {
-                                            name: [name, `[@@key: ${k}]`].filter(Boolean).join(''),
-                                            parent: arg,
-                                        })
-
-                                        if (
-                                            recordKeyValidationResult !== Number(k) &&
-                                            recordKeyValidationResult instanceof ValidationErrors
-                                        )
-                                            errors.push(
-                                                ...(recordKeyValidationResult.errors as ValidationError<
-                                                    any,
-                                                    any
-                                                >[])
-                                            )
-
-                                        const recordValueValidationResult = validate.bind(
-                                            mustNotThrow()
-                                        )(arg[k as keyof typeof arg], valueMetadata.schema, {
-                                            name: [name, `[@@value:at(${k})]`]
-                                                .filter(Boolean)
-                                                .join(''),
-                                            parent: arg,
-                                        })
-                                        if (
-                                            recordValueValidationResult !==
-                                                arg[k as keyof typeof arg] &&
-                                            recordValueValidationResult instanceof ValidationErrors
-                                        )
-                                            errors.push(
-                                                ...(recordValueValidationResult.errors as ValidationError<
-                                                    any,
-                                                    any
-                                                >[])
-                                            )
-                                    })
-
-                                    break
-                                case keyMetadata.type === 'string' ||
-                                    (keyMetadata.type === 'custom' &&
-                                        keyMetadata.kind === 'string'):
-                                    Object.getOwnPropertyNames(arg).forEach(k => {
-                                        const recordKeyValidationResult = validate.bind(
-                                            mustNotThrow()
-                                        )(k, keyMetadata.schema, {
-                                            name: [name, `[@@key: '${k}']`]
-                                                .filter(Boolean)
-                                                .join(''),
-                                            parent: arg,
-                                        })
-
-                                        if (
-                                            recordKeyValidationResult !== k &&
-                                            recordKeyValidationResult instanceof ValidationErrors
-                                        )
-                                            errors.push(
-                                                ...(recordKeyValidationResult.errors as ValidationError<
-                                                    any,
-                                                    any
-                                                >[])
-                                            )
-
-                                        const recordValueValidationResult = validate.bind(
-                                            mustNotThrow()
-                                        )(arg[k as keyof typeof arg], valueMetadata.schema, {
-                                            name: [name, `[@@value:at('${k}')]`]
-                                                .filter(Boolean)
-                                                .join(''),
-                                            parent: arg,
-                                        })
-                                        if (
-                                            recordValueValidationResult !==
-                                                arg[k as keyof typeof arg] &&
-                                            recordValueValidationResult instanceof ValidationErrors
-                                        )
-                                            errors.push(
-                                                ...(recordValueValidationResult.errors as ValidationError<
-                                                    any,
-                                                    any
-                                                >[])
-                                            )
-                                    })
-                                    break
-
-                                case keyMetadata.type === 'symbol':
-                                    Object.getOwnPropertySymbols(arg).forEach(k => {
-                                        const recordKeyValidationResult = validate.bind(
-                                            mustNotThrow()
-                                        )(k, keyMetadata.schema, {
-                                            name: [name, `[@@key: ${k.toString()}]`]
-                                                .filter(Boolean)
-                                                .join(''),
-                                            parent: arg,
-                                        })
-
-                                        if (
-                                            recordKeyValidationResult !== k &&
-                                            recordKeyValidationResult instanceof ValidationErrors
-                                        )
-                                            errors.push(
-                                                ...(recordKeyValidationResult.errors as ValidationError<
-                                                    any,
-                                                    any
-                                                >[])
-                                            )
-
-                                        const recordValueValidationResult = validate.bind(
-                                            mustNotThrow()
-                                        )(arg[k as keyof typeof arg], valueMetadata.schema, {
-                                            name: [name, `[@@value:at(${k.toString()})]`]
-                                                .filter(Boolean)
-                                                .join(''),
-                                            parent: arg,
-                                        })
-                                        if (
-                                            recordValueValidationResult !==
-                                                arg[k as keyof typeof arg] &&
-                                            recordValueValidationResult instanceof ValidationErrors
-                                        )
-                                            errors.push(
-                                                ...(recordValueValidationResult.errors as ValidationError<
-                                                    any,
-                                                    any
-                                                >[])
-                                            )
-                                    })
-                                    break
-                            }
-
-                            break
-                        default:
-                            throw new TypeError(
-                                "Invalid metadata for record key guard. record key guard must be of type 'string', 'number', 'symbol', or 'enum<string | number | symbol>'"
-                            )
-                    }
-                }
+                validateRecord(
+                    { ...baseCtx, metadata: metadata as V3.RecordStruct<string, any> },
+                    validate,
+                    mustNotThrow()
+                )
                 break
             case 'intersection':
-                {
-                    if (metadata.optional && arg === undefined) break
-
-                    const intersectionResults = metadata.types
-                        .map(s => {
-                            updateStructMetadata(s.schema, {
-                                rules: s.rules as RuleStruct<CustomRules>[],
-                            })
-
-                            return s
-                        })
-                        .map(({ schema }) =>
-                            validate.bind(mustNotThrow())(arg, schema, {
-                                name,
-                                parent,
-                            })
-                        )
-
-                    const intersectionRulesResults = validateRules(
-                        arg,
-                        metadata.rules,
-                        schema,
-                        name,
-                        parent
-                    )
-
-                    errors.push(...intersectionRulesResults)
-
-                    const intersectionErrors = intersectionResults
-                        .filter(isInstanceOf(ValidationErrors))
-                        .filter(e => e !== arg)
-
-                    if (intersectionErrors.length === 0) break
-
-                    const intersectionErrorList = intersectionErrors.map(item => [...item]).flat()
-
-                    pushNewError({
-                        message: 'Value does not match all intersection types',
-                        context: {
-                            types: metadata.types.filter((_, i) =>
-                                intersectionResults
-                                    .map((r, i) => [i, r])
-                                    .filter(
-                                        ([, r]) => isInstanceOf(r, ValidationError) && r !== arg
-                                    )
-                                    .map(([i]) => i)
-                                    .includes(i)
-                            ),
-                            errors: intersectionErrorList,
-                        },
-                    })
-
-                    errors.push(...intersectionErrorList)
-                }
+                validateIntersection(
+                    { ...baseCtx, metadata: metadata as V3.IntersectionStruct<any[]> },
+                    validate,
+                    mustNotThrow()
+                )
                 break
             case 'union':
-                {
-                    if (metadata.optional && arg === undefined) break
-
-                    const unionResults = metadata.types.map(({ schema, rules: unionInnerRules }) =>
-                        validate.bind(mustNotThrow())(
-                            arg,
-                            updateStructMetadata(schema, {
-                                rules: unionInnerRules as RuleStruct<CustomRules>[],
-                            }),
-                            {
-                                name,
-                                parent,
-                            }
-                        )
-                    )
-
-                    const unionRulesResults = validateRules(
-                        arg,
-                        metadata.rules,
-                        schema,
-                        name,
-                        parent
-                    )
-
-                    errors.push(...unionRulesResults)
-
-                    const unionErrors = unionResults
-                        .filter(isInstanceOf(ValidationErrors))
-                        .filter(e => e !== arg)
-
-                    if (unionErrors.length === unionResults.length) {
-                        const unionErrorList = unionErrors.map(e => Array.from(e)).flat()
-
-                        pushNewError({
-                            message: 'Value does not match any of the union types',
-                            context: {
-                                structMetadata: metadata,
-                                types: metadata.types,
-                                errors: unionErrorList,
-                            },
-                        })
-                    }
-                }
+                validateUnion(
+                    { ...baseCtx, metadata: metadata as V3.UnionStruct<any[]> },
+                    validate,
+                    mustNotThrow()
+                )
                 break
             default:
-                try {
-                    // return ensureInterface(arg, schema)
-                    ensureInterface(arg, schema)
-
-                    if (doesNotMatchRules(arg, metadata.rules, schema, name, parent))
-                        throw new TypeGuardError(
-                            'Value does not match all rules',
-                            arg,
-                            metadata.rules
-                        )
-                } catch (e) {
-                    if (!(e instanceof TypeGuardError))
-                        throw new TypeError(`Expected TypeGuardError, got ${(e as Error)?.name}`, {
-                            cause: e,
-                        })
-
-                    switch (metadata.type) {
-                        case 'custom':
-                            if (!metadata.schema(arg)) {
-                                pushNewError({
-                                    message: getValidatorMessage(
-                                        schema,
-                                        'Value does not match the custom schema'
-                                    ),
-                                    context: {
-                                        structMetadata: metadata,
-                                        expectedType: metadata.type,
-                                        actualType: typeof arg,
-                                    },
-                                })
-                            }
-
-                            break
-                        case 'any': //no test for `any`
-                            break
-                        case 'tuple':
-                            if (!Array.isArray(arg) || arg.length !== metadata.elements.length) {
-                                pushNewError({
-                                    message: getValidatorMessage(
-                                        schema,
-                                        `Value must be a tuple/array of length ${metadata.elements.length}`
-                                    ),
-                                    context: {
-                                        structMetadata: metadata,
-                                        expectedType: metadata.type,
-                                        actualType: typeof arg,
-                                        expectedLength: metadata.elements.length,
-                                        actualLength: Array.isArray(arg) ? arg.length : null,
-                                    },
-                                })
-                                break
-                            }
-
-                            if (!metadata.elements.every(isStruct))
-                                throw new TypeGuardError(
-                                    'Tuple metadata must have elements that are structs',
-                                    metadata.elements,
-                                    isStruct
-                                )
-
-                            metadata.elements
-                                .map((innerStruct, i) =>
-                                    validate.bind(mustNotThrow())(
-                                        arg[i],
-                                        innerStruct.schema,
-                                        `${name}[<tuple>.at{${i}}]`,
-                                        parent
-                                    )
-                                )
-                                .filter(isInstanceOf(ValidationErrors))
-                                .forEach(innerErrors => errors.push(...innerErrors))
-
-                            break
-                        case 'primitive':
-                            if (!(Generics.Primitives as readonly string[]).includes(typeof arg))
-                                pushNewError({
-                                    message: getValidatorMessage(
-                                        schema,
-                                        `Value must be a primitive`
-                                    ),
-                                    context: {
-                                        structMetadata: metadata,
-                                        expectedType: metadata.type,
-                                        actualType: typeof arg,
-                                    },
-                                })
-                            break
-                        case 'enum':
-                            if (metadata.types.length < 2)
-                                throw new TypeError(
-                                    'An enum schema must have at least two values to match'
-                                )
-
-                            if (!(Generics.Primitives as readonly string[]).includes(typeof arg))
-                                pushNewError({
-                                    message: getValidatorMessage(
-                                        schema,
-                                        `Value must be a primitive`
-                                    ),
-                                    context: {
-                                        structMetadata: metadata,
-                                        expectedType: metadata.type,
-                                        actualType: typeof arg,
-                                    },
-                                })
-
-                            const enumResults = metadata.types.map(enumElementStruct =>
-                                validate.bind(mustNotThrow())<Generics.PrimitiveType, Name, Parent>(
-                                    arg,
-                                    enumElementStruct.schema,
-                                    { name, parent: parent === NO_PARENT ? undefined : parent }
-                                )
-                            )
-
-                            const enumErrorCount = enumResults.filter(
-                                isInstanceOf(ValidationErrors)
-                            ).length
-
-                            if (enumResults.length - enumErrorCount > 1)
-                                throw new TypeError('Invalid Enum State! Multiple matches found!')
-
-                            if (enumErrorCount === enumResults.length)
-                                pushNewError({
-                                    message: getValidatorMessage(
-                                        schema,
-                                        `Value does not match any of the enum values`
-                                    ),
-                                    context: {
-                                        structMetadata: metadata,
-                                        expected: { roMatch: { xor: metadata.types } },
-                                    },
-                                })
-
-                            break
-                        case 'null':
-                            if (arg !== null)
-                                pushNewError({
-                                    message: getValidatorMessage(schema, `Value must be null`),
-                                    context: {
-                                        structMetadata: metadata,
-                                        expectedType: metadata.type,
-                                        actualType: typeof arg,
-                                    },
-                                })
-
-                            break
-                        default:
-                            if (typeof arg !== metadata.type)
-                                pushNewError({
-                                    message: getValidatorMessage(
-                                        schema,
-                                        `Value must be of type "${metadata.type}"`
-                                    ),
-                                    context: {
-                                        structMetadata: metadata,
-                                        expectedType: metadata.type,
-                                        actualType: typeof arg,
-                                    },
-                                })
-                            else if (!schema(arg))
-                                pushNewError({
-                                    message: getValidatorMessage(
-                                        schema,
-                                        `Value must pass inner schema validations "${metadata.type}"`
-                                    ),
-                                    context: {
-                                        structMetadata: metadata,
-                                        expectedType: metadata.type,
-                                        actualType: typeof arg,
-                                        schema,
-                                    },
-                                })
-                    }
-
-                    const ruleErrors = validateRules(
-                        arg,
-                        metadata.rules,
-                        schema,
-                        name,
-                        parent
-                    ).errors
-
-                    errors.push(...ruleErrors)
-                }
+                validateDefault({ ...baseCtx, metadata }, validate, mustNotThrow())
         }
     }
 
@@ -878,6 +184,7 @@ function validate<T, Name extends string, Parent>(
 }
 
 type ISchemaValidator<T, Throws extends boolean = DefaultThrowsParam> = Merge<
+    // biome-ignore lint/complexity/noBannedTypes: {} used as base type for Merge utility
     {},
     Throws extends true
         ? {
@@ -888,7 +195,7 @@ type ISchemaValidator<T, Throws extends boolean = DefaultThrowsParam> = Merge<
           }
 >
 
-interface ISchemaValidatorConstructor {
+type ISchemaValidatorConstructor = {
     new <T>(schema: TypeGuard<T>): SchemaValidator<T, DefaultThrowsParam>
     new <T, Throws extends true>(schema: TypeGuard<T>, throws: Throws): SchemaValidator<T, true>
     new <T, Throws extends false>(schema: TypeGuard<T>, throws: Throws): SchemaValidator<T, false>
@@ -908,34 +215,42 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
     public constructor(schema: TypeGuard<T>, throws: Throws)
     public constructor(
         protected schema: TypeGuard<T>,
+        // biome-ignore lint/nursery/noShadow: constructor param shadows module-level symbol
         protected throws = defaults['throws']
     ) {}
 
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static validate<T>(
         arg: unknown,
         schema: TypeGuard<T>,
+        // biome-ignore lint/nursery/noShadow: param shadows module-level function
         shouldThrow: boolean = defaults['throws']
     ): ValidateReturn<T> {
         return validate.bind(setThrows(shouldThrow))(arg, schema)
     }
 
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>,
         schema: TypeGuard<T>
     ): TypeGuard<T>
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>
     ): (schema: TypeGuard<T>) => TypeGuard<T>
 
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>,
         schema?: TypeGuard<T> | typeof NO_ARG
     ): TypeGuard<T> | (<U = T>(schema: TypeGuard<U>) => TypeGuard<U>)
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>,
         schema: TypeGuard<T> | typeof NO_ARG = NO_ARG
     ) {
         if (schema === NO_ARG)
+            // biome-ignore lint/nursery/noShadow: currying param intentionally shadows outer param
             return (schema: TypeGuard<T>) => __SchemaValidator.setValidatorMessage(message, schema)
 
         if (typeof message === 'string') return setValidatorMessage(message, schema)
@@ -958,12 +273,12 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
                     "Cannot set validator message mapper for class instance schema's properties"
                 )
 
-            Object.entries(message).forEach(([k, item]) =>
+            Object.entries(message).forEach(([k, item]) => {
                 __SchemaValidator.setValidatorMessage<Value<T>>(
                     item as ValidatorMessageMap<Value<T>>,
                     metadata.tree[k as keyof T].schema as TypeGuard<Value<T>>
                 )
-            )
+            })
         } else if ('entries' in metadata)
             __SchemaValidator.setValidatorMessage(
                 message,
@@ -980,6 +295,7 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
     public validate<V>(value: V, shouldThrow: boolean): T | ValidationErrors
 
     @AutoBind()
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
     public validate<V>(value: V, shouldThrow: boolean = this.throws): T | ValidationErrors {
         return validate.bind(setThrows(shouldThrow))(value, this.schema)
     }

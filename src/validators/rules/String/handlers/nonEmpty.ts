@@ -1,5 +1,6 @@
 import { nonZero } from '../../common.ts'
 
-const handler = (arg: string) => nonZero(String(arg).length)
+// biome-ignore lint/nursery/noUselessTypeConversion: String() guards against undefined at runtime
+const handler = (arg: string): boolean => nonZero(String(arg).length)
 
 export { handler as nonEmpty }

@@ -8,20 +8,12 @@ import { getMessage } from './getMessage.ts'
 import { hasMessage } from './hasMessage.ts'
 import { isStandardSchema } from '../../validators/standard-schema/isStandardSchema.ts'
 import { isTypeGuard } from './isTypeGuard.ts'
-
 export function ensureInterface<Interface, Instance = unknown>(
     value: Instance,
-    validator: TypeGuard<Interface>
+    validator: StandardSchemaV1<Interface> | TypeGuard<Interface>
 ): Interface
 export function ensureInterface<Interface>(
-    validator: TypeGuard<Interface>
-): <Instance = unknown>(value: Instance) => Interface
-export function ensureInterface<Interface, Instance = unknown>(
-    value: Instance,
-    validator: StandardSchemaV1<Interface>
-): Interface
-export function ensureInterface<Interface>(
-    validator: StandardSchemaV1<Interface>
+    validator: StandardSchemaV1<Interface> | TypeGuard<Interface>
 ): <Instance = unknown>(value: Instance) => Interface
 
 export function ensureInterface<Interface, Instance = unknown>(

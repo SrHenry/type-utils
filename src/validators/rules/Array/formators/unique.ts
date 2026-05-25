@@ -1,3 +1,3 @@
 import { template } from '../../common.ts'
 
-export const uniqueFormator = () => template(`unique items`)
+export const uniqueFormator = (): string => template(`unique items`)

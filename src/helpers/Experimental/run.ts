@@ -1,7 +1,7 @@
 import { isPromise } from '../../helpers/isPromise.ts'
-import { AsyncFunc, Func } from '../../types/Func.ts'
-import { AsyncLambda, Lambda } from '../../types/Lambda.ts'
-import { AsyncResult, ErrorResult, Result, SucessfulResult } from '../../types/Result.ts'
+import type { AsyncFunc, Func } from '../../types/Func.ts'
+import type { AsyncLambda, Lambda } from '../../types/Lambda.ts'
+import type { AsyncResult, ErrorResult, Result, SucessfulResult } from '../../types/Result.ts'
 import { lambda } from './lambda/index.ts'
 
 export function run<TParams extends any[], ReturnType>(
@@ -26,6 +26,7 @@ export function run(
     callback: Func<any[], any>,
     ...params: any[]
 ): Lambda<any[], Result<any> | AsyncResult<any>> | Result<any> | AsyncResult<any> {
+    // biome-ignore lint/nursery/noShadow: currying pattern — inner param fills outer's slot
     const resolver = (...params: any[]): Result<any> | AsyncResult<any> => {
         try {
             const result = callback(...params)

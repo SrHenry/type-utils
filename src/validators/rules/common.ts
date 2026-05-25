@@ -1,14 +1,14 @@
 /** Rule formator template */
-export const template = (message: string) => `[rule: ${message}]`
+export const template = (message: string): string => `[rule: ${message}]`
 
 /** checks if `arg` is below `n` max value  */
-export const max = (arg: number | bigint, n: number | bigint) => arg <= n
+export const max = (arg: number | bigint, n: number | bigint): boolean => arg <= n
 
 /** checks if `arg` is above `n` min value  */
-export const min = (arg: number | bigint, n: number | bigint) => arg >= n
+export const min = (arg: number | bigint, n: number | bigint): boolean => arg >= n
 
 /** checks if `arg` is not zero */
-export const nonZero = (arg: number) => arg !== 0
+export const nonZero = (arg: number): boolean => arg !== 0
 
 /**
  * Compares if two values are equal.
@@ -53,7 +53,7 @@ export const equals = (a: any, b: any, deepObject: boolean): boolean => {
  *
  * @returns The number of occurrences of the element in the array
  */
-export const count = (element: unknown, arr: unknown[], deepObject: boolean = true) => {
+export const count = (element: unknown, arr: unknown[], deepObject = true): number => {
     if (arr.length === 0) return 0
 
     return arr.filter(item => equals(item, element, deepObject)).length
@@ -67,6 +67,6 @@ export const count = (element: unknown, arr: unknown[], deepObject: boolean = tr
  *
  * @returns `true` if all elements are unique, `false` otherwise
  * */
-export const unique = (arg: unknown[], deepObject: boolean) =>
+export const unique = (arg: unknown[], deepObject: boolean): boolean =>
     // arrayMaxHandler.call(null, arg, 0) ||
     max(arg.length, 0) || arg.every((item, _, arr) => count(item, arr, deepObject) === 1)

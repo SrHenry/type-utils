@@ -26,10 +26,8 @@ describe('XNOR', () => {
         expect(XNOR(false, false, true)).toBe(false)
         expect(XNOR(true, false, false, false)).toBe(false)
         expect(XNOR(false, true, false, false, false)).toBe(false)
-        expect(
-            XNOR(
-                ...Array.from({ length: LARGE_ARRAY_SIZE }, (_, i) => (random === i ? true : false))
-            )
-        ).toBe(false)
+        expect(XNOR(...Array.from({ length: LARGE_ARRAY_SIZE }, (_, i) => random === i))).toBe(
+            false
+        )
     })
 })

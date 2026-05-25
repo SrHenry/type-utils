@@ -8,7 +8,7 @@ type Rules = Omit<typeof ArrayRules, 'optional'>
 
 export type ArraySchema = CallableFunction & {
     <T = any>(): FluentSchema<T[], Rules>
-    <T>(schema: TypeGuard<T> | StandardSchemaV1<T, T>): FluentSchema<T[], Rules>
+    // biome-ignore lint/complexity/noBannedTypes: {} used as wildcard object type for overload
     (tree: {}): FluentSchema<{}[], Rules>
-    <T>(tree: ValidatorMap<T>): FluentSchema<T[], Rules>
+    <T>(tree: ValidatorMap<T> | TypeGuard<T> | StandardSchemaV1<T, T>): FluentSchema<T[], Rules>
 }

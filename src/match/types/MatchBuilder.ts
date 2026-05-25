@@ -46,7 +46,8 @@ export type BaseMatchBuilder<
     __exprs: [...TExprs]
     __patterns: [...TPatterns]
 } & (HasDefault extends true
-    ? {}
+    ? // biome-ignore lint/complexity/noBannedTypes: {} used as empty type in conditional
+      {}
     : {
           default<TExpr>(
               expression: Expr<TExpr, TTarget>
@@ -61,5 +62,6 @@ export type MatchBuilder<
     ? BaseMatchBuilder<TTarget, TExprs, TPatterns, HasDefault> &
           (IsExhaustive<TTarget, TPatterns[number], HasDefault> extends true
               ? ExecMatchBuilder<TExprs, TPatterns>
-              : {})
+              : // biome-ignore lint/complexity/noBannedTypes: {} used as empty type in conditional
+                {})
     : never

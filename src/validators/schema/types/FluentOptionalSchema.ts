@@ -7,6 +7,7 @@ import type { StandardSchemaV1 } from '../../standard-schema/types.ts'
 
 export type FluentOptionalSchema<
     T,
+    // biome-ignore lint/complexity/noBannedTypes: {} used as default for rules record type
     TRules extends { [x: string]: Fn<any[], any> } = {},
     TCalledRules extends [...(keyof TRules)[]] = [],
     TUsedCustomRules extends [...Custom<any[], string, T>[]] = [],
@@ -22,11 +23,7 @@ export type FluentOptionalSchema<
     use<TCustomRules extends [Custom<any[], string, T>, ...Custom<any[], string, T>[]]>(
         ...rules: TCustomRules
     ): FluentOptionalSchema<T, TRules, TCalledRules, [...TUsedCustomRules, ...typeof rules]>
-
-    validator(): ThrowFn<ValidationErrors, [arg: unknown], undefined | T> & {
-        validate: ThrowFn<ValidationErrors, [arg: unknown], undefined | T>
-    }
-    validator(throwOnError: true): ThrowFn<ValidationErrors, [arg: unknown], undefined | T> & {
+    validator(throwOnError?: true): ThrowFn<ValidationErrors, [arg: unknown], undefined | T> & {
         validate: ThrowFn<ValidationErrors, [arg: unknown], undefined | T>
     }
     validator(throwOnError: false): Fn<[arg: unknown], ValidateReturn<undefined | T>> & {

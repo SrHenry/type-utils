@@ -11,17 +11,14 @@ import { setAsTypeGuard } from './setAsTypeGuard.ts'
 type OmittedKeys = 'type' | 'schema' | 'optional'
 type OptionalizedKeys = 'rules'
 
-export function asTypeGuard<T>(predicate: Predicate<any>): TypeGuard<T>
-export function asTypeGuard<P extends Predicate<any>>(predicate: P): TypeGuard<Param0<P>>
-
 export function asTypeGuard<T>(
     predicate: Predicate<any>,
-    metadata: Omit<CustomStruct<T>, OmittedKeys | OptionalizedKeys> &
+    metadata?: Omit<CustomStruct<T>, OmittedKeys | OptionalizedKeys> &
         Partial<Pick<CustomStruct<T>, OptionalizedKeys>>
 ): TypeGuard<T>
 export function asTypeGuard<P extends Predicate<any>>(
     predicate: P,
-    metadata: Omit<CustomStruct<Param0<P>>, OmittedKeys | OptionalizedKeys> &
+    metadata?: Omit<CustomStruct<Param0<P>>, OmittedKeys | OptionalizedKeys> &
         Partial<Pick<CustomStruct<Param0<P>>, OptionalizedKeys>>
 ): TypeGuard<Param0<P>>
 
@@ -32,11 +29,6 @@ export function asTypeGuard<T>(
 ): TypeGuard<T> {
     if (!isUnaryFunction<TypeGuard>(predicate))
         throw new Error('predicate must be a unary function')
-
-    // if (!metadata) return setAsTypeGuard(predicate)
-
-    // if (!('rules' in metadata && Array.isArray(metadata.rules)))
-    //     throw new Error(`missing 'rules' in metadata or is not an array`)
 
     if (
         'rules' in metadata &&

@@ -1,4 +1,5 @@
 import './validators/standard-schema/registerValidateCallback.ts'
+import './helpers/Experimental/pipeline/core/registerPipeTransformCheck.ts'
 
 function normalize(obj: any, seen = new WeakMap<any, string>(), path = '$'): any {
     if (obj === null) return null
@@ -18,6 +19,7 @@ function normalize(obj: any, seen = new WeakMap<any, string>(), path = '$'): any
         return `[Symbol ${String(obj.description) || 'anonymous'}]`
     }
     if (seen.has(obj)) {
+        // biome-ignore lint/style/noNonNullAssertion: has() guarantees existence, WeakMap.get() doesn't narrow
         const circularPath = seen.get(obj)!
         return `[Circular ${circularPath}]`
     }
@@ -92,11 +94,11 @@ function fnv1aHash(str: string): string {
         hash ^= str.charCodeAt(i)
         hash = (hash * 0x01000193) >>> 0
     }
-    return ('0000000' + hash.toString(16)).slice(-8)
+    return `0000000${hash.toString(16)}`.slice(-8)
 }
 
 expect.extend({
-    toMatchStructure(received, expected) {
+    toMatchStructure(received: any, expected: any) {
         const clean = (o: any) => normalize(o)
         const pass = this.equals(clean(received), clean(expected))
 
@@ -109,13 +111,3 @@ expect.extend({
         }
     },
 })
-
-declare global {
-    namespace jest {
-        interface Matchers<R> {
-            toMatchStructure(expected: any): R
-        }
-    }
-}
-
-export {}

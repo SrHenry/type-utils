@@ -48,14 +48,16 @@ export function replaceSchemaTree<
     )
         .filter(([key]) => !(key in tree))
         .map(([key, value]) => ({
-            [key]: value.schema,
+            [key]: value['schema'],
         })) as unknown as Record<string, TypeGuard>[]
 
-    Object.entries<Record<string, TypeGuard>>(tree).forEach(([k, v]) => baseTree.push({ [k]: v }))
+    Object.entries<Record<string, TypeGuard>>(tree).forEach(([k, v]) => {
+        baseTree.push({ [k]: v })
+    })
 
-    const newTree = baseTree.reduce(
+    const newTree = baseTree.reduce<Record<string, TypeGuard>>(
         (o, branch) => Object.assign(o, branch),
-        {} as Record<string, TypeGuard>
+        {}
     )
 
     return object(newTree) as TypeGuard<Prettify<Omit<TOrigin, keyof TReplace> & TReplace>>

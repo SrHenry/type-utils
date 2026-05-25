@@ -24,12 +24,14 @@ export function pick(...keys_or_mappers: any[]) {
     for (const mapper of keys_or_mappers.filter(
         (e: any): e is { [k: string]: (from: any) => any } => typeof e !== 'string'
     )) {
-        Object.entries(mapper).forEach(([k, v]) => mappers.set(k, v))
+        Object.entries(mapper).forEach(([k, v]) => {
+            mappers.set(k, v)
+        })
     }
 
     return (item: any, _i?: number, _array?: any[]) => {
-        let firstMissingKeyIndex = -1
-        if ((firstMissingKeyIndex = keys.findIndex(key => !(key in item))) !== -1)
+        const firstMissingKeyIndex = keys.findIndex(key => !(key in item))
+        if (firstMissingKeyIndex !== -1)
             throw new TypeError(`object has no '${keys[firstMissingKeyIndex]}' property`)
 
         return arrayToObject(

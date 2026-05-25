@@ -4,7 +4,7 @@ import { getStructMetadata } from '../../validators/schema/helpers/getStructMeta
 import { number } from '../../validators/schema/number.ts'
 import { object } from '../../validators/schema/object.ts'
 import { string } from '../../validators/schema/string.ts'
-import { V3 } from '../../validators/schema/types/index.ts'
+import type { V3 } from '../../validators/schema/types/index.ts'
 import { replaceSchemaTree, type ReplacedKeysTree } from '../replaceSchemaTree.ts'
 
 describe('replaceSchemaTree', () => {

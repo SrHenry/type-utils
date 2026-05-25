@@ -16,7 +16,7 @@
       "./src/@types",
       "./node_modules/@types"
     ],
-    "types": [
+  "types": [
       "*"
     ],
     "noEmit": true,
@@ -46,6 +46,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "types"
+    "types",
+    "vitest.config.ts"
   ]
 }

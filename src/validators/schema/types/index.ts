@@ -207,6 +207,7 @@ export namespace V3 {
         ClassNameStr = string,
         Rules extends CustomRule<any[], string, T> = CustomRule<any[], string, T>,
     > = BaseStruct<'object', T> &
+        // biome-ignore lint/complexity/noBannedTypes: {} as generic constraint for non-nullish is idiomatic TS
         ObjectTree<{}> &
         ClassInstanceRef<T, ClassNameStr> &
         WithRulesStruct<Rules>
@@ -292,6 +293,7 @@ export namespace V3 {
         T = any,
         UnionOrIntersection extends 'union' | 'intersection' | true | false = true,
         Rules extends CustomRule<any[], string, any> = CustomRule<any[], string, any>,
+        // biome-ignore lint/complexity/noBannedTypes: Function used in conditional type for type-level dispatch
     > = T extends Function
         ? AnyStruct<Rules> & { schema: TypeGuard<T> }
         :
@@ -362,7 +364,8 @@ export namespace V3 {
           ? TupleStruct<T, Rules>
           : T extends (infer U)[]
             ? ArrayStruct<U, Rules>
-            : T extends {}
+            : // biome-ignore lint/complexity/noBannedTypes: {} used in conditional type for object detection
+              T extends {}
               ?
                     | ObjectStruct<T, Rules>
                     | RecordStruct<keyof T, T[keyof T], Rules>
@@ -629,7 +632,8 @@ export namespace V1 {
                     },
                 ]
             >
-          : U extends Function
+          : // biome-ignore lint/complexity/noBannedTypes: Function used in conditional type for function detection
+            U extends Function
             ? BaseStruct<'function', U>
             : U extends object
               ? V1.ObjectStruct<U>

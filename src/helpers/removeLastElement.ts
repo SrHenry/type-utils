@@ -8,7 +8,7 @@
  *
  * @returns {T} The list without the last element of it
  */
-export const removeLastElement = <T extends Array<U>, U>(list: T): T => {
+export const removeLastElement = <T extends U[], U>(list: T): T => {
     list.pop()
 
     return list

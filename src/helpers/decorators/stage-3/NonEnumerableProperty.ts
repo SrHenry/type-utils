@@ -9,9 +9,10 @@ export function NonEnumerableProperty() {
                 writable: existingDescriptor ? existingDescriptor.writable : true,
                 configurable: existingDescriptor ? existingDescriptor.configurable : true,
                 enumerable: false,
-                ...(existingDescriptor?.hasOwnProperty('value') && {
-                    value: existingDescriptor.value,
-                }),
+                ...(existingDescriptor &&
+                    Object.hasOwn(existingDescriptor, 'value') && {
+                        value: existingDescriptor.value,
+                    }),
             })
         })
     }

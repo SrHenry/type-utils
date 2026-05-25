@@ -29,6 +29,7 @@ function _fn(): TypeGuard<any[]>
 function _fn(rules: ArrayRule[]): TypeGuard<any[]>
 function _fn<T>(rules: ArrayRule[], schema: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T[]>
 function _fn<T>(schema: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T[]>
+// biome-ignore lint/complexity/noBannedTypes: {} used as wildcard object type for overload
 function _fn(tree: {}): TypeGuard<{}[]>
 function _fn<T>(tree: ValidatorMap<T>): TypeGuard<T[]>
 function _fn<T>(
@@ -47,7 +48,7 @@ function _fn<T>(
         | ValidatorMap<T> = void 0,
     _schema: TypeGuard<T> | StandardSchemaV1<T, T> = any()
 ): TypeGuard<T[]> {
-    if (!!rules && typeof rules === 'object' && !Array.isArray(rules) && !isStandardSchema(rules))
+    if (rules && typeof rules === 'object' && !Array.isArray(rules) && !isStandardSchema(rules))
         return _fn(object(rules) as unknown as TypeGuard<T>)
 
     const normalizeIfSchema = (s: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T> =>
@@ -98,6 +99,7 @@ type OptionalizedArray = CallableFunction & {
         schema: TypeGuard<T> | StandardSchemaV1<T, T>
     ): TypeGuard<T[] | undefined>
     <T>(schema: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T[] | undefined>
+    // biome-ignore lint/complexity/noBannedTypes: {} used as wildcard object type for overload
     (tree: {}): TypeGuard<{}[] | undefined>
     <T>(tree: ValidatorMap<T>): TypeGuard<T[] | undefined>
 }
@@ -169,12 +171,12 @@ export const array: ArraySchema = ((
     }
 
     schema.optional = () => addCall('optional')
-    schema.unique = (deepObject: boolean = true) =>
-        addCall('unique', [ArrayRules.unique(deepObject)])
+    schema.unique = (deepObject = true) => addCall('unique', [ArrayRules.unique(deepObject)])
     schema.min = (n: number) => addCall('min', [ArrayRules.min(n)])
     schema.max = (n: number) => addCall('max', [ArrayRules.max(n)])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, any[]>) => addCall('use', [...rules])
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    schema.use = (...customRules: Custom<any[], string, any[]>) => addCall('use', [...customRules])
     schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any[]>)
 
     return copyStructMetadata(getGuard(), schema, {

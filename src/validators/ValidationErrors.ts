@@ -17,22 +17,21 @@ export class ValidationErrors<
     public constructor(errors: Iterator<T> | IterableIterator<T> | T[]) {
         if (!Array.isArray(errors)) {
             super()
-
-            this.#errors = new Array()
+            this.#errors = []
             this.#generator = getIterableObjectOrDefault(errors)
 
             return
         }
 
         super(stringifyErrors(errors))
-
         this.#generator = createDefaultGenerator()
         this.#errors = errors
     }
 
     public get errors(): T[] {
-        Array.from(this.#generator).forEach(error => this.#errors.push(error))
-
+        Array.from(this.#generator).forEach(error => {
+            this.#errors.push(error)
+        })
         return this.#errors
     }
 
@@ -46,6 +45,7 @@ export class ValidationErrors<
     public override toString(): string {
         return stringifyErrors(this.errors)
     }
+    // biome-ignore lint/suspicious/noConfusingVoidType: Symbol.toPrimitive requires string | void return
     public toPrimitive(hint: TypeOfTag): string | void {
         if (hint === 'string') return this.toString()
     }

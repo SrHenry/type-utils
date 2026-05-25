@@ -1,3 +1,5 @@
+// biome-ignore-all lint/nursery/noShadow: type parameters inherently reuse names across sibling type aliases
+
 export type LengthOfTuple<T extends any[]> = T extends { length: infer L } ? L : never
 export type DropFirstInTuple<T extends any[]> = ((...args: T) => any) extends (
     arg: any,

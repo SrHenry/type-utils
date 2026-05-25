@@ -7,12 +7,8 @@
  * @returns
  */
 export function AutoBind() {
-    return function (
-        _: any,
-        _2: string | symbol,
-        descriptor: PropertyDescriptor
-    ): PropertyDescriptor {
-        const originalMethod: Function = descriptor.value
+    return (_: any, _2: string | symbol, descriptor: PropertyDescriptor): PropertyDescriptor => {
+        const originalMethod: (...args: unknown[]) => unknown = descriptor.value
         return {
             configurable: true,
             enumerable: false,

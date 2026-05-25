@@ -20,10 +20,6 @@ describe('AND', () => {
         expect(AND(true, false, true)).toBe(false)
         expect(AND(true, true, false, true)).toBe(false)
         expect(AND(true, true, true, false, true)).toBe(false)
-        expect(
-            AND(
-                ...Array.from({ length: LARGE_ARRAY_SIZE }, (_, i) => (random === i ? false : true))
-            )
-        ).toBe(false)
+        expect(AND(...Array.from({ length: LARGE_ARRAY_SIZE }, (_, i) => random !== i))).toBe(false)
     })
 })

@@ -1,25 +1,24 @@
-import { jest } from '@jest/globals'
 import { repeat } from '../../helpers/repeat.ts'
 import { curry } from '../Experimental/curry/index.ts'
 
 describe('repeat', () => {
     it('should run a callback function n times', () => {
-        const callback = jest.fn()
+        const callback = vi.fn()
         repeat(callback, 5)
 
         expect(callback).toHaveBeenCalledTimes(5)
     })
 
     it('snould throw an error if the number of loops is less than 1', () => {
-        expect(() => repeat(jest.fn(), 0)).toThrow()
-        expect(() => repeat(jest.fn(), -10)).toThrow()
+        expect(() => repeat(vi.fn(), 0)).toThrow()
+        expect(() => repeat(vi.fn(), -10)).toThrow()
     })
     it('implementation should have 2 parameters', () => {
         expect(repeat.length).toBe(2)
     })
     it('should be curriable', () => {
-        const callback = jest.fn()
-        const mock2 = jest.fn()
+        const callback = vi.fn()
+        const mock2 = vi.fn()
         const repeatCurried = curry(repeat)
 
         expect(repeatCurried).toBeInstanceOf(Function)
@@ -44,7 +43,7 @@ describe('repeat', () => {
         expect(mock2).toHaveBeenCalledTimes(177)
     })
     it('should be curriable with partial application', () => {
-        const callback = jest.fn()
+        const callback = vi.fn()
         const repeatCurried = curry(repeat, true)
         const repeatFn = repeatCurried(callback)
 
@@ -59,7 +58,7 @@ describe('repeat', () => {
 
         expect(callback).toHaveBeenCalledTimes(11)
 
-        const mock2 = jest.fn()
+        const mock2 = vi.fn()
         repeatCurried(mock2, 10)
 
         expect(mock2).toHaveBeenCalledTimes(10)

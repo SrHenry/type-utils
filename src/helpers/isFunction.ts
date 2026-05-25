@@ -13,6 +13,6 @@
  * isFunction(() => {}) // true
  * isFunction(function () {}) // true
  */
-export function isFunction(input: any): input is Function {
+export function isFunction(input: any): input is (...args: unknown[]) => unknown {
     return typeof input === 'function'
 }

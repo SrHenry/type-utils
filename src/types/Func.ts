@@ -1,3 +1,5 @@
+// biome-ignore-all lint/nursery/noShadow: type parameters inherently reuse names across sibling type aliases
+
 import type { Tag } from './Tag.ts'
 import type { TupleTools } from './Tuple.ts'
 
@@ -146,7 +148,7 @@ export type ThrowableFn<
     ReturnType = void,
 > = Tag<Fn<Params, ReturnType>, 'throws', TException>
 
-export { ThrowableFn as ThrowFn }
+export type { ThrowableFn as ThrowFn }
 export type GetThrowableException<T> =
     T extends ThrowableFn<infer TException, any[], any> ? TException : never
 

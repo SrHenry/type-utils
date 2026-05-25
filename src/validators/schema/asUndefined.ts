@@ -23,9 +23,7 @@ function _fn(): TypeGuard<undefined> {
 
 export const _undefined = optionalize(_fn)
 
-type UndefinedSchema = CallableFunction & {
-    (): FluentSchema<undefined>
-}
+type UndefinedSchema = CallableFunction & (() => FluentSchema<undefined>)
 
 export const asUndefined: UndefinedSchema = (() => {
     const customRules: Custom<any[], string, undefined>[] = []
@@ -80,7 +78,9 @@ export const asUndefined: UndefinedSchema = (() => {
 
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, undefined>) => addCall('use', [...rules])
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    schema.use = (...customRules: Custom<any[], string, undefined>) =>
+        addCall('use', [...customRules])
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, undefined>>),
