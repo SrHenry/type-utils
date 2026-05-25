@@ -64,8 +64,8 @@ function validateDefaultInner(
         case 'tuple':
             validateDefaultTuple(ctx, validate, mustNotThrowCtx)
             break
-        case 'primitive':
-            if (!(Generics.Primitives as readonly string[]).includes(typeof ctx.arg))
+	case 'primitive':
+		if (ctx.arg !== null && !(Generics.Primitives as readonly string[]).includes(typeof ctx.arg))
                 ctx.pushNewError({
                     message: getValidatorMessage(ctx.schema, `Value must be a primitive`),
                     context: {
@@ -186,7 +186,7 @@ function validateDefaultEnum(
     if (metadata.types.length < 2)
         throw new TypeError('An enum schema must have at least two values to match')
 
-    if (!(Generics.Primitives as readonly string[]).includes(typeof ctx.arg))
+	if (ctx.arg !== null && !(Generics.Primitives as readonly string[]).includes(typeof ctx.arg))
         ctx.pushNewError({
             message: getValidatorMessage(ctx.schema, `Value must be a primitive`),
             context: {

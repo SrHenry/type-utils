@@ -18,7 +18,7 @@ import { validateCustomRules } from './helpers/validateCustomRules.ts'
 
 function _fn(): TypeGuard<Generics.PrimitiveType> {
     const guard = (arg: unknown): arg is Generics.PrimitiveType =>
-        branchIfOptional(arg, []) || (Generics.Primitives as readonly string[]).includes(typeof arg)
+        branchIfOptional(arg, []) || arg === null || (Generics.Primitives as readonly string[]).includes(typeof arg)
 
     return setStructMetadata(
         { type: 'primitive', schema: guard, optional: false } as V3.PrimitiveStruct,
