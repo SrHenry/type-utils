@@ -14,6 +14,7 @@ docs
 docs/**
 node_modules
 tsconfig.json
+workflows
 yarn-error.log
 jest.config.*
 typedoc.json
