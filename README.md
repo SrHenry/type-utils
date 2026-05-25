@@ -69,6 +69,13 @@
     - [Lambda](#lambda)
     - [Function/Lambda Currying](#functionlambda-currying)
     - [Pipelines/Pipes](#pipelinespipes)
+  - [pipe(value) / createPipeline(fn?)](#pipevalue--createpipelinefn)
+  - [.pipe(transform)](#pipetransform)
+  - [.pipe(callWith(...args))](#pipecallwithargs)
+  - [.pipe(apply(fn, ...args))](#pipeapplyfn-args)
+  - [tap / tapAsync](#tapfn-options--tapasyncfn-options)
+  - [enpipe(value) / enpipe(fn, ...args)](#enpipevalue--enpipefn-args)
+  - [Realistic async pipeline example](#realistic-async-pipeline-example)
     - [Switch Expression](#switch-expression)
       - [Reusable switcher](#reusable-switcher)
       - [Stored switcher](#stored-switcher)
@@ -750,62 +757,190 @@ console.log(
 
 This is a fluent API to create sync/async function pipelines. Inspired in FP pipe operator while it does not comes to Javascript/Typescript yet. It allows only single param functions, piping the return as the parameter to the next function in pipeline.
 
+> **Breaking changes** (experimental API):
+>
+> - `inject()` has been removed — use `callWith()` for reverse-apply or a plain transform `() => value` for value replacement
+> - `.pipe(enpipe(value))` as reverse-apply is no longer idiomatic — use `.pipe(callWith(value))` instead
+> - `.pipe(fn => fn(value))` lambda pattern is replaced by `.pipe(callWith(value))`
+> - `.pipe(enpipe(fn, ...args))` is replaced by `.pipe(apply(fn, ...args))`
+> - `GetPipeline<T>` type has been removed — use `Pipe<T>` instead
+> - `PipelineBox` and `AsyncPipelineBox` are now standalone classes (not decorator-based)
+> - `AsyncPipelineBox` no longer has `.catch()` — use `.depipe().catch()` on the promise
+
+#### `pipe(value)` / `createPipeline(fn?)`
+
+Creates a `PipelineBox<T>` (sync) or `AsyncPipelineBox<T>` (async) from a value or function:
+
 ```typescript
 import { Experimental } from '@srhenry/type-utils'
 
-const { pipe, enpipe, lambda } = Experimental
+const { pipe } = Experimental
+
+const result = pipe('hello')
+  .pipe(s => s.toUpperCase())
+  .pipe(s => s.split(''))
+  .depipe() // ['H', 'E', 'L', 'L', 'O']
+```
+
+When a `Promise` is passed, the pipeline becomes async:
+
+```typescript
+const result = await pipe(Promise.resolve(42))
+  .pipe(n => n * 2)
+  .depipe() // 84
+```
+
+#### `.pipe(transform)`
+
+Applies a transform function to the boxed value. If the transform returns a `Promise`, the pipeline auto-promotes to `AsyncPipelineBox`:
+
+```typescript
+const result = pipe(5)
+  .pipe(n => n * 10)          // PipelineBox<number>
+  .pipe(n => Promise.resolve(n + 1)) // AsyncPipelineBox<number>
+  .depipe() // Promise<51>
+```
+
+#### `.pipe(callWith(...args))`
+
+Reverse-apply: calls the boxed function with the given arguments. Replaces the `fn => fn(value)` lambda pattern:
+
+```typescript
+import { Experimental } from '@srhenry/type-utils'
+
+const { pipe, callWith } = Experimental
+
+const greet = (name: string) => `Hello, ${name}!`
+
+const result = pipe(greet)
+  .pipe(callWith('World'))
+  .depipe() // 'Hello, World!'
+```
+
+With multi-arg functions:
+
+```typescript
+const add = (a: number, b: number) => a + b
+
+const result = pipe(add)
+  .pipe(callWith(3, 4))
+  .depipe() // 7
+```
+
+#### `.pipe(apply(fn, ...args))`
+
+Partial application: curries `fn` with the given args, returning a transform that applies the next incoming value to the remaining parameters:
+
+```typescript
+import { Experimental } from '@srhenry/type-utils'
+
+const { pipe, apply } = Experimental
+
+const multiply = (a: number, b: number) => a * b
+
+const result = pipe(5)
+  .pipe(apply(multiply, 3))  // applies 3 as first arg, incoming 5 as second
+  .depipe() // 15
+```
+
+#### `tap(fn, options?)` / `tapAsync(fn, options?)`
+
+Side-effect factories that pass the value through unchanged. Errors are swallowed by default (`swallow: true`). Use `.catch(handler)` to route errors:
+
+```typescript
+const { pipe, tap } = Experimental
+
+const result = pipe('hello')
+  .pipe(tap(v => console.log(v)))
+  .pipe(tap(() => { throw new Error('boom') }, { catch: e => console.error(e) }))
+  .pipe(s => s.toUpperCase())
+  .depipe() // 'HELLO'
+```
+
+Fluent `.tap()` / `.tapAsync()` are also available directly on the box:
+
+```typescript
+const result = pipe('hello')
+  .tap(v => console.log(v))
+  .pipe(s => s.toUpperCase())
+  .depipe()
+```
+
+#### `enpipe(value)` / `enpipe(fn, ...args)`
+
+Creates a dual-callable `Pipe<T>` — works as both a standalone chainable and a `.pipe()` transform. When used in a pipeline, the boxed function is called with the incoming value (reverse-apply). When called standalone, it returns its boxed value:
+
+```typescript
+import { Experimental } from '@srhenry/type-utils'
+
+const { enpipe, callWith } = Experimental
+
+const p = enpipe('hello')
+p.depipe()   // 'hello'
+p('unused')  // 'hello' (callable)
+p.pipe(s => s.toUpperCase()).depipe() // 'HELLO'
+```
+
+With partial application:
+
+```typescript
+const curried = enpipe(addUserFactory, db) // curries first arg
+curried.depipe() // the curried function
+```
+
+> **Note:** For most `.pipe()` use cases, `callWith()` and `apply()` are clearer and more type-safe than `enpipe`. Use `enpipe` when you need the dual-callable pattern.
+
+#### Realistic async pipeline example
+
+```typescript
+import { Experimental } from '@srhenry/type-utils'
+
+const { pipe, callWith, apply, tap } = Experimental
 
 const addUserFactory =
-    (db: Record<string, Record<string, any>[]>) => (user: Record<string, any>) =>
-        new Promise<string>(resolve => {
-            setTimeout(() => {
-                const id = uuid()
-
-                db['users'] ??= []
-                db['users']?.push({ id, ...user })
-                resolve(id)
-            }, 200)
-        })
+  (db: Record<string, Record<string, any>[]>) => (user: Record<string, any>) =>
+  new Promise<string>(resolve => {
+    setTimeout(() => {
+      const id = uuid()
+      db['users'] ??= []
+      db['users']?.push({ id, ...user })
+      resolve(id)
+    }, 200)
+  })
 const addPostFactory =
-    (db: Record<string, Record<string, any>[]>) => (user_id: string, post: Record<string, any>) =>
-        new Promise<boolean>(resolve => {
-            setTimeout(() => {
-                db['posts'] ??= []
-                db['posts']?.push({ user_id, ...post })
-                resolve(true)
-            }, 300)
-        })
+  (db: Record<string, Record<string, any>[]>) => (user_id: string, post: Record<string, any>) =>
+  new Promise<boolean>(resolve => {
+    setTimeout(() => {
+      db['posts'] ??= []
+      db['posts']?.push({ user_id, ...post })
+      resolve(true)
+    }, 300)
+  })
 
 const db = {
-    users: [] as Record<string, any>[],
-    posts: [] as Record<string, any>[],
-} as Record<string, Record<string, any>[]>
+  users: [] as Record<string, any>[],
+  posts: [] as Record<string, any>[],
+} as Record<string, Record<string, any>[]>[]
 
-const len = <T = any>(s: string | ArrayLike<T>) => s.length
 const addPostCurried = (post: Record<string, any>) => (id: string) =>
-    pipe(addPostFactory).pipe(enpipe(db)).pipe(lambda).invoke(id, post)
+  pipe(addPostFactory)
+    .pipe(callWith(db))
+    .pipe(callWith(id, post))
+    .depipe()
 
 const result = await pipe(addUserFactory)
-    .pipe(enpipe(db))
-    .pipe(
-        enpipe({
-            name: 'Marcus',
-            email: 'example@email.com',
-        })
-    )
-    .pipeAsync(
-        addPostCurried({
-            title: 'Hello World',
-            content: 'Lorem ipsum dolor sit amet',
-        })
-    )
-    .pipeAsync(() => {
-        if (len(db['users']!) === 0 || len(db['posts']!) === 0) return false
-
-        db['replies'] = []
-        return true
-    })
-    .depipe() // true | false
+  .pipe(callWith(db))
+  .pipe(callWith({ name: 'Marcus', email: 'example@email.com' }))
+  .pipeAsync(addPostCurried({
+    title: 'Hello World',
+    content: 'Lorem ipsum dolor sit amet',
+  }))
+  .pipeAsync(() => {
+    if (db['users']!.length === 0 || db['posts']!.length === 0) return false
+    db['replies'] = []
+    return true
+  })
+  .depipe() // true | false
 ```
 
 ---

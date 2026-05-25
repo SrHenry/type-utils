@@ -33,4 +33,4 @@ export function match(value: unknown = NO_PARAM) {
     } as unknown as Match<any>
 }
 
-match['NO_PARAM'] = NO_PARAM
+match.NO_PARAM = NO_PARAM

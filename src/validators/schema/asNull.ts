@@ -23,9 +23,7 @@ function _fn(): TypeGuard<null> {
 
 export const _null = optionalize(_fn)
 
-type NullSchema = CallableFunction & {
-    (): FluentSchema<null>
-}
+type NullSchema = CallableFunction & (() => FluentSchema<null>)
 
 export const asNull: NullSchema = (() => {
     const customRules: Custom<any[], string, null>[] = []
@@ -80,7 +78,8 @@ export const asNull: NullSchema = (() => {
 
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, null>) => addCall('use', [...rules])
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    schema.use = (...customRules: Custom<any[], string, null>) => addCall('use', [...customRules])
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(getRuleStructMetadata<Custom<any[], string, null>>),

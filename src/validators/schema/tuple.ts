@@ -29,7 +29,7 @@ const guardFactory =
 
         if (arg.length !== schemas.length) return false
 
-        for (let i = 0; i < arg.length; i++) if (!schemas[i]!(arg[i])) return false
+        for (let i = 0; i < arg.length; i++) if (!schemas[i]?.(arg[i])) return false
 
         return true
     }
@@ -144,7 +144,9 @@ export const tuple: TupleSchema = ((
 
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, [...any]>) => addCall('use', [...rules])
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    schema.use = (...customRules: Custom<any[], string, [...any]>) =>
+        addCall('use', [...customRules])
     schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<[...any]>)
 
     return copyStructMetadata(getGuard() as TypeGuard<[...any]>, schema, {

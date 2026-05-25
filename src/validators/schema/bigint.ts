@@ -28,7 +28,7 @@ function _fn(rules: Partial<Rules>): TypeGuard<bigint>
 function _fn(rules: NumberRule[]): TypeGuard<bigint>
 
 function _fn(rules: Partial<Rules> | NumberRule[] = []): TypeGuard<bigint> {
-    if (Array.isArray<NumberRule>(rules)) {
+    if (Array.isArray(rules)) {
         const guard = (arg: unknown): arg is bigint =>
             branchIfOptional(arg, rules as NumberRule[]) ||
             (typeof arg === 'bigint' && isFollowingRules(arg, rules as NumberRule[]))
@@ -123,7 +123,8 @@ export const bigint: BigIntSchema = (() => {
     schema.max = (n: bigint) => addCall('max', [NumberRules.max(n)])
     schema.min = (n: bigint) => addCall('min', [NumberRules.min(n)])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, bigint>) => addCall('use', [...rules])
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    schema.use = (...customRules: Custom<any[], string, bigint>) => addCall('use', [...customRules])
     schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<bigint>)
 
     return copyStructMetadata(getGuard(), schema, {

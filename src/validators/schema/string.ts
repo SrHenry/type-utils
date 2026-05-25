@@ -75,7 +75,7 @@ function _fn(rules: Partial<Rules> | StringRule[] | string | RegExp = []): TypeG
         )
     }
 
-    if (Array.isArray<StringRule>(rules)) {
+    if (Array.isArray(rules)) {
         const guard = (arg: unknown): arg is string =>
             branchIfOptional(arg, rules as StringRule[]) ||
             (typeof arg === 'string' && isFollowingRules(arg, rules as StringRule[]))
@@ -123,15 +123,13 @@ export const string = ((matcher?: string | RegExp) => {
     const getGuard = () => {
         const resolver = callStack['optional'] ? _string.optional : _string
         let guard = resolver(rules)
-        {
-            // override guard with matcher
-            if (matcher) {
-                if (typeof matcher === 'string') {
-                    guard = resolver(matcher)
-                }
-                if (matcher instanceof RegExp) {
-                    guard = resolver(matcher)
-                }
+        // override guard with matcher
+        if (matcher) {
+            if (typeof matcher === 'string') {
+                guard = resolver(matcher)
+            }
+            if (matcher instanceof RegExp) {
+                guard = resolver(matcher)
             }
         }
 
@@ -191,7 +189,8 @@ export const string = ((matcher?: string | RegExp) => {
     schema.url = () => addCall('url', [StringRules.url()])
     schema.email = () => addCall('email', [StringRules.email()])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, string>) => addCall('use', [...rules])
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    schema.use = (...customRules: Custom<any[], string, string>) => addCall('use', [...customRules])
     schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<string>)
 
     return copyStructMetadata(getGuard(), schema, {

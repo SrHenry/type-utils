@@ -1,4 +1,4 @@
-import { All } from '../types/index.ts'
+import type { All } from '../types/index.ts'
 
 export function isRule(rule: unknown): rule is All {
     if (!Array.isArray(rule)) return false
@@ -8,7 +8,7 @@ export function isRule(rule: unknown): rule is All {
     if (typeof r !== 'string') return false
     if (!Array.isArray(args)) return false
 
-    if (!!handler && typeof handler !== 'function') return false
+    if (handler && typeof handler !== 'function') return false
 
     return true
 }

@@ -42,9 +42,8 @@ function _fn<T extends Generics.PrimitiveType>(values: T[]): TypeGuard<T> {
 
 export const _enum = optionalize(_fn)
 
-type EnumSchema = CallableFunction & {
-    <const T extends [...Generics.PrimitiveType[]]>(values: T): FluentSchema<T[number]>
-}
+type EnumSchema = CallableFunction &
+    (<const T extends [...Generics.PrimitiveType[]]>(values: T) => FluentSchema<T[number]>)
 
 export const asEnum: EnumSchema = ((values: any[]) => {
     const customRules: Custom<any[], string, Generics.PrimitiveType>[] = []
@@ -103,8 +102,9 @@ export const asEnum: EnumSchema = ((values: any[]) => {
 
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, Generics.PrimitiveType>) =>
-        addCall('use', [...rules])
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    schema.use = (...customRules: Custom<any[], string, Generics.PrimitiveType>) =>
+        addCall('use', [...customRules])
     schema.toStandardSchema = () =>
         toStandardSchema(schema as unknown as TypeGuard<Generics.PrimitiveType>)
 

@@ -67,14 +67,14 @@ describe('bigint', () => {
         expect(schema([])).toBe(false)
         expect(schema(() => void 0)).toBe(false)
         expect(
-            schema(function () {
+            schema(() => {
                 void 0
             })
         ).toBe(false)
         expect(schema(class {})).toBe(false)
         expect(schema(new Date())).toBe(false)
         expect(schema(/a/)).toBe(false)
-        expect(schema(new RegExp('a'))).toBe(false)
+        expect(schema(/a/)).toBe(false)
         expect(schema(new Error())).toBe(false)
         expect(schema(new Map())).toBe(false)
         expect(schema(new Set())).toBe(false)
@@ -189,14 +189,14 @@ describe('bigint', () => {
         expect(schema([])).toBe(false)
         expect(schema(() => void 0)).toBe(false)
         expect(
-            schema(function () {
+            schema(() => {
                 void 0
             })
         ).toBe(false)
         expect(schema(class {})).toBe(false)
         expect(schema(new Date())).toBe(false)
         expect(schema(/a/)).toBe(false)
-        expect(schema(new RegExp('a'))).toBe(false)
+        expect(schema(/a/)).toBe(false)
         expect(schema(new Error())).toBe(false)
         expect(schema(new Map())).toBe(false)
         expect(schema(new Set())).toBe(false)

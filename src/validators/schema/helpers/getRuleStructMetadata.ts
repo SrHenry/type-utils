@@ -2,7 +2,7 @@ import { keys } from '../../rules/constants.ts'
 import { isCustom } from '../../rules/helpers/isCustomRule.ts'
 import { isDefaultRule } from '../../rules/helpers/isDefaultRule.ts'
 
-import {
+import type {
     Custom as CustomRuleSet,
     Default as DefaultRuleSet,
     All as RuleSet,
@@ -19,7 +19,9 @@ export function getRuleStructMetadata(rule: RuleSet): RuleStruct<RuleSet>
 export function getRuleStructMetadata(rule: RuleSet): RuleStruct<RuleSet> {
     if (isDefaultRule(rule)) {
         const [binding, args] = rule
-        const [name] = Object.entries(keys).find(([, value]) => value === binding)!
+        const entry = Object.entries(keys).find(([, value]) => value === binding)
+        if (!entry) throw new Error(`Unknown default rule binding: ${String(binding)}`)
+        const [name] = entry
 
         return {
             type: 'default',

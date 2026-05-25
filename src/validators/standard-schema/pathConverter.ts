@@ -17,7 +17,7 @@ export function parsePathString(path: string | undefined): PropertyKey[] | undef
             continue
         }
 
-        const dotOrBracket = /[.\[]/.exec(rest)
+        const dotOrBracket = /[.[]/.exec(rest)
         if (dotOrBracket) {
             keys.push(rest.slice(0, dotOrBracket.index))
             rest = rest.slice(dotOrBracket.index)

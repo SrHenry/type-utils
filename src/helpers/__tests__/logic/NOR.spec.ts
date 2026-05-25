@@ -12,11 +12,7 @@ describe('NOR', () => {
         expect(NOR(true, false, true)).toBe(false)
         expect(NOR(true, true, false, true)).toBe(false)
         expect(NOR(true, true, true, false, true)).toBe(false)
-        expect(
-            NOR(
-                ...Array.from({ length: LARGE_ARRAY_SIZE }, (_, i) => (random === i ? true : false))
-            )
-        ).toBe(false)
+        expect(NOR(...Array.from({ length: LARGE_ARRAY_SIZE }, (_, i) => random === i))).toBe(false)
     })
     it('should return true if all values are false', () => {
         expect(NOR(false)).toBe(true)

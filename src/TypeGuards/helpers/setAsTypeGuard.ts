@@ -1,5 +1,5 @@
-import { Predicate } from '../../types/Predicate.ts'
-import { TypeGuard } from '../types/index.ts'
+import type { Predicate } from '../../types/Predicate.ts'
+import type { TypeGuard } from '../types/index.ts'
 import { __type_guard__ } from './constants.ts'
 import { setMetadata } from './setMetadata.ts'
 

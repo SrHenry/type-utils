@@ -1,4 +1,4 @@
-import { TypeGuard } from '../types/index.ts'
+import type { TypeGuard } from '../types/index.ts'
 import { hasTypeGuardMetadata } from './hasTypeGuardMetadata.ts'
 import { isUnaryFunction } from './isUnaryFunction.ts'
 

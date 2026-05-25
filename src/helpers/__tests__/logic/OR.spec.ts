@@ -12,9 +12,7 @@ describe('OR', () => {
         expect(OR(true, false, true)).toBe(true)
         expect(OR(true, true, false, true)).toBe(true)
         expect(OR(true, true, true, false, true)).toBe(true)
-        expect(
-            OR(...Array.from({ length: LARGE_ARRAY_SIZE }, (_, i) => (random === i ? true : false)))
-        ).toBe(true)
+        expect(OR(...Array.from({ length: LARGE_ARRAY_SIZE }, (_, i) => random === i))).toBe(true)
     })
     it('should return false if all values are false', () => {
         expect(OR(false)).toBe(false)

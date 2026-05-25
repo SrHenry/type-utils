@@ -28,7 +28,7 @@ export namespace StandardSchemaV1 {
 
     export type FailureResult = {
         readonly success: false
-        readonly issues: ReadonlyArray<Issue>
+        readonly issues: readonly Issue[]
     }
 
     export type Issue = {

@@ -1,8 +1,8 @@
 export function AutoBind() {
-    return function <T, A extends any[], R>(
+    return <T, A extends any[], R>(
         value: (...args: A) => R,
         context: ClassMethodDecoratorContext<T, (...args: A) => R>
-    ) {
+    ) => {
         const methodName = context.name
 
         context.addInitializer(function (this: any) {

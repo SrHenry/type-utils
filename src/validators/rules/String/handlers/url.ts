@@ -1,8 +1,8 @@
-const handler = (arg: string) => {
+const handler = (arg: string): boolean => {
     try {
         new URL(arg)
         return true
-    } catch (e) {
+    } catch (_e) {
         return false
     }
 }

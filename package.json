@@ -31,8 +31,15 @@
         "build:umd": "npx webpack --entry=./dist/cjs/umd.js --output-path=./umd --output-filename=index.min.js --mode=production --target=web",
         "prebuild:umd:dev": "npm run build:cjs",
         "build:umd:dev": "npx webpack --entry=./dist/cjs/umd.js --output-path=./umd --output-filename=index.js --mode=development --target=web --library=TypeUtils --library-type=umd --library-target=web",
+        "lint": "biome lint ./src",
+        "lint:fix": "biome lint --write ./src",
+        "format": "prettier --check \"src/**/*.ts\"",
+        "format:fix": "prettier --write \"src/**/*.ts\"",
+        "check": "biome lint ./src && prettier --check \"src/**/*.ts\"",
+        "check:fix": "biome lint --write ./src && prettier --write \"src/**/*.ts\"",
         "circular-dependencies": "madge --ts-config tsconfig.json --circular --extensions ts src",
-        "circular-dependencies:graph": "madge --ts-config tsconfig.json --circular --extensions ts --image .madge/circular-dependencies.graph.svg src"
+        "circular-dependencies:graph": "madge --ts-config tsconfig.json --circular --extensions ts --image .madge/circular-dependencies.graph.svg src",
+        "precommit": "npm run build:clean && npm run check:fix && npm run test && npm run circular-dependencies"
     },
     "repository": "github:SrHenry/type-utils.git",
     "keywords": [
@@ -54,9 +61,11 @@
         "typescript": "6.0.3"
     },
     "devDependencies": {
-		"@vitest/coverage-v8": "^3.2.1",
-		"vitest": "^3.2.1",
+	"@biomejs/biome": "^2.4.15",
+	"@vitest/coverage-v8": "^3.2.1",
+	"vitest": "^3.2.1",
         "madge": "^8.0.0",
+        "prettier": "^3.8.3",
         "run-script-os": "^1.1.6",
 	"ts-node": "^10.9.2",
         "tsx": "^4.21.0",

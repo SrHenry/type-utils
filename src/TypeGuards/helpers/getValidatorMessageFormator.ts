@@ -1,4 +1,4 @@
-import { MessageFormator, TypeGuard } from '../types/index.ts'
+import type { MessageFormator, TypeGuard } from '../types/index.ts'
 import { __validator_message_formator__ } from './constants.ts'
 import { getMetadata } from './getMetadata.ts'
 

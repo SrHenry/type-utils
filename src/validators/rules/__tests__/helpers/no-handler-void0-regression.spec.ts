@@ -91,7 +91,7 @@ describe('regression: handler must never be called with undefined/null/void 0', 
 
 describe('regression: brand-based validation replaces handler(void 0) spec check', () => {
     it('should reject manually constructed rule tuples without brand', () => {
-        const fakeRule = ['fake', [], () => () => true]
+        const fakeRule = ['fake', [], () => (): boolean => true]
 
         expect(isCustom(fakeRule)).toBe(false)
     })
@@ -116,6 +116,7 @@ describe('regression: brand-based validation replaces handler(void 0) spec check
             name: 'valid',
             handler: (n: number) => () => n > 0,
         })
+        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
         const tuple = rule()
 
         const handler = tuple[2]

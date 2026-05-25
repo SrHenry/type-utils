@@ -59,14 +59,11 @@ const getRandomFromArrayLike = (from: ArrayLike<unknown>): unknown =>
     from[getRandomInt(from.length)]
 
 /** Returns a random int number between `0` and `n` */
-export function random(n: number): number
 /** Returns a random int number between `min` and `max` */
-export function random(min: number, max: number): number
+export function random(min: number, max?: number): number
 /** Returns a random element from an array */
-export function random<const T>(from: T[]): T
 /** Returns a random element from a list array-like */
 export function random<const T>(from: ArrayLike<T>): T
-
 export function random(
     min_or_n_or_list: number | ArrayLike<unknown>,
     max: number | typeof NULL_PARAM = NULL_PARAM

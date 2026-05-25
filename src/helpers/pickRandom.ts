@@ -5,7 +5,9 @@ export function pickRandom<T>(from: T[]): T {
     if (!Array.isArray(from)) throw new Error('value must be an array')
 
     const index = random(from.length)
-    const element = from[index]!
+    const element = from[index]
+
+    if (element === undefined) throw new Error('unexpected undefined element')
 
     from.splice(index, 1)
 
