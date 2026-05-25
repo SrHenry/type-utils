@@ -8,5 +8,14 @@
     "declaration": false,
     "sourceMap": true,
     "noEmitOnError": true
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "types",
+    "vitest.config.ts",
+    "src/**/*.spec.ts",
+    "src/**/__tests__/**",
+    "src/vitest.setup.ts"
+  ]
 }

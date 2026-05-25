@@ -16,10 +16,9 @@
       "./src/@types",
       "./node_modules/@types"
     ],
-	"types": [
-		"*",
-		"vitest/globals"
-	],
+  "types": [
+      "*"
+    ],
     "noEmit": true,
     "stripInternal": true,
     "esModuleInterop": true,
@@ -47,6 +46,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "types"
+    "types",
+    "vitest.config.ts"
   ]
 }
