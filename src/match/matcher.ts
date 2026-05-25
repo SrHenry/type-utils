@@ -13,6 +13,7 @@ export function matcher(
     if (patterns.some(p => !Array.isArray(p) || p.length !== 2))
         throw new TypeError('All patterns must be a pair tuple')
 
+    // biome-ignore lint/nursery/noShadow: currying pattern — inner param fills outer's slot
     const execFn = (value: unknown) => {
         const expr =
             patterns

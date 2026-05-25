@@ -23,7 +23,6 @@ import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
 import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 
-// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 function _fn<T extends {}>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
 // function _fn<T extends ValidatorMap<any>>(tree: T): TypeGuard<GetTypeFromValidatorMap<T>>
 
@@ -88,7 +87,6 @@ function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, an
 }
 
 type OptionalizedObject = {
-    // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
     <T extends {}>(tree: ValidatorMap<T>): TypeGuard<undefined | Sanitize<T>>
 
     (): TypeGuard<undefined | Record<any, any>>
@@ -99,7 +97,6 @@ type OptionalizedObject = {
 export const _object = optionalizeOverloadFactory(_fn).optionalize<OptionalizedObject>()
 
 type ObjectSchema = CallableFunction & {
-    // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
     <T extends {}>(tree: ValidatorMap<T>): FluentSchema<Sanitize<T>>
     (): FluentSchema<Record<any, any>>
     // biome-ignore lint/complexity/noBannedTypes: {} used as wildcard object type for overload
@@ -160,7 +157,8 @@ export const object: ObjectSchema = ((tree?: ValidatorMap<any>) => {
 
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, object>) => addCall('use', [...rules])
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    schema.use = (...customRules: Custom<any[], string, object>) => addCall('use', [...customRules])
     schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<object>)
 
     return copyStructMetadata(getGuard(), schema, {

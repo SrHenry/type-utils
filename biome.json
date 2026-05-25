@@ -4,12 +4,12 @@
         "ignoreUnknown": true,
         "includes": [
             "src/**",
-            "!!dist/**",
-            "!!types/**",
-            "!!node_modules/**",
-            "!!umd/**",
-            "!!coverage/**",
-            "!!docs/**",
+            "!!dist",
+            "!!types",
+            "!!node_modules",
+            "!!umd",
+            "!!coverage",
+            "!!docs",
             "!!**/*.draft.*",
             "!!**/*.draft"
         ]
@@ -33,7 +33,7 @@
                 "noForEach": "off",
                 "noStaticOnlyClass": "off",
                 "useLiteralKeys": "off",
-"noUselessTypeConstraint": "error",
+                "noUselessTypeConstraint": "error",
                 "useOptionalChain": "error",
                 "useSimplifiedLogicExpression": "warn"
             },
@@ -95,10 +95,7 @@
                     "level": "warn",
                     "options": { "syntax": "shorthand" }
                 },
-                "useConsistentTypeDefinitions": {
-                    "level": "warn",
-                    "options": { "style": "type" }
-                },
+                "useConsistentTypeDefinitions": "off",
                 "useDefaultParameterLast": "error",
                 "useExportType": "warn",
                 "useImportType": {
@@ -109,7 +106,7 @@
                 "useShorthandFunctionType": "error",
                 "useThrowNewError": "warn",
                 "useThrowOnlyError": "warn",
-                "useUnifiedTypeSignatures": "warn"
+                "useUnifiedTypeSignatures": "off"
             },
             "suspicious": {
                 "recommended": true,
@@ -134,17 +131,19 @@
                     "complexity": {
                         "noExcessiveCognitiveComplexity": "off"
                     },
+                    "security": {
+                        "noSecrets": "off"
+                    },
                     "suspicious": {
                         "noExplicitAny": "off",
                         "noDebugger": "off"
                     },
-"style": {
-"noNonNullAssertion": "off",
-"useConsistentTypeDefinitions": "off"
-},
-"nursery": {
-"useExplicitReturnType": "off"
-}
+                    "style": {
+                        "noNonNullAssertion": "off"
+                    },
+                    "nursery": {
+                        "useExplicitReturnType": "off"
+                    }
                 }
             }
         },

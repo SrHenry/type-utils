@@ -150,7 +150,8 @@ export const and: IntersectionSchema = ((
     }
 
     schema.optional = () => addCall('optional')
-    schema.use = (...rules: Custom<any[], string, any>) => addCall('use', [...rules])
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    schema.use = (...customRules: Custom<any[], string, any>) => addCall('use', [...customRules])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any>)
 

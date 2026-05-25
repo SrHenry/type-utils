@@ -76,7 +76,7 @@ export abstract class BaseValidator {
         })
     }
 
-    public static isValidArray<T>(arg: unknown, args: ValidatorArgs<T>): arg is Array<T> {
+    public static isValidArray<T>(arg: unknown, args: ValidatorArgs<T>): arg is T[] {
         try {
             BaseValidator.validateArray(arg, args)
 

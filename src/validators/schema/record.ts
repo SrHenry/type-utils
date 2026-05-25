@@ -74,7 +74,10 @@ function _fn<K extends PropertyKey, T>(
 ): TypeGuard<Record<K, T>> | TypeGuard<Record<string, any>> {
     if (keyGuard_or_rules === NULL) return _fn(defaults.keyGuard, defaults.valueGuard)
 
-    const handleRulesObject = (rules: Partial<Rules>) => {
+    const handleRulesObject = (
+        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        rules: Partial<Rules>
+    ) => {
         const _rules = []
         const { nonEmpty, optional } = rules
 
@@ -262,8 +265,9 @@ export const record: RecordSchema = ((
     schema.optional = () => addCall('optional')
     schema.nonEmpty = () => addCall('nonEmpty', [RecordRules.nonEmpty()])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, Record<PropertyKey, any>>) =>
-        addCall('use', [...rules])
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    schema.use = (...customRules: Custom<any[], string, Record<PropertyKey, any>>) =>
+        addCall('use', [...customRules])
     schema.toStandardSchema = () =>
         toStandardSchema(schema as unknown as TypeGuard<Record<PropertyKey, any>>)
 

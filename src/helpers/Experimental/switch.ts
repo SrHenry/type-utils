@@ -71,6 +71,7 @@ function __switch__(
         if (typeof defaultResult !== 'function')
             throw new Error('default lambda must be a callable function')
 
+        // biome-ignore lint/nursery/noShadow: currying pattern — inner param fills outer's slot
         const defaultFn = (arg: unknown = $$switch_no_arg$$) => {
             if (arg === $$switch_no_arg$$) throw new Error('missing switch argument to evaluate')
 
@@ -86,6 +87,7 @@ function __switch__(
         return lambda(arg === $$switch_no_initial_arg$$ ? defaultFn : () => defaultFn(arg))
     }
 
+    // biome-ignore lint/nursery/noShadow: currying pattern — inner param fills outer's slot
     const caseFn = (arg: unknown = $$switch_no_arg$$) => {
         if (arg === $$switch_no_arg$$) throw new Error('missing switch argument to evaluate')
 

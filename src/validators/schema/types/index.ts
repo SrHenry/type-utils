@@ -186,32 +186,27 @@ export namespace V3 {
         UnionOrIntersectionPartialStruct<Types> &
         WithRulesStruct<Rules>
 
-    // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
     export type ObjectTree<T extends {}> = {
         tree: {
             [K in keyof T]: V3.GenericStruct<T[K]> | V3.StructType
         }
     }
 
-    // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
     export type ObjectStruct<
         T extends {},
         Rules extends CustomRule<any[], string, T> = CustomRule<any[], string, T>,
     > = BaseStruct<'object', T> & ObjectTree<T> & WithRulesStruct<Rules>
 
-    // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
     export type ClassInstanceRef<T extends {}, ClassNameStr = string> = {
         constructor: ConstructorSignature<T>
         className: ClassNameStr
     }
 
     export type ClassInstanceStruct<
-        // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
         T extends {},
         ClassNameStr = string,
         Rules extends CustomRule<any[], string, T> = CustomRule<any[], string, T>,
     > = BaseStruct<'object', T> &
-        // biome-ignore lint/complexity/noBannedTypes: {} used for generic object tree type
         ObjectTree<{}> &
         ClassInstanceRef<T, ClassNameStr> &
         WithRulesStruct<Rules>
@@ -225,7 +220,6 @@ export namespace V3 {
         Rules extends CustomRule<any[], string, U[]> = CustomRule<any[], string, U[]>,
     > = BaseStruct<'object', U[]> & ArrayEntries<U> & WithRulesStruct<ArrayRule | Rules>
 
-    // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
     export type RecordMetadata<T extends {}> = {
         keyMetadata:
             | V3.StringStruct
@@ -662,10 +656,8 @@ export type UnionStruct<Types extends any[]> = V3.UnionStruct<Types>
 export type IntersectionStruct<Types extends any[]> = V3.IntersectionStruct<Types>
 export type TupleStruct<Types extends readonly any[]> = V3.TupleStruct<Types>
 export type ArrayStruct<U> = V3.ArrayStruct<U>
-// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 export type ObjectStruct<T extends {}> = V3.ObjectStruct<T>
 export type RecordStruct<K extends keyof any = string, T = any> = V3.RecordStruct<K, T>
-// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 export type ClassInstanceStruct<T extends {}, ClassNameStr = string> = V3.ClassInstanceStruct<
     T,
     ClassNameStr

@@ -62,8 +62,9 @@ export function createRule<
 
     const formator: MessageFormator =
         messageFormator ??
-        (message ? () => message : (...args: Args) => `${name}(${args.join(', ')})`)
+        (message ? (): string => message : (...args: Args): string => `${name}(${args.join(', ')})`)
 
+    // biome-ignore lint/nursery/useExplicitReturnType: return type is deeply generic and varies by overload
     const wrapper = (subject: Subject) => {
         const getSetterWithSubject = getRuleSetterForCustomHandler(handler)
 

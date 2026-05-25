@@ -2,17 +2,15 @@ type ObjectKeys<T> = T extends object
     ? (keyof T)[]
     : T extends number
       ? []
-      : T extends Array<any> | string
+      : T extends any[] | string
         ? string[]
         : never
 
 type Fallback<T, TO, Includes = never> = T extends never | Includes ? TO : T
 
-// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 type ObjectEntry<T extends {}> = {
     [K in keyof T]: [K, T[K]]
 }[keyof T]
-// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 type ObjectEntries<T extends {}> = ObjectEntry<T>[]
 type Entry<T> = T extends any[]
     ? T // biome-ignore lint/complexity/noBannedTypes: {} used in conditional type
@@ -34,7 +32,6 @@ type ObjectValue<T> = T extends any[]
           : never
       : never
 
-// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 type ObjectValues<T extends {}> = ObjectValue<T>[]
 type Value<T> = T extends any[]
     ? T // biome-ignore lint/complexity/noBannedTypes: {} used in conditional type
@@ -51,7 +48,6 @@ interface ObjectConstructor {
     keys<T>(o: T): (keyof T)[]
     keys<T>(o: T): Fallback<ObjectKeys<T>, string[], never[]>
     // entries<T extends object>(o: T): [keyof T, T[keyof T]][]
-    // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
     entries<T extends {}>(o: T): ObjectEntries<T>
     // entries<T>(o: ArrayLike<T>): [string, T][]
     values<T>(o: T): T[keyof T][]
@@ -85,9 +81,8 @@ declare type TypeOfTag =
  */
 declare type Prettify<T> = {
     [K in keyof T]: T[K]
-} & {} // biome-ignore lint/complexity/noBannedTypes: Prettify intersection hack requires empty type
+} & {}
 
-// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 type Replace<TOrigin extends {}, TReplace extends Partial<Record<keyof TOrigin, any>>> = Prettify<
     Omit<TOrigin, keyof TReplace> & {
         [K in keyof TReplace]: TReplace[K]

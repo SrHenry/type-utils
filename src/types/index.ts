@@ -22,17 +22,13 @@ export type {
     __V_2_T as Values,
 }
 
-// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 type __OE_2_T<T extends {}> = ObjectEntries<T>
 type __E_2_T<T> = Entries<T>
-// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 type __OE_1_T<T extends {}> = ObjectEntry<T>
 type __E_1_T<T> = Entry<T>
 
-// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 type __OV_2_T<T extends {}> = ObjectValues<T>
 type __V_2_T<T> = Values<T>
-// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 type __OV_1_T<T extends {}> = ObjectValue<T>
 type __V_1_T<T> = Value<T>
 

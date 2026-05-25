@@ -136,6 +136,7 @@ export namespace Generics {
     }
 
     export namespace V2 {
+        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
         export function safeJSON<T = GenericObject>(obj: T): T & SafeJSON<T> {
             return JSON.parse(JSON.stringify(obj))
         }

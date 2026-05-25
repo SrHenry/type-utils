@@ -39,6 +39,7 @@ export function enpipe<TFunc extends Func<any[], any>, TArgs extends Partial<Par
 ): Pipe<CurryingTools.CurriedFunc<TFunc, TArgs>>
 
 /** @deprecated Use pipe() + callWith() / apply() instead. */
+// biome-ignore lint/complexity/noBannedTypes: deprecated API, {} constraint is intentional
 export function enpipe<TValue extends {} | Func<any[], any>>(
     ..._args: [TValue | unknown, ...unknown[]]
 ): Pipe<any> {

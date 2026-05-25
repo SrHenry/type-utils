@@ -6,7 +6,7 @@ import { callWith } from '../Experimental/pipeline/callWith.ts'
 import { createPipeline } from '../Experimental/pipeline/createPipeline.ts'
 import { enpipe } from '../Experimental/pipeline/enpipe.ts'
 import { pipe } from '../Experimental/pipeline/pipe.ts'
-import { PipelineBox } from '../Experimental/pipeline/core/PipelineBox.ts'
+import type { PipelineBox } from '../Experimental/pipeline/core/PipelineBox.ts'
 import { tap } from '../Experimental/pipeline/tap.ts'
 import { tapAsync } from '../Experimental/pipeline/tapAsync.ts'
 import { isPipeTransform } from '../Experimental/pipeline/core/isPipeTransform.ts'
@@ -111,6 +111,7 @@ describe('pipe', () => {
             createPipeline().pipe(getFromDb).pipeAsync(updateFn).pipeAsync(updateDb).depipe()
 
         const updateFoo = () =>
+            // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
             updateDbPipeline(db => {
                 log.push('edit')
 
@@ -134,6 +135,7 @@ describe('pipe', () => {
         ])
 
         const updateHandsome = () =>
+            // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
             updateDbPipeline(db => {
                 log.push('edit')
                 db['handsome'] = false
@@ -261,9 +263,15 @@ describe('enpipe', () => {
         await createPipeline(addUserFactory)
             .pipe(callWith(db))
             .pipe(callWith(newUser))
-            .pipeAsync(id => (expect(typeof id).toBe('string'), id))
+            .pipeAsync(id => {
+                expect(typeof id).toBe('string')
+                return id
+            })
             .pipeAsync(apply(addPostCurried, newPost))
-            .pipeAsync(result => (expect(result).toBe(true), result))
+            .pipeAsync(result => {
+                expect(result).toBe(true)
+                return result
+            })
             .depipe()
 
         expect(db['users']).toBeDefined()

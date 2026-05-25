@@ -96,6 +96,7 @@ export function curry(this: any, fn: CallableFunction, partialApply = false, arg
     function curriedPartialApply(...innerArgs: any[]) {
         if (innerArgs.length >= paramsLength) return fn(...innerArgs)
 
+        // biome-ignore lint/nursery/noShadow: currying pattern — inner param fills outer's slot
         function partialApply(...deepArgs: any[]) {
             return curriedPartialApply(...innerArgs, ...deepArgs)
         }

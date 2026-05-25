@@ -1,3 +1,4 @@
+// biome-ignore lint/style/useImportType: PipelineBox.isBox is used as a value at runtime
 import { PipelineBox, AsyncPipelineBox } from './PipelineBox.ts'
 
 export function depipe<T>(arg: PipelineBox<T>): T

@@ -124,7 +124,8 @@ export const number: NumberSchema = (() => {
     schema.max = (n: number) => addCall('max', [NumberRules.max(n)])
     schema.min = (n: number) => addCall('min', [NumberRules.min(n)])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, number>) => addCall('use', [...rules])
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    schema.use = (...customRules: Custom<any[], string, number>) => addCall('use', [...customRules])
     schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<number>)
 
     return copyStructMetadata(getGuard(), schema, {

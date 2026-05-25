@@ -6,7 +6,6 @@ import { getStructMetadata } from '../validators/schema/helpers/getStructMetadat
 import { object } from '../validators/schema/object.ts'
 
 export type ReplacedKeysTree<
-    // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
     TOrigin extends {},
     TReplace extends Partial<Record<keyof TOrigin, any>>,
 > = {
@@ -30,7 +29,6 @@ export type ReplacedKeysTree<
  *
  * @throws {TypeError} If the schema is not a type guard or if the schema is not an object schema.
  */
-// biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
 export function replaceSchemaTree<
     TOrigin extends {},
     TReplace extends Partial<Record<keyof TOrigin, any>>,

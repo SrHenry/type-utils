@@ -1,3 +1,3 @@
 import { template } from '../../common.ts'
 
-export const nonEmptyFormator = () => template(`non empty`)
+export const nonEmptyFormator = (): string => template(`non empty`)

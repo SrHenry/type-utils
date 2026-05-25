@@ -54,12 +54,14 @@ describe('boolean', () => {
         expect(boolean()).toHaveProperty('optional')
         expect(typeof boolean().optional).toBe('function')
 
+        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
         const schema = boolean().optional()
 
         expect(typeof schema).toBe('function')
     })
 
     it('should return true if value is boolean or undefined', () => {
+        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
         const schema = boolean().optional()
 
         expect(schema(true)).toBe(true)

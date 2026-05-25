@@ -15,13 +15,16 @@ export function setMetadata(
 ): object | symbol {
     if (into === __curry_param__) {
         if (metadata === __curry_param__)
+            // biome-ignore lint/nursery/noShadow: currying pattern — inner param fills outer's slot
             return (metadata: unknown, into: object | symbol = __curry_param__) => {
                 if (into === __curry_param__)
+                    // biome-ignore lint/nursery/noShadow: currying pattern — inner param fills outer's slot
                     return (into: object) => setMetadata(key, metadata, into)
 
                 return setMetadata(key, metadata, into)
             }
 
+        // biome-ignore lint/nursery/noShadow: currying pattern — inner param fills outer's slot
         return (into: object): object | symbol => setMetadata(key, metadata, into)
     }
 

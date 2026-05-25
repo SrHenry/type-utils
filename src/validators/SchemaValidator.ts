@@ -122,6 +122,7 @@ function validate<T, Name extends string, Parent>(
     name_or_options?: Name | ValidateOptionalArgs<Name, Parent>,
     parent: Parent | NO_PARENT = NO_PARENT
 ): ValidateReturn<T> {
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
     const throws = shouldThrow(this)
     const metadata = getStructMetadata(schema) as V3.StructType
     const errors: ValidationError[] = []
@@ -193,6 +194,7 @@ function validate<T, Name extends string, Parent>(
 
                         const results = Object.entries(tree)
                             .map(e => {
+                                // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
                                 const [, { schema, rules: objectEntryRules }] = e
 
                                 updateStructMetadata(schema, {
@@ -202,7 +204,10 @@ function validate<T, Name extends string, Parent>(
                                 return e
                             })
                             .map(
-                                ([k, { schema, optional }]): [
+                                (
+                                    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+                                    [k, { schema, optional }]
+                                ): [
                                     (typeof tree)[Exclude<keyof typeof tree, symbol>]['schema'],
                                     (
                                         | GetTypeGuard<
@@ -394,6 +399,7 @@ function validate<T, Name extends string, Parent>(
                                     ),
                                 ])
                                 .filter(isInstanceOf(ValidationErrors))
+                                // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
                                 .flatMap(errors => errors.errors)
 
                             errors.push(...recordValidationResult)
@@ -590,6 +596,7 @@ function validate<T, Name extends string, Parent>(
 
                             return s
                         })
+                        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
                         .map(({ schema }) =>
                             validate.bind(mustNotThrow())(arg, schema, {
                                 name,
@@ -638,17 +645,19 @@ function validate<T, Name extends string, Parent>(
                 {
                     if (metadata.optional && arg === undefined) break
 
-                    const unionResults = metadata.types.map(({ schema, rules: unionInnerRules }) =>
-                        validate.bind(mustNotThrow())(
-                            arg,
-                            updateStructMetadata(schema, {
-                                rules: unionInnerRules as RuleStruct<CustomRules>[],
-                            }),
-                            {
-                                name,
-                                parent,
-                            }
-                        )
+                    const unionResults = metadata.types.map(
+                        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+                        ({ schema, rules: unionInnerRule }) =>
+                            validate.bind(mustNotThrow())(
+                                arg,
+                                updateStructMetadata(schema, {
+                                    rules: unionInnerRule as RuleStruct<CustomRules>[],
+                                }),
+                                {
+                                    name,
+                                    parent,
+                                }
+                            )
                     )
 
                     const unionRulesResults = validateRules(
@@ -983,6 +992,7 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
     public validate<V>(value: V, shouldThrow: boolean): T | ValidationErrors
 
     @AutoBind()
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
     public validate<V>(value: V, shouldThrow: boolean = this.throws): T | ValidationErrors {
         return validate.bind(setThrows(shouldThrow))(value, this.schema)
     }

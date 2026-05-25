@@ -1,3 +1,4 @@
+// biome-ignore lint/style/useImportType: PipelineBox.wrap is used as a value at runtime
 import { PipelineBox, AsyncPipelineBox } from './core/PipelineBox.ts'
 
 export function pipe<T>(value: Exclude<T, Promise<any>>): PipelineBox<T>
