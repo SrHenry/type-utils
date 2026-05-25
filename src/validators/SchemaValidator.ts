@@ -122,20 +122,15 @@ function validate<T, Name extends string, Parent>(
     name_or_options?: Name | ValidateOptionalArgs<Name, Parent>,
     parent: Parent | NO_PARENT = NO_PARENT
 ): ValidateReturn<T> {
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
     const throws = shouldThrow(this)
     const metadata = getStructMetadata(schema) as V3.StructType
     const errors: ValidationError[] = []
     let name: Name | undefined
+    ;({ name, parent = NO_PARENT } =
+        typeof name_or_options === 'string' ? { name: name_or_options } : (name_or_options ?? {}))
 
-    // Sanitize name and parent
-    {
-        ;({ name, parent = NO_PARENT } =
-            typeof name_or_options === 'string'
-                ? { name: name_or_options }
-                : (name_or_options ?? {}))
-
-        if (parent === NO_PARENT) name ??= '$' as Name
-    }
+    if (parent === NO_PARENT) name ??= '$' as Name
 
     const pushNewError = pushNewErrorFactory(errors, { schema, value: arg, name, parent })
 
@@ -147,6 +142,7 @@ function validate<T, Name extends string, Parent>(
 
             let { message } = e
 
+            // biome-ignore lint/style/noNonNullAssertion: hasValidatorMessage() guarantees existence
             if (hasValidatorMessage(schema)) message = getValidatorMessage(schema)!
 
             pushNewError({
@@ -179,6 +175,7 @@ function validate<T, Name extends string, Parent>(
                         if (metadata.optional && arg === undefined) break
 
                         if ('className' in metadata) {
+                            // biome-ignore lint/suspicious/noShadowRestrictedNames: destructured class constructor reference
                             const { constructor, className } = metadata
 
                             if (!(arg instanceof constructor)) {
@@ -198,6 +195,7 @@ function validate<T, Name extends string, Parent>(
 
                         const results = Object.entries(tree)
                             .map(e => {
+                                // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
                                 const [, { schema, rules: objectEntryRules }] = e
 
                                 updateStructMetadata(schema, {
@@ -207,7 +205,10 @@ function validate<T, Name extends string, Parent>(
                                 return e
                             })
                             .map(
-                                ([k, { schema, optional }]): [
+                                (
+                                    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+                                    [k, { schema, optional }]
+                                ): [
                                     (typeof tree)[Exclude<keyof typeof tree, symbol>]['schema'],
                                     (
                                         | GetTypeGuard<
@@ -269,7 +270,9 @@ function validate<T, Name extends string, Parent>(
                                         ))
                                 )
                             })
-                            .forEach(([, e]) => errors.push(...e.errors))
+                            .forEach(([, e]) => {
+                                errors.push(...e.errors)
+                            })
                     } else if ('entries' in metadata) {
                         const { entries, optional } = metadata
 
@@ -332,7 +335,7 @@ function validate<T, Name extends string, Parent>(
                             })
 
                     switch (keyMetadata.type) {
-                        case 'enum':
+                        case 'enum': {
                             if (
                                 !keyMetadata.types.every(({ type: enumInnerType }) =>
                                     Generics.PropertyKeyTypes.includes(enumInnerType)
@@ -358,16 +361,16 @@ function validate<T, Name extends string, Parent>(
                                             keyMetadata.types
                                                 .map(
                                                     ({
-                                                        schema,
-                                                        type,
+                                                        schema: keySchema,
+                                                        type: keyType,
                                                     }): TypeGuard<string> | TypeGuard<symbol> =>
-                                                        type === 'number'
+                                                        keyType === 'number'
                                                             ? asTypeGuard<string>(
                                                                   (input: string) =>
                                                                       Number.isNaN(Number(input)) &&
-                                                                      schema(Number(input))
+                                                                      keySchema(Number(input))
                                                               )
-                                                            : schema
+                                                            : keySchema
                                                 )
                                                 .some(typeGuard => typeGuard(_i)),
                                         {
@@ -397,10 +400,12 @@ function validate<T, Name extends string, Parent>(
                                     ),
                                 ])
                                 .filter(isInstanceOf(ValidationErrors))
+                                // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
                                 .flatMap(errors => errors.errors)
 
                             errors.push(...recordValidationResult)
                             break
+                        }
                         case 'string':
                         case 'number':
                         case 'symbol':
@@ -423,6 +428,7 @@ function validate<T, Name extends string, Parent>(
                                 break
                             }
 
+                            // biome-ignore lint/nursery/noUnnecessaryConditions: switch(true) pattern for pattern matching
                             switch (true) {
                                 case keyMetadata.type === 'number':
                                     Object.getOwnPropertyNames(arg).forEach(k => {
@@ -591,6 +597,7 @@ function validate<T, Name extends string, Parent>(
 
                             return s
                         })
+                        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
                         .map(({ schema }) =>
                             validate.bind(mustNotThrow())(arg, schema, {
                                 name,
@@ -614,18 +621,18 @@ function validate<T, Name extends string, Parent>(
 
                     if (intersectionErrors.length === 0) break
 
-                    const intersectionErrorList = intersectionErrors.map(item => [...item]).flat()
+                    const intersectionErrorList = intersectionErrors.flatMap(item => [...item])
 
                     pushNewError({
                         message: 'Value does not match all intersection types',
                         context: {
                             types: metadata.types.filter((_, i) =>
                                 intersectionResults
-                                    .map((r, i) => [i, r])
+                                    .map((r, idx) => [idx, r] as const)
                                     .filter(
                                         ([, r]) => isInstanceOf(r, ValidationError) && r !== arg
                                     )
-                                    .map(([i]) => i)
+                                    .map(([idx]) => idx)
                                     .includes(i)
                             ),
                             errors: intersectionErrorList,
@@ -639,17 +646,19 @@ function validate<T, Name extends string, Parent>(
                 {
                     if (metadata.optional && arg === undefined) break
 
-                    const unionResults = metadata.types.map(({ schema, rules: unionInnerRules }) =>
-                        validate.bind(mustNotThrow())(
-                            arg,
-                            updateStructMetadata(schema, {
-                                rules: unionInnerRules as RuleStruct<CustomRules>[],
-                            }),
-                            {
-                                name,
-                                parent,
-                            }
-                        )
+                    const unionResults = metadata.types.map(
+                        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+                        ({ schema, rules: unionInnerRule }) =>
+                            validate.bind(mustNotThrow())(
+                                arg,
+                                updateStructMetadata(schema, {
+                                    rules: unionInnerRule as RuleStruct<CustomRules>[],
+                                }),
+                                {
+                                    name,
+                                    parent,
+                                }
+                            )
                     )
 
                     const unionRulesResults = validateRules(
@@ -667,7 +676,7 @@ function validate<T, Name extends string, Parent>(
                         .filter(e => e !== arg)
 
                     if (unionErrors.length === unionResults.length) {
-                        const unionErrorList = unionErrors.map(e => Array.from(e)).flat()
+                        const unionErrorList = unionErrors.flatMap(e => Array.from(e))
 
                         pushNewError({
                             message: 'Value does not match any of the union types',
@@ -751,7 +760,9 @@ function validate<T, Name extends string, Parent>(
                                     )
                                 )
                                 .filter(isInstanceOf(ValidationErrors))
-                                .forEach(innerErrors => errors.push(...innerErrors))
+                                .forEach(innerErrors => {
+                                    errors.push(...innerErrors)
+                                })
 
                             break
                         case 'primitive':
@@ -768,7 +779,7 @@ function validate<T, Name extends string, Parent>(
                                     },
                                 })
                             break
-                        case 'enum':
+                        case 'enum': {
                             if (metadata.types.length < 2)
                                 throw new TypeError(
                                     'An enum schema must have at least two values to match'
@@ -815,6 +826,7 @@ function validate<T, Name extends string, Parent>(
                                 })
 
                             break
+                        }
                         case 'null':
                             if (arg !== null)
                                 pushNewError({
@@ -878,6 +890,7 @@ function validate<T, Name extends string, Parent>(
 }
 
 type ISchemaValidator<T, Throws extends boolean = DefaultThrowsParam> = Merge<
+    // biome-ignore lint/complexity/noBannedTypes: {} used as base type for Merge utility
     {},
     Throws extends true
         ? {
@@ -888,7 +901,7 @@ type ISchemaValidator<T, Throws extends boolean = DefaultThrowsParam> = Merge<
           }
 >
 
-interface ISchemaValidatorConstructor {
+type ISchemaValidatorConstructor = {
     new <T>(schema: TypeGuard<T>): SchemaValidator<T, DefaultThrowsParam>
     new <T, Throws extends true>(schema: TypeGuard<T>, throws: Throws): SchemaValidator<T, true>
     new <T, Throws extends false>(schema: TypeGuard<T>, throws: Throws): SchemaValidator<T, false>
@@ -908,34 +921,42 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
     public constructor(schema: TypeGuard<T>, throws: Throws)
     public constructor(
         protected schema: TypeGuard<T>,
+        // biome-ignore lint/nursery/noShadow: constructor param shadows module-level symbol
         protected throws = defaults['throws']
     ) {}
 
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static validate<T>(
         arg: unknown,
         schema: TypeGuard<T>,
+        // biome-ignore lint/nursery/noShadow: param shadows module-level function
         shouldThrow: boolean = defaults['throws']
     ): ValidateReturn<T> {
         return validate.bind(setThrows(shouldThrow))(arg, schema)
     }
 
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>,
         schema: TypeGuard<T>
     ): TypeGuard<T>
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>
     ): (schema: TypeGuard<T>) => TypeGuard<T>
 
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>,
         schema?: TypeGuard<T> | typeof NO_ARG
     ): TypeGuard<T> | (<U = T>(schema: TypeGuard<U>) => TypeGuard<U>)
+    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>,
         schema: TypeGuard<T> | typeof NO_ARG = NO_ARG
     ) {
         if (schema === NO_ARG)
+            // biome-ignore lint/nursery/noShadow: currying param intentionally shadows outer param
             return (schema: TypeGuard<T>) => __SchemaValidator.setValidatorMessage(message, schema)
 
         if (typeof message === 'string') return setValidatorMessage(message, schema)
@@ -958,12 +979,12 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
                     "Cannot set validator message mapper for class instance schema's properties"
                 )
 
-            Object.entries(message).forEach(([k, item]) =>
+            Object.entries(message).forEach(([k, item]) => {
                 __SchemaValidator.setValidatorMessage<Value<T>>(
                     item as ValidatorMessageMap<Value<T>>,
                     metadata.tree[k as keyof T].schema as TypeGuard<Value<T>>
                 )
-            )
+            })
         } else if ('entries' in metadata)
             __SchemaValidator.setValidatorMessage(
                 message,
@@ -980,6 +1001,7 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
     public validate<V>(value: V, shouldThrow: boolean): T | ValidationErrors
 
     @AutoBind()
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
     public validate<V>(value: V, shouldThrow: boolean = this.throws): T | ValidationErrors {
         return validate.bind(setThrows(shouldThrow))(value, this.schema)
     }

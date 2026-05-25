@@ -20,10 +20,6 @@ describe('NAND', () => {
         expect(NAND(true, false, true)).toBe(true)
         expect(NAND(true, true, false, true)).toBe(true)
         expect(NAND(true, true, true, false, true)).toBe(true)
-        expect(
-            NAND(
-                ...Array.from({ length: LARGE_ARRAY_SIZE }, (_, i) => (random === i ? false : true))
-            )
-        ).toBe(true)
+        expect(NAND(...Array.from({ length: LARGE_ARRAY_SIZE }, (_, i) => random !== i))).toBe(true)
     })
 })

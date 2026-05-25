@@ -30,9 +30,7 @@ function _fn(): TypeGuard<Generics.PrimitiveType> {
 
 export const _primitive = optionalize(_fn)
 
-type PrimitiveSchema = CallableFunction & {
-    (): FluentSchema<Generics.PrimitiveType>
-}
+type PrimitiveSchema = CallableFunction & (() => FluentSchema<Generics.PrimitiveType>)
 
 export const primitive: PrimitiveSchema = (() => {
     const customRules: Custom<any[], string, Generics.PrimitiveType>[] = []
@@ -90,8 +88,9 @@ export const primitive: PrimitiveSchema = (() => {
 
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    schema.use = (...rules: Custom<any[], string, Generics.PrimitiveType>) =>
-        addCall('use', [...rules])
+    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    schema.use = (...customRules: Custom<any[], string, Generics.PrimitiveType>) =>
+        addCall('use', [...customRules])
 
     return copyStructMetadata(getGuard(), schema, {
         rules: customRules.map(

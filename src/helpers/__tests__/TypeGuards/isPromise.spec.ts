@@ -8,6 +8,7 @@ describe('isPromise', () => {
         expect(isPromise('no')).toBe(false)
         expect(
             isPromise({
+                // biome-ignore lint/suspicious/noThenProperty: intentional thenable test
                 then: async (fn: <T>(e: any) => T | PromiseLike<T>) => {
                     return await fn(null)
                 },

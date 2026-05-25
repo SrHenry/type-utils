@@ -19,6 +19,7 @@ function normalize(obj: any, seen = new WeakMap<any, string>(), path = '$'): any
         return `[Symbol ${String(obj.description) || 'anonymous'}]`
     }
     if (seen.has(obj)) {
+        // biome-ignore lint/style/noNonNullAssertion: has() guarantees existence, WeakMap.get() doesn't narrow
         const circularPath = seen.get(obj)!
         return `[Circular ${circularPath}]`
     }
@@ -93,7 +94,7 @@ function fnv1aHash(str: string): string {
         hash ^= str.charCodeAt(i)
         hash = (hash * 0x01000193) >>> 0
     }
-    return ('0000000' + hash.toString(16)).slice(-8)
+    return `0000000${hash.toString(16)}`.slice(-8)
 }
 
 expect.extend({
@@ -118,5 +119,3 @@ declare global {
         }
     }
 }
-
-export {}

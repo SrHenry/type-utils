@@ -83,7 +83,7 @@ console.log(
 )
 
 const __metadata__ = Symbol('__metadata__')
-const f1 = setMetadata(__metadata__, { a: 1 }, function () {
+const f1 = setMetadata(__metadata__, { a: 1 }, () => {
     void 0
 })
 
@@ -92,6 +92,7 @@ const _b2 = getMetadata(__metadata__, f1, object({ a: number() }))
 
 console.log('metadata', _b, _b2)
 
+// biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
 const getMetadataOf = <T>(schema: TypeGuard<T>) =>
     console.log('metadata of schema', getStructMetadata(schema))
 
@@ -143,7 +144,7 @@ if (!is(aaa, preEnvSchema)) throw new Error('Missing required environment variab
 const tryParse = (value: string, to: Exclude<Generics.Primitives, 'symbol' | 'undefined'>) => {
     switch (to) {
         case 'number':
-            if (isNaN(Number(value))) throw new Error(`${value} is not a number`)
+            if (Number.isNaN(Number(value))) throw new Error(`${value} is not a number`)
             return Number(value)
         case 'boolean':
             if (!['true', 'false'].includes(value)) throw new Error(`${value} is not a boolean`)

@@ -39,7 +39,7 @@ describe('$switch', () => {
             .case(1, 'one')
             .default('none of the above')
 
-        // @ts-ignore
+        // @ts-expect-error
         expect(() => switcher.invoke()).toThrow()
         expect(() => switcher.invoke(1)).not.toThrow()
         expect(switcher.invoke(1)).toBe('one')
@@ -119,24 +119,24 @@ describe('$switch', () => {
 
         expect(switcher.invoke()).toBe('default')
 
-        // @ts-ignore
+        // @ts-expect-error
         expect(switcher.invoke(4)).not.toBe('four')
-        // @ts-ignore
+        // @ts-expect-error
         expect(switcher.invoke(4)).toBe('default')
 
-        // @ts-ignore
+        // @ts-expect-error
         expect(switcher.invoke(3)).not.toBe('three')
-        // @ts-ignore
+        // @ts-expect-error
         expect(switcher.invoke(3)).toBe('default')
 
-        // @ts-ignore
+        // @ts-expect-error
         expect(switcher.invoke(2)).not.toBe('two')
-        // @ts-ignore
+        // @ts-expect-error
         expect(switcher.invoke(2)).toBe('default')
 
-        // @ts-ignore
+        // @ts-expect-error
         expect(switcher.invoke(1)).not.toBe('one')
-        // @ts-ignore
+        // @ts-expect-error
         expect(switcher.invoke(1)).toBe('default')
     })
 })

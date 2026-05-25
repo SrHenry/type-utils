@@ -11,45 +11,42 @@ import { setAsTypeGuard } from './setAsTypeGuard.ts'
 type OmittedKeys = 'type' | 'schema' | 'optional'
 type OptionalizedKeys = 'rules'
 
-export function asTypeGuard<T>(predicate: Predicate<any>): TypeGuard<T>
-export function asTypeGuard<P extends Predicate<any>>(predicate: P): TypeGuard<Param0<P>>
-
 export function asTypeGuard<T>(
-	predicate: Predicate<any>,
-	metadata: Omit<CustomStruct<T>, OmittedKeys | OptionalizedKeys> &
-	Partial<Pick<CustomStruct<T>, OptionalizedKeys>>
+    predicate: Predicate<any>,
+    metadata?: Omit<CustomStruct<T>, OmittedKeys | OptionalizedKeys> &
+        Partial<Pick<CustomStruct<T>, OptionalizedKeys>>
 ): TypeGuard<T>
 export function asTypeGuard<P extends Predicate<any>>(
-	predicate: P,
-	metadata: Omit<CustomStruct<Param0<P>>, OmittedKeys | OptionalizedKeys> &
-	Partial<Pick<CustomStruct<Param0<P>>, OptionalizedKeys>>
+    predicate: P,
+    metadata?: Omit<CustomStruct<Param0<P>>, OmittedKeys | OptionalizedKeys> &
+        Partial<Pick<CustomStruct<Param0<P>>, OptionalizedKeys>>
 ): TypeGuard<Param0<P>>
 
 export function asTypeGuard<T>(
-	predicate: Predicate<unknown>,
-	metadata: Omit<CustomStruct<T>, OmittedKeys | OptionalizedKeys> &
-	Partial<Pick<CustomStruct<T>, OptionalizedKeys>> = {}
+    predicate: Predicate<unknown>,
+    metadata: Omit<CustomStruct<T>, OmittedKeys | OptionalizedKeys> &
+        Partial<Pick<CustomStruct<T>, OptionalizedKeys>> = {}
 ): TypeGuard<T> {
-	if (!isUnaryFunction<TypeGuard>(predicate))
-		throw new Error('predicate must be a unary function')
+    if (!isUnaryFunction<TypeGuard>(predicate))
+        throw new Error('predicate must be a unary function')
 
-	if (
-		'rules' in metadata &&
-		Array.isArray(metadata.rules) &&
-		!metadata.rules.every(r => isRuleStruct(r) && r.type === 'custom')
-	) {
-		throw new Error(`metadata.rules must be an array of custom rule structs`)
-	}
+    if (
+        'rules' in metadata &&
+        Array.isArray(metadata.rules) &&
+        !metadata.rules.every(r => isRuleStruct(r) && r.type === 'custom')
+    ) {
+        throw new Error(`metadata.rules must be an array of custom rule structs`)
+    }
 
-	const struct = {
-		optional: false,
-		rules: [],
+    const struct = {
+        optional: false,
+        rules: [],
 
-		...metadata,
+        ...metadata,
 
-		type: 'custom',
-		schema: predicate,
-	} as CustomStruct<T>
+        type: 'custom',
+        schema: predicate,
+    } as CustomStruct<T>
 
-	return setCustomStructMetadata<any>(struct, setAsTypeGuard(predicate))
+    return setCustomStructMetadata<any>(struct, setAsTypeGuard(predicate))
 }

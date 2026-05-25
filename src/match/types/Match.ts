@@ -14,7 +14,9 @@ export type Match<
     TPatterns = never,
     HasDefault extends boolean = false,
 > = BaseMatch<T, TExprs, TPatterns, HasDefault> &
-    (IsExhaustive<T, TPatterns, HasDefault> extends true ? ExecMatch<TExprs> : {})
+    (IsExhaustive<T, TPatterns, HasDefault> extends true
+        ? ExecMatch<TExprs> // biome-ignore lint/complexity/noBannedTypes: {} used as empty type in conditional
+        : {})
 
 type BaseMatch<T, TExprs extends [...any[]], TPatterns, HasDefault extends boolean> = {
     with<P extends T | Guard<T, T>, TExpr = ExtractPattern<P>>(
@@ -27,7 +29,8 @@ type BaseMatch<T, TExprs extends [...any[]], TPatterns, HasDefault extends boole
         HasDefault
     >
 } & (HasDefault extends true
-    ? {}
+    ? // biome-ignore lint/complexity/noBannedTypes: {} used as empty type in conditional
+      {}
     : {
           default<TExpr>(
               expression: Expr<TExpr, T>

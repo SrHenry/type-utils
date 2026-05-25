@@ -1,5 +1,5 @@
 import { bindings } from '../constants.ts'
-import { Default } from '../types/index.ts'
+import type { Default } from '../types/index.ts'
 import { isRule } from './isRule.ts'
 
 export function isDefaultRule(rule: unknown): rule is Default {

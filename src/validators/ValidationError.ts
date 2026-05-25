@@ -10,7 +10,7 @@ export type ValidationArgs<
     Schema,
     Name extends string = string,
     Parent = any,
-    Context extends {} | null = null,
+    Context extends object | null = null,
 > = {
     value: Value
     schema: TypeGuard<Schema>
@@ -27,13 +27,13 @@ export class ValidationError<
     Schema = unknown,
     Path extends string = string,
     Parent = any,
-    Context extends {} = any,
+    Context extends object = any,
 > extends TypeGuardError<Value, TypeGuard<Schema>> {
     @NonEnumerableProperty()
-    private Path?: Path
+    private readonly Path?: Path
 
     @NonEnumerableProperty()
-    private Parent?: Parent
+    private readonly Parent?: Parent
 
     public readonly context: Context | null = null
 

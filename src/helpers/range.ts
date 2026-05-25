@@ -1,4 +1,4 @@
-import { Func, Func1 } from '../types/Func.ts'
+import type { Func, Func1 } from '../types/Func.ts'
 
 const NULL = Symbol('NULL')
 
@@ -6,7 +6,6 @@ const NULL = Symbol('NULL')
  * Returns a generator that yields numbers from `0` to `size - 1` (inclusive).
  * @param size The size of the range, the number of iterations of the generator.
  */
-export function range(size: number): Generator<number>
 
 /**
  * Returns a generator that yields numbers from `start` to `end` (inclusive).
@@ -14,7 +13,6 @@ export function range(size: number): Generator<number>
  * @param start The start of the range.
  * @param end The end of the range.
  */
-export function range(start: number, end: number): Generator<number>
 
 /**
  * Returns a generator that yields numbers from `start` to `end` (inclusive) by `step` steps.
@@ -23,7 +21,7 @@ export function range(start: number, end: number): Generator<number>
  * @param end The end of the range.
  * @param step The step to increment the range by.
  */
-export function range(start: number, end: number, step: number): Generator<number>
+export function range(start: number, end?: number, step?: number): Generator<number>
 
 /**
  * Returns a generator that yields values from a given callback passing the numbers in the range from `start` to `end` (inclusive).
@@ -57,7 +55,7 @@ export function* range(
     start_or_size: number,
     end: number | symbol = NULL,
     step_or_map: number | Func<[number], unknown> | symbol = NULL,
-    step: number = 1
+    step = 1
 ) {
     if (end === NULL) {
         if (start_or_size < 0) yield* range(0, start_or_size + 1, step)

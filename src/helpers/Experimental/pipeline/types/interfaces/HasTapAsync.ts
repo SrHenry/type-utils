@@ -1,11 +1,11 @@
 export interface HasTapAsync<T> {
-  readonly tapAsync: (
-    fn: (value: Awaited<T>) => Promise<void> | void,
-    options?: TapAsyncOptions
-  ) => any
+    readonly tapAsync: (
+        fn: (value: Awaited<T>) => Promise<void> | void,
+        options?: TapAsyncOptions
+    ) => any
 }
 
 export interface TapAsyncOptions {
-  swallow?: boolean
-  catch?: (error: unknown) => void
+    swallow?: boolean
+    catch?: (error: unknown) => void
 }

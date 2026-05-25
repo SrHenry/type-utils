@@ -12,11 +12,7 @@ describe('XOR', () => {
         expect(XOR(false, false, true)).toBe(true)
         expect(XOR(true, false, false, false)).toBe(true)
         expect(XOR(false, true, false, false, false)).toBe(true)
-        expect(
-            XOR(
-                ...Array.from({ length: LARGE_ARRAY_SIZE }, (_, i) => (random === i ? true : false))
-            )
-        ).toBe(true)
+        expect(XOR(...Array.from({ length: LARGE_ARRAY_SIZE }, (_, i) => random === i))).toBe(true)
     })
     it('should return false if two or more values are true or all values are false', () => {
         expect(XOR(false)).toBe(false)

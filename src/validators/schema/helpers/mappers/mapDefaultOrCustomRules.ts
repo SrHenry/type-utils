@@ -34,8 +34,6 @@ export function mapDefaultOrCustomRules<T extends keyof keys>(
     ruleTuple: DefaultRuleTuple<T>
 ): DefaultMappedRule<T>
 
-export function mapDefaultOrCustomRules(ruleTuple: DefaultRules): MappedRules
-
 export function mapDefaultOrCustomRules<
     Args extends any[] = unknown[],
     RuleName extends string = string,
@@ -44,7 +42,9 @@ export function mapDefaultOrCustomRules<
 
 export function mapDefaultOrCustomRules(ruleTuple: CustomRules): CustomMappedRule
 
-export function mapDefaultOrCustomRules(ruleTuple: DefaultRules | CustomRules): MappedRules
+export function mapDefaultOrCustomRules(
+    ruleTuple: DefaultRules | CustomRules | DefaultRules
+): MappedRules
 
 export function mapDefaultOrCustomRules(ruleTuple: DefaultRules | CustomRules): MappedRules {
     if (isCustomRule(ruleTuple)) {

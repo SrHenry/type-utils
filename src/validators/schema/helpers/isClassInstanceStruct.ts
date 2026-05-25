@@ -27,10 +27,7 @@ export function isClasInstanceStruct<T extends {}>(
     const doesConstructorMatches = isConstructorInStruct && struct.constructor === _class
 
     if (
-        !isTreeInStruct ||
-        !isTreeEmpty ||
-        !isClassNameInStruct ||
-        !isConstructorInStruct ||
+        !(isTreeInStruct && isTreeEmpty && isClassNameInStruct && isConstructorInStruct) ||
         (hasProvidedClassConstructor && !doesConstructorMatches)
     )
         return false

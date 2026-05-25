@@ -13,22 +13,12 @@ export abstract class BaseValidator {
     ): U {
         const o = ensureInstanceOf(arg, Object) as Record<string, unknown>
 
-        if (required.length === 0 && optional.length === 0) {
-            for (const [prop, validator] of Object.entries<TypeGuard>(validators)) {
-                if (!(prop in o)) throw new TypeGuardError(`Property ${prop} is not defined`, o)
+        const effectiveRequired =
+            required.length || optional.length
+                ? required
+                : (Object.keys(validators) as (keyof typeof validators)[])
 
-                if (!validator(o[prop]))
-                    throw new TypeGuardError(
-                        `Property '${prop}' failed validation`,
-                        o[prop],
-                        validator
-                    )
-            }
-
-            return o as U
-        }
-
-        for (const key of required) {
+        for (const key of effectiveRequired) {
             if (!(key in o))
                 throw new TypeGuardError(`Missing required key ${String(key)}`, o, validators[key])
 
@@ -55,7 +45,7 @@ export abstract class BaseValidator {
 
     public static hasValidProperties<T>(arg: unknown, vargs: ValidatorArgs<T>): arg is T {
         try {
-            this.validateProperties(arg, vargs)
+            BaseValidator.validateProperties(arg, vargs)
 
             return true
         } catch {
@@ -69,16 +59,16 @@ export abstract class BaseValidator {
     ): Promise<U> {
         return new Promise((resolve, reject) => {
             try {
-                resolve(this.validateProperties(arg, { validators, required, optional }))
+                resolve(BaseValidator.validateProperties(arg, { validators, required, optional }))
             } catch (e: unknown) {
                 reject(e)
             }
         })
     }
 
-    public static isValidArray<T>(arg: unknown, args: ValidatorArgs<T>): arg is Array<T> {
+    public static isValidArray<T>(arg: unknown, args: ValidatorArgs<T>): arg is T[] {
         try {
-            this.validateArray(arg, args)
+            BaseValidator.validateArray(arg, args)
 
             return true
         } catch {
@@ -90,7 +80,7 @@ export abstract class BaseValidator {
         if (!Array.isArray(arg)) throw new TypeGuardError(`Invalid type for array`, arg, Array)
 
         for (const item of arg) {
-            this.validateProperties(item, args)
+            BaseValidator.validateProperties(item, args)
         }
 
         return arg as U[]
@@ -107,7 +97,7 @@ export abstract class BaseValidator {
         defaultValue: U | undefined = undefined
     ): U | undefined {
         if (typeof args === 'function') return is(arg, args) ? arg : (defaultValue ?? void 0)
-        return this.hasValidProperties(arg, args) ? arg : (defaultValue ?? void 0)
+        return BaseValidator.hasValidProperties(arg, args) ? arg : (defaultValue ?? void 0)
     }
 
     public static validate<T, U>(arg: T, schema: TypeGuard<U>): U {

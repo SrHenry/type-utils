@@ -5,9 +5,11 @@ export function hasMetadata<K extends string | symbol, T>(key: K, from: T): bool
 export function hasMetadata<K extends string | symbol>(key: K): <T>(from: T) => boolean
 export function hasMetadata<K extends string | symbol, T>(
     key: K,
-    from: Object | typeof __curry_param__ = __curry_param__
+    from: object | typeof __curry_param__ = __curry_param__
 ): boolean | ((from: T) => boolean) {
-    if (from === __curry_param__) return (from: T): boolean => hasMetadata(key, from)
+    if (from === __curry_param__)
+        // biome-ignore lint/nursery/noShadow: currying pattern — inner param fills outer's slot
+        return (from: T): boolean => hasMetadata(key, from)
 
     if (from === null || typeof from === 'undefined') return false
 

@@ -9,7 +9,7 @@ export function NonEnumerableProperty() {
             Object.defineProperty(target, propertyKey, {
                 ...descriptor,
                 enumerable: false,
-                ...(descriptor?.hasOwnProperty('value') && {
+                ...(Object.hasOwn(descriptor, 'value') && {
                     value: descriptor.value,
                 }),
             })

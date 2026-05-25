@@ -19,7 +19,7 @@ export const AND = (...values: any[]) => {
  * @returns result of nested 'OR' Logic gate.
  */
 export const OR = (...values: any[]) => {
-    for (const value of values) if (!!value) return true
+    for (const value of values) if (value) return true
     return false
 }
 

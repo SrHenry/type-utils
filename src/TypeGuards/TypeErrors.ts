@@ -7,10 +7,7 @@ export class TypeGuardError<Type, TypeGuard> extends Error {
     private readonly __checked: Type
     @NonEnumerableProperty()
     private readonly __against?: TypeGuard
-
-    constructor(message: string, checked: Type)
-    constructor(message: string, checked: Type, against: TypeGuard)
-    constructor(message: string, checked: Type, against: TypeGuard, cause: Error['cause'])
+    constructor(message: string, checked: Type, against?: TypeGuard, cause?: Error['cause'])
 
     constructor(
         message: string,

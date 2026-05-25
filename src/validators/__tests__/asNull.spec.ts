@@ -14,13 +14,11 @@ describe('asNull', () => {
         {},
         [],
         () => void 0,
-        function () {
-            return void 0
-        },
+        () => void 0,
         class {},
         new Date(),
         /a/,
-        new RegExp('a'),
+        /a/,
         new Error(),
         new Map(),
         new Set(),
@@ -55,12 +53,14 @@ describe('asNull', () => {
         expect(asNull()).toHaveProperty('optional')
         expect(typeof asNull().optional).toBe('function')
 
+        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
         const schema = asNull().optional()
 
         expect(typeof schema).toBe('function')
     })
 
     it('should return true if value is null or undefined', () => {
+        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
         const schema = asNull().optional()
 
         expect(schema(null)).toBe(true)
@@ -68,6 +68,7 @@ describe('asNull', () => {
     })
 
     it('should return false if value is not null or undefined', () => {
+        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
         const schema = asNull().optional()
 
         for (const value of values.filter(v => v !== undefined)) expect(schema(value)).toBe(false)

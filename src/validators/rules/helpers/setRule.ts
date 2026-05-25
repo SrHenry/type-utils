@@ -1,11 +1,16 @@
 import { setMessageFormator } from '../../../TypeGuards/helpers/setMessageFormator.ts'
-import { Rule } from '../types/index.ts'
+import type { Rule } from '../types/index.ts'
 
-export const setRule = (rule: Rule) => {
-    const setErrorMessageFormator = (messageFormator: (...args: any[]) => string) =>
+export const setRule = (
+    rule: Rule
+): {
+    readonly setErrorMessageFormator: (messageFormator: (...args: any[]) => string) => Rule
+    readonly setErrorMessage: (message: string) => Rule
+} => {
+    const setErrorMessageFormator = (messageFormator: (...args: any[]) => string): Rule =>
         setMessageFormator(messageFormator, rule)
 
-    const setErrorMessage = (message: string) => setErrorMessageFormator(() => message)
+    const setErrorMessage = (message: string): Rule => setErrorMessageFormator(() => message)
 
     return Object.freeze({ setErrorMessageFormator, setErrorMessage })
 }

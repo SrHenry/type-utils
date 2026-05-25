@@ -55,9 +55,10 @@ describe('optionalizeOverloadFactory', () => {
                 bar: number(),
             }) as TypeGuard<Something>
         }
-        const optionalized = optionalizeOverloadFactory(isSomething).optionalize<{
-            (): TypeGuard<undefined | Something>
-        }>()
+        const optionalized =
+            optionalizeOverloadFactory(isSomething).optionalize<
+                () => TypeGuard<undefined | Something>
+            >()
 
         expect(optionalized()(undefined)).toBe(false)
         expect(optionalized()({})).toBe(false)
