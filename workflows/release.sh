@@ -30,10 +30,19 @@ ${BOLD}Options${NC}
   --bump [level]       Auto-calculate version bump from package.json (default: patch)
                        Level must be one of: major, minor, patch
                        Mutually exclusive with <version>
+  --rc [<number>]      Append -rc.<number> to <version> (e.g. 0.9.0-rc.2)
+                       Requires <version>. Number omitted: auto-calculate from
+                       existing tags (next rc number, or 1 if none exist)
+  --beta [<number>]    Append -beta[.<number>] to <version> (e.g. 0.9.0-beta, 0.9.0-beta.2)
+                       Requires <version>. Number omitted: auto-calculate from
+                       existing tags (next beta number, or bare -beta if none)
+  --alpha [<number>]   Append -alpha[.<number>] to <version> (e.g. 0.9.0-alpha, 0.9.0-alpha.2)
+                       Requires <version>. Number omitted: auto-calculate from
+                       existing tags (next alpha number, or bare -alpha if none)
   --dry-run            Validate and generate changelog only, no mutations
   --auto               Enable AI-assisted README update via harness
   --strict             Compose with --auto to abort on harness failure
-  --harness <binary>   Override the harness binary (default: \$RELEASE_HARNESS from .env)
+  --harness <exec>     Override the harness executable (default: \$RELEASE_HARNESS from .env)
   -h, --help           Show this help message
 
 ${BOLD}Environment${NC} (loaded from .env)
@@ -48,6 +57,8 @@ die() { err "$@"; exit 1; }
 
 VERSION=""
 BUMP=""
+PRERELEASE=""
+PRERELEASE_NUM=""
 DRY_RUN=false
 AUTO=false
 STRICT=false
@@ -60,6 +71,30 @@ while [[ $# -gt 0 ]]; do
         BUMP="$2"; shift 2
       else
         BUMP="patch"; shift
+      fi
+      ;;
+    --rc)
+      [[ -n "$PRERELEASE" ]] && die "Cannot use --rc with --${PRERELEASE} — prerelease flags are mutually exclusive"
+      if [[ $# -ge 2 ]] && [[ "$2" != --* ]]; then
+        PRERELEASE="rc"; PRERELEASE_NUM="$2"; shift 2
+      else
+        PRERELEASE="rc"; PRERELEASE_NUM=""; shift
+      fi
+      ;;
+    --beta)
+      [[ -n "$PRERELEASE" ]] && die "Cannot use --beta with --${PRERELEASE} — prerelease flags are mutually exclusive"
+      if [[ $# -ge 2 ]] && [[ "$2" != --* ]]; then
+        PRERELEASE="beta"; PRERELEASE_NUM="$2"; shift 2
+      else
+        PRERELEASE="beta"; PRERELEASE_NUM=""; shift
+      fi
+      ;;
+    --alpha)
+      [[ -n "$PRERELEASE" ]] && die "Cannot use --alpha with --${PRERELEASE} — prerelease flags are mutually exclusive"
+      if [[ $# -ge 2 ]] && [[ "$2" != --* ]]; then
+        PRERELEASE="alpha"; PRERELEASE_NUM="$2"; shift 2
+      else
+        PRERELEASE="alpha"; PRERELEASE_NUM=""; shift
       fi
       ;;
     --dry-run) DRY_RUN=true; shift ;;
@@ -76,8 +111,16 @@ if [[ -n "$BUMP" && -n "$VERSION" ]]; then
   die "Cannot use both <version> and --bump — they are mutually exclusive"
 fi
 
+if [[ -n "$BUMP" && -n "$PRERELEASE" ]]; then
+  die "Cannot use both --bump and --${PRERELEASE} — they are mutually exclusive"
+fi
+
 if [[ -z "$BUMP" && -z "$VERSION" ]]; then
   die "Missing required argument: <version> (or use --bump to auto-calculate)"
+fi
+
+if [[ -n "$PRERELEASE" && -z "$VERSION" ]]; then
+  die "--${PRERELEASE} requires <version> (e.g. 0.9.0 --${PRERELEASE})"
 fi
 
 if [[ -n "$BUMP" ]]; then
@@ -87,14 +130,23 @@ if [[ -n "$BUMP" ]]; then
   esac
 fi
 
+if [[ -n "$PRERELEASE_NUM" ]]; then
+  [[ "$PRERELEASE_NUM" =~ ^[0-9]+$ ]] || die "Invalid --${PRERELEASE} number: '$PRERELEASE_NUM' — must be a positive integer"
+fi
+
 if [[ "$STRICT" == true && "$AUTO" != true ]]; then
   die "--strict requires --auto (it composes with --auto to enforce strict harness behavior)"
 fi
 
 SEMVER_REGEX='^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?(\+[a-zA-Z0-9.]+)?$'
+SEMVER_CORE_REGEX='^[0-9]+\.[0-9]+\.[0-9]+$'
 
 if [[ -n "$VERSION" ]]; then
-  [[ "$VERSION" =~ $SEMVER_REGEX ]] || die "Invalid semver: $VERSION"
+  if [[ -n "$PRERELEASE" ]]; then
+    [[ "$VERSION" =~ $SEMVER_CORE_REGEX ]] || die "With --${PRERELEASE}, <version> must be a clean semver core (e.g. 0.9.0), not a prerelease"
+  else
+    [[ "$VERSION" =~ $SEMVER_REGEX ]] || die "Invalid semver: $VERSION"
+  fi
   [[ "$VERSION" =~ ^[0-9] ]] || die "Version must not start with 'v' prefix: $VERSION"
 fi
 
@@ -122,13 +174,44 @@ if [[ -n "$BUMP" ]]; then
     else console.log(cur[0] + '.' + cur[1] + '.' + (cur[2]+1));
   ") || die "Failed to calculate bump version"
   info "Auto-bump: $BUMP → v${VERSION} (from v${CURRENT_VERSION})"
-else
+fi
+
+if [[ -n "$PRERELEASE" ]]; then
+  if [[ -z "$PRERELEASE_NUM" ]]; then
+    PRERELEASE_NUM=$(git tag -l "v${VERSION}-${PRERELEASE}*" 2>/dev/null | \
+      sed -n "s/^v${VERSION}-${PRERELEASE}\.\([0-9]*\)$/\1/p" | \
+      sort -n | tail -1)
+
+    if [[ -n "$PRERELEASE_NUM" ]]; then
+      PRERELEASE_NUM=$((PRERELEASE_NUM + 1))
+      info "Auto-detected --${PRERELEASE} number: ${PRERELEASE_NUM} (from existing tags)"
+    else
+      if [[ "$PRERELEASE" == "rc" ]]; then
+        PRERELEASE_NUM=1
+        info "No existing --rc tags for v${VERSION}, starting at 1"
+      else
+        PRERELEASE_NUM=""
+        info "No existing --${PRERELEASE} tags for v${VERSION}, using bare -${PRERELEASE}"
+      fi
+    fi
+  fi
+
+  if [[ -n "$PRERELEASE_NUM" ]]; then
+    VERSION="${VERSION}-${PRERELEASE}.${PRERELEASE_NUM}"
+  else
+    VERSION="${VERSION}-${PRERELEASE}"
+  fi
+  info "Prerelease version: v${VERSION}"
+fi
+
+if [[ -z "$PRERELEASE" ]]; then
   node -e "
-    const cur = '$CURRENT_VERSION'.split('.').map(Number);
-    const newV = '$VERSION'.split('.').map(Number);
+    const cur = '$CURRENT_VERSION'.split('-')[0].split('.').map(Number);
+    const newV = '$VERSION'.split('-')[0].split('.').map(Number);
     const curN = cur[0]*1e6 + cur[1]*1e3 + cur[2];
     const newN = newV[0]*1e6 + newV[1]*1e3 + newV[2];
-    if (newN <= curN) { console.error('New version $VERSION must be greater than current $CURRENT_VERSION'); process.exit(1); }
+    if (newN < curN) { console.error('New version $VERSION has lower core than current $CURRENT_VERSION'); process.exit(1); }
+    if (newN === curN && !'$VERSION'.includes('-')) { console.error('New version $VERSION must be greater than current $CURRENT_VERSION'); process.exit(1); }
   " || die "Version $VERSION is not a valid bump from $CURRENT_VERSION"
 fi
 
@@ -162,6 +245,8 @@ TODAY=$(date +%Y-%m-%d)
 info "Release checklist:"
 if [[ -n "$BUMP" ]]; then
   echo "  Version:       v${VERSION} (auto-bump: ${BUMP} from v${CURRENT_VERSION})"
+elif [[ -n "$PRERELEASE" ]]; then
+  echo "  Version:       v${VERSION} (prerelease: ${PRERELEASE})"
 else
   echo "  Version:       v${VERSION} (from v${CURRENT_VERSION})"
 fi

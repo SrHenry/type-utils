@@ -202,15 +202,43 @@ Commit or stash your changes before running `release.sh`. The script requires a 
 ## Script reference
 
 ```
-workflows/release.sh [<version> | --bump [major|minor|patch]] [--dry-run] [--auto] [--strict] [--harness <binary>] [-h|--help]
+workflows/release.sh [<version> | --bump [major|minor|patch]] [options]
 ```
 
 | Flag | Description |
 |---|---|
 | `<version>` | Semver version to release (e.g. `0.9.0`). Required unless `--bump` is used |
 | `--bump [level]` | Auto-calculate version bump from current `package.json` version. Level: `major`, `minor`, or `patch` (default). Mutually exclusive with `<version>` |
+| `--rc [<number>]` | Append `-rc.<number>` to `<version>` (e.g. `0.9.0-rc.2`). Requires `<version>`. Number omitted: auto-calculate from existing tags (next rc number, or 1 if none) |
+| `--beta [<number>]` | Append `-beta[.<number>]` to `<version>` (e.g. `0.9.0-beta`, `0.9.0-beta.2`). Requires `<version>`. Number omitted: auto-calculate from existing tags (next beta number, or bare `-beta` if none) |
+| `--alpha [<number>]` | Append `-alpha[.<number>]` to `<version>` (e.g. `0.9.0-alpha`, `0.9.0-alpha.2`). Requires `<version>`. Number omitted: auto-calculate from existing tags (next alpha number, or bare `-alpha` if none) |
 | `--dry-run` | Validate and generate changelog only, no mutations |
 | `--auto` | Enable AI README update; warn and continue on harness failure |
 | `--strict` | Compose with `--auto` to abort release on harness failure |
-| `--harness <binary>` | Override the harness binary (default: `$RELEASE_HARNESS` from `.env`) |
+| `--harness <exec>` | Override the harness executable (default: `$RELEASE_HARNESS` from `.env`) |
 | `-h`, `--help` | Show usage information |
+
+### Prerelease flag behavior
+
+- `--rc`, `--beta`, and `--alpha` are mutually exclusive with each other and with `--bump`
+- All three require an explicit `<version>` argument (the base semver core, e.g. `0.9.0`)
+- When `<number>` is omitted, the script scans existing git tags to find the highest prerelease number for that version+type and increments it
+- `--rc` always starts at `1` when no prior tags exist (e.g. `0.9.0-rc.1`)
+- `--beta` and `--alpha` use a bare suffix when no prior tags exist (e.g. `0.9.0-beta`, `0.9.0-alpha`), then number sequentially on subsequent runs (e.g. `0.9.0-beta.2`)
+- Examples:
+  ```bash
+  # First alpha for 0.9.0 → 0.9.0-alpha
+  ./workflows/release.sh 0.9.0 --alpha
+
+  # Second alpha (auto-detected) → 0.9.0-alpha.2
+  ./workflows/release.sh 0.9.0 --alpha
+
+  # Explicit beta number → 0.9.0-beta.5
+  ./workflows/release.sh 0.9.0 --beta 5
+
+  # First rc for 0.9.0 → 0.9.0-rc.1
+  ./workflows/release.sh 0.9.0 --rc
+
+  # Second rc (auto-detected) → 0.9.0-rc.2
+  ./workflows/release.sh 0.9.0 --rc
+  ```
