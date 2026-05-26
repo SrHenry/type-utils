@@ -15,13 +15,14 @@ Auto-discovered by: OpenCode, Claude Code, Codex, Cursor, Windsurf, Copilot, Gem
 
 Do **NOT** create branches, worktrees, or write code until all of the following are confirmed:
 
-1. **Base branch** — which branch to target:
-   - `developer` for features, refactors, and non-urgent changes (default)
-   - `master` for hotfixes and urgent production fixes
-   - If the user requests a different base, analyze the case against industry standard practices (e.g., main/master for hotfixes, integration branch for features) and question the user before proceeding
-2. **Related issues** — GitHub issue numbers, URLs, or external references (or explicitly "none")
-3. **Scope delimited** — what's included, what's excluded, expected behavior for edge cases
-4. **User confirms** — restate understanding and get explicit go-ahead before proceeding
+1. **Worktree required** — all code-producing work must happen in an ephemeral worktree (`/tmp/<repo-name>-<topic>`), **never** in the main repo checkout. The user may explicitly opt out (e.g. "work in the main checkout" or "no worktree") — but you must never assume this; always use a worktree unless told otherwise
+2. **Base branch** — which branch to target:
+- `developer` for features, refactors, and non-urgent changes (default)
+- `master` for hotfixes and urgent production fixes
+- If the user requests a different base, analyze the case against industry standard practices (e.g., main/master for hotfixes, integration branch for features) and question the user before proceeding
+3. **Related issues** — GitHub issue numbers, URLs, or external references (or explicitly "none")
+4. **Scope delimited** — what's included, what's excluded, expected behavior for edge cases
+5. **User confirms** — restate understanding and get explicit go-ahead before proceeding
 
 If the request is vague or ambiguous: ask targeted questions. Better to over-clarify than to assume. Never start implementation on unclear intent.
 
