@@ -108,8 +108,8 @@ Scopes: `schema`, `validator`, `build`, `README`, `pipeline`, `types`, etc.
 
 Before making any commit, the AI harness **must** clarify the commit author identity:
 
-- **Default author**: The repository owner — the AI harness must ask the user to confirm the author identity before the first commit in a session, unless already specified earlier in the conversation
-- **Verification step**: Before the first commit, check the worktree's `user.name` and `user.email` (`git config user.name` / `git config user.email`) — if they look like placeholder values (e.g., `Test`, `test@test.com`), stop and ask the user for the correct identity before committing
+- **Default author**: The local then global git config of the root worktree (i.e., `git config user.name` / `git config user.email` resolved from the main repo checkout, not the ephemeral worktree) — the AI harness must ask the user to confirm the author identity before the first commit in a session, unless already specified earlier in the conversation
+- **Verification step**: Before the first commit, check the resolved `user.name` and `user.email` — if they look like placeholder values (e.g., `Test`, `test@test.com`), stop and ask the user for the correct identity before committing
 - **Override**: If the user explicitly requests a different author (e.g., a co-author, bot identity, or different email), use that instead — but never assume an alternate identity without explicit direction
 - **GPG signing**: When the author identity is confirmed, commits should be GPG-signed (`-S` / `--gpg-sign`) with the key matching the author's email
 
