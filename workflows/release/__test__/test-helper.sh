@@ -19,12 +19,12 @@ _ASSERTIONS_IN_TEST=0
 
 # --- Color output ---
 
-_TH_RED='\033[0;31m'
-_TH_GREEN='\033[0;32m'
-_TH_YELLOW='\033[0;33m'
-_TH_CYAN='\033[0;36m'
-_TH_BOLD='\033[1m'
-_TH_NC='\033[0m'
+_TH_RED=$(printf '\033[0;31m')
+_TH_GREEN=$(printf '\033[0;32m')
+_TH_YELLOW=$(printf '\033[0;33m')
+_TH_CYAN=$(printf '\033[0;36m')
+_TH_BOLD=$(printf '\033[1m')
+_TH_NC=$(printf '\033[0m')
 
 # --- Output helpers ---
 
@@ -34,15 +34,15 @@ _th_indent() {
     fi
 }
 
-pass() { printf "${_TH_GREEN}✓${_TH_NC} %s\n" "$*"; }
+pass() { printf "${_TH_GREEN}✓${_TH_NC} %s\n" "$*" >&2; }
 fail() { printf "${_TH_RED}✗${_TH_NC} %s\n" "$*" >&2; }
-skip() { printf "${_TH_YELLOW}⊘${_TH_NC} %s\n" "$*"; }
+skip() { printf "${_TH_YELLOW}⊘${_TH_NC} %s\n" "$*" >&2; }
 
 # --- Test registration ---
 
 describe() {
-    _CURRENT_DESCRIBE="$1"
-    printf "\n${_TH_BOLD}${_TH_CYAN}%s${_TH_NC}\n" "$1"
+_CURRENT_DESCRIBE="$1"
+printf "\n${_TH_BOLD}${_TH_CYAN}%s${_TH_NC}\n" "$1" >&2
 }
 
 it() {
@@ -228,12 +228,37 @@ PKGJSON
 	cp "$_REAL_RELEASE_SH" workflows/release/release.sh
 	chmod +x workflows/release/release.sh
 
-	# Copy prompt template
-	cp "$_REAL_PROMPT_TEMPLATE" workflows/release/release-readme-prompt.md 2>/dev/null || true
+    # Copy prompt template
+    cp "$_REAL_PROMPT_TEMPLATE" workflows/release/release-readme-prompt.md 2>/dev/null || true
+
+    # Create a stub opencode binary for harness adapter tests
+    mkdir -p bin
+    cat > bin/opencode <<'STUBOPENCODE'
+#!/bin/sh
+# Stub opencode for release.sh tests
+# Simulates successful harness run with JSON output
+case "$1" in
+run)
+    # Find --title value for session ID
+    _stub_title="release-automation-stub"
+    for _stub_arg in "$@"; do
+        case "$_prev_arg" in --title) _stub_title="$_stub_arg" ;; esac
+        _prev_arg="$_stub_arg"
+    done
+    printf '{"type":"step_start","sessionID":"ses_stub123","title":"%s"}\n' "$_stub_title"
+    exit 0
+    ;;
+session)
+    case "$2" in delete) exit 0 ;; esac
+    ;;
+esac
+exit 0
+STUBOPENCODE
+    chmod +x bin/opencode
 
     # Create fake .env (gitignored, like the real project)
     cat > .env <<'ENVFILE'
-RELEASE_HARNESS=echo
+RELEASE_HARNESS=opencode
 RELEASE_HARNESS_MODEL=test-model
 RELEASE_HARNESS_ARGS=--test
 ENVFILE
@@ -293,42 +318,41 @@ cleanup_fake_repo() {
 
 # Run release.sh and capture output + exit code
 run_release() {
-    _rr_output_file="$_TMP_DIR/release_output.txt"
-    _rr_rc=0
-    cd "$_FAKE_REPO_DIR"
-    # Redirect stderr into stdout for capture
-	sh workflows/release/release.sh "$@" > "$_rr_output_file" 2>&1 || _rr_rc=$?
-    cd "$_ORIG_DIR"
-    _RUN_OUTPUT=$(cat "$_rr_output_file")
-    _RUN_EXIT_CODE=$_rr_rc
+_rr_output_file="$_TMP_DIR/release_output.txt"
+_rr_rc=0
+cd "$_FAKE_REPO_DIR"
+PATH="$(pwd)/bin:${PATH}" sh workflows/release/release.sh "$@" > "$_rr_output_file" 2>&1 || _rr_rc=$?
+cd "$_ORIG_DIR"
+_RUN_OUTPUT=$(cat "$_rr_output_file")
+_RUN_EXIT_CODE=$_rr_rc
 }
 
 # Run release.sh with --dry-run (safe, no mutations)
 run_release_dry() {
-    _rrd_output_file="$_TMP_DIR/release_dry_output.txt"
-    _rrd_rc=0
-    cd "$_FAKE_REPO_DIR"
-	sh workflows/release/release.sh --dry-run "$@" > "$_rrd_output_file" 2>&1 || _rrd_rc=$?
-    cd "$_ORIG_DIR"
-    _RUN_OUTPUT=$(cat "$_rrd_output_file")
-    _RUN_EXIT_CODE=$_rrd_rc
+_rrd_output_file="$_TMP_DIR/release_dry_output.txt"
+_rrd_rc=0
+cd "$_FAKE_REPO_DIR"
+PATH="$(pwd)/bin:${PATH}" sh workflows/release/release.sh --dry-run "$@" > "$_rrd_output_file" 2>&1 || _rrd_rc=$?
+cd "$_ORIG_DIR"
+_RUN_OUTPUT=$(cat "$_rrd_output_file")
+_RUN_EXIT_CODE=$_rrd_rc
 }
 
 # --- Summary ---
 
 print_summary() {
-    echo ""
-    printf "${_TH_BOLD}--- Test Summary ---${_TH_NC}\n"
-    printf "  Total:   %d\n" $_TESTS_TOTAL
-    printf "  ${_TH_GREEN}Passed:  %d${_TH_NC}\n" $_TESTS_PASSED
-    printf "  ${_TH_RED}Failed:  %d${_TH_NC}\n" $_TESTS_FAILED
-    printf "  ${_TH_YELLOW}Skipped: %d${_TH_NC}\n" $_TESTS_SKIPPED
-    echo ""
-    if [ $_TESTS_FAILED -gt 0 ]; then
-        printf "${_TH_RED}${_TH_BOLD}FAIL${_TH_NC}\n"
-        return 1
-    else
-        printf "${_TH_GREEN}${_TH_BOLD}PASS${_TH_NC}\n"
-        return 0
-    fi
+echo "" >&2
+printf "${_TH_BOLD}--- Test Summary ---${_TH_NC}\n" >&2
+printf " Total: %d\n" $_TESTS_TOTAL >&2
+printf " ${_TH_GREEN}Passed: %d${_TH_NC}\n" $_TESTS_PASSED >&2
+printf " ${_TH_RED}Failed: %d${_TH_NC}\n" $_TESTS_FAILED >&2
+printf " ${_TH_YELLOW}Skipped: %d${_TH_NC}\n" $_TESTS_SKIPPED >&2
+echo "" >&2
+if [ $_TESTS_FAILED -gt 0 ]; then
+printf "${_TH_RED}${_TH_BOLD}FAIL${_TH_NC}\n" >&2
+return 1
+else
+printf "${_TH_GREEN}${_TH_BOLD}PASS${_TH_NC}\n" >&2
+return 0
+fi
 }
