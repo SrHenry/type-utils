@@ -1,0 +1,23 @@
+#!/bin/sh
+
+_needs_precommit() {
+    git diff --cached --name-only --diff-filter=ACMR \
+        | while IFS= read -r _file; do
+            case "$_file" in
+                *.ts) exit 0 ;;
+                tsconfig*.json) exit 0 ;;
+                package.json) exit 0 ;;
+                yarn.lock) exit 0 ;;
+                biome.json) exit 0 ;;
+                .prettierrc*) exit 0 ;;
+                vitest.config.*) exit 0 ;;
+            esac
+        done
+    return 1
+}
+
+if _needs_precommit; then
+    yarn precommit
+fi
+
+git add -u

@@ -148,7 +148,7 @@ Create both together — the worktree stays alive for the entire PR lifecycle:
 git worktree add /tmp/<repo-name>-<topic> -b feat/<topic> origin/<base-branch>
 ```
 
-Work in the worktree (`/tmp/` prefix — ephemeral, not inside the main repo checkout). Run `yarn install` inside the worktree after creation.
+Work in the worktree (`/tmp/` prefix — ephemeral, not inside the main repo checkout). **The first step after creating the worktree must be `yarn install`** to set up dependencies and trigger the `prepare` script (which configures git hooks). Do not write code, run builds, or execute tests until `yarn install` completes.
 
 ### 3. Implement
 
@@ -192,6 +192,15 @@ for remote in $(git remote); do git push "$remote" --delete feat/<topic> || echo
 ```
 
 Restore the main repo to its original branch if needed.
+
+## Release Pipeline
+
+When performing a release (running `release.sh`, creating tags, drafting GitHub releases, or any release-related task), **always** follow the README update guidelines in [`workflows/release/release-readme-prompt.md`](workflows/release/release-readme-prompt.md). This file defines what belongs in `README.md` (user-facing APIs only) vs. what belongs in `CHANGELOG.md` or GitHub Release Notes (bug fixes, changelog entries, internal changes). Never add bug fix notes, per-version callouts, or internal tooling docs to the README.
+
+## Release Assets
+
+- **Tarball naming**: `type-utils-<tag>.tgz` or `type-utils-<tag>.tar.gz` — `<tag>` is the version without `v` prefix (e.g. `type-utils-0.8.1.tgz`). Never use the scoped package name (e.g. ~~`srhenry-type-utils-0.8.1.tgz`~~)
+- **Tarball cleanup**: Remove local tarball(s) immediately after uploading to the GitHub release (`rm -f type-utils-*.tgz srhenry-type-utils-*.tgz`). Do not leave release artifacts in the working tree
 
 ## Release Automation (`workflows/`)
 

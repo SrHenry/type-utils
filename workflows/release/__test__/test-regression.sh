@@ -164,12 +164,25 @@ it "allows --alpha with --skip-precommit"
 describe "Regression: .env parsing edge cases"
 
 it "handles .env with trailing whitespace in values"
-    _FAKE_REPO_DIR="$_TMP_DIR/reg-env-trail"
-    create_fake_repo "$_FAKE_REPO_DIR"
-    cd "$_FAKE_REPO_DIR"
-    printf 'RELEASE_HARNESS=echo\nRELEASE_HARNESS_MODEL=test-model\n' > .env
-    cd "$_ORIG_DIR"
-    run_release_dry 0.9.0 --auto
-    assert_contains "$_RUN_OUTPUT" "Harness: echo"
-    test_pass
-    cleanup_fake_repo "$_FAKE_REPO_DIR"
+_FAKE_REPO_DIR="$_TMP_DIR/reg-env-trail"
+create_fake_repo "$_FAKE_REPO_DIR"
+cd "$_FAKE_REPO_DIR"
+printf 'RELEASE_HARNESS=opencode\nRELEASE_HARNESS_MODEL=test-model\n' > .env
+cd "$_ORIG_DIR"
+run_release_dry 0.9.0 --auto
+assert_contains "$_RUN_OUTPUT" "Harness: opencode"
+test_pass
+cleanup_fake_repo "$_FAKE_REPO_DIR"
+
+it "rejects unsupported harness adapter"
+_FAKE_REPO_DIR="$_TMP_DIR/reg-unsupported-adapter"
+create_fake_repo "$_FAKE_REPO_DIR"
+cd "$_FAKE_REPO_DIR"
+printf 'RELEASE_HARNESS=fakeharness\nRELEASE_HARNESS_MODEL=test-model\n' > .env
+cd "$_ORIG_DIR"
+_output=$(cd "$_FAKE_REPO_DIR" && PATH="$(pwd)/bin:${PATH}" sh workflows/release/release.sh 0.9.0 --auto 2>&1) && _rc=0 || _rc=$?
+cd "$_ORIG_DIR"
+assert_exit_code 1 "$_rc"
+assert_contains "$_output" "not a supported adapter"
+test_pass
+cleanup_fake_repo "$_FAKE_REPO_DIR"

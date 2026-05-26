@@ -39,7 +39,8 @@
     "check:fix": "biome lint --write ./src && prettier --write \"src/**/*.ts\"",
     "circular-dependencies": "madge --ts-config tsconfig.json --circular --extensions ts src",
     "circular-dependencies:graph": "madge --ts-config tsconfig.json --circular --extensions ts --image .madge/circular-dependencies.graph.svg src",
-    "precommit": "npm run build:clean && npm run check:fix && npm run test && npm run circular-dependencies"
+    "precommit": "npm run build:clean && npm run check:fix && npm run test && npm run circular-dependencies",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "repository": "github:SrHenry/type-utils.git",
   "keywords": [
