@@ -129,6 +129,8 @@ const isAvocadoString = string('avocado') //specific string
 const isPatternString = string(/goo+gle/) //pattern/RegExp matched string
 ```
 
+Supports the fluent `.max()`, `.min()`, `.regex()`, `.nonEmpty()`, `.url()`, `.email()`, `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
+
 #### [`Schema.number`](https://srhenry.github.io/type-utils/variables/number.html)
 
 It represents a number to typescript's type infers and runtime validation
@@ -138,6 +140,8 @@ import { number } from '@srhenry/type-utils'
 
 const isNumber = number()
 ```
+
+Supports the fluent `.nonZero()`, `.max()`, `.min()`, `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
 
 #### [`Schema.boolean`](https://srhenry.github.io/type-utils/variables/boolean.html)
 
@@ -164,6 +168,8 @@ const isMyObject = object({
 })
 ```
 
+Supports the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
+
 #### [`Schema.array`](https://srhenry.github.io/type-utils/variables/array.html)
 
 It represents an array to typescript's type infers and runtime validation, which its items can also be described using the Schema helpers
@@ -176,6 +182,8 @@ const isMyArray = array(string()) // array of strings
 const isMyObjArray = array(object({ foo: string('bar') }))
 const isMyObjArray2 = array({ foo: string('bar') })
 ```
+
+Supports the fluent `.max()`, `.min()`, `.unique()`, `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
 
 #### [`Schema.tuple`](https://srhenry.github.io/type-utils/variables/tuple.html)
 
@@ -218,6 +226,8 @@ import { symbol } from '@srhenry/type-utils'
 const isSymbol = symbol()
 ```
 
+Supports the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
+
 #### [`Schema.bigint`](https://srhenry.github.io/type-utils/variables/bigint.html)
 
 It represents a `bigint` to typescript's type infers and runtime validation.
@@ -250,6 +260,8 @@ const validStatus = [...Object.keys(Status)] as (keyof typeof Status)[]
 const isStatus = asEnum(validStatus)
 ```
 
+Supports the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
+
 #### [`Schema.asNull`](https://srhenry.github.io/type-utils/variables/asNull.html)
 
 It represents a null literal to typescript's type infers and runtime validation.
@@ -259,6 +271,8 @@ import { asNull } from '@srhenry/type-utils'
 
 const isNull = asNull()
 ```
+
+Supports the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
 
 #### [`Schema.asUndefined`](https://srhenry.github.io/type-utils/variables/asUndefined.html)
 
@@ -332,6 +346,8 @@ const hasBar = object({ bar: string() })
 const isSomething = and(hasFoo, hasBar)
 ```
 
+Supports the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
+
 #### [`Schema.or`](https://srhenry.github.io/type-utils/variables/or.html)
 
 It creates an union between two schemas.
@@ -343,6 +359,8 @@ const isString = string()
 const isBool = boolean()
 const isSomething = or(isString, isBool)
 ```
+
+Supports the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
 
 #### [`Schema.useSchema`](https://srhenry.github.io/type-utils/variables/useSchema.html)
 
