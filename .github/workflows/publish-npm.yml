@@ -24,9 +24,12 @@ jobs:
                   node-version: 24
                   registry-url: 'https://registry.npmjs.org'
 
-            # Yarn 1.x comes preinstalled with Node, but we lock it to your version.
-            - name: Ensure Yarn 1.x
-              run: yarn --version
+        # Yarn 1.x comes preinstalled with Node, but we enforce the exact version
+        - name: Ensure Yarn 1.x
+          run: |
+            corepack enable
+            corepack prepare yarn@1 --activate
+            yarn --version
 
             - name: Install dependencies
               run: yarn install --frozen-lockfile
