@@ -25,7 +25,7 @@
         "clear-docs:default": "rm -rf ./docs || exit 0",
         "predocs:clean": "npm run clear-docs",
         "docs:clean": "npm run docs",
-        "release": "bash workflows/release.sh",
+        "release": "sh workflows/release/release.sh",
         "build:tsc:umd": "npx tsc -p ./umd.tsconfig.jsonc",
         "prebuild:umd": "npm run build:cjs",
         "build:umd": "npx webpack --entry=./dist/cjs/umd.js --output-path=./umd --output-filename=index.min.js --mode=production --target=web",

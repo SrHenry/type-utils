@@ -4,60 +4,67 @@
 
 Releases follow the flow: **merge developer → master → update README → run `release.sh` → push to all remotes → publish draft release → CI/CD publishes to npm**. The `workflows/release.sh` script automates the mechanical steps; an optional AI harness can automate the README update; and GitHub Actions handles the npm publish.
 
+The script is POSIX sh compatible (`#!/bin/sh`) and tested via `workflows/__test__/run-tests.sh`.
+
 ## Release flow
 
 ```
 developer branch
-       │
-       ▼
-  merge to master (manual, --no-ff recommended)
-       │
-       ▼
-  update README.md ─────────────────────┐
-       │                                │
-       │  (manual)                      │  (--auto [--strict])
-       │                                │  AI harness reads
-       │                                │  release-readme-prompt.md
-       │                                │  + git log context
-       │  ◄─────────────────────────────┘
-       ▼
-  workflows/release.sh <version> [flags]
-       │
-       ├── yarn precommit (build + lint + test + circular-deps)
-       ├── (optional) AI README update via harness
-       ├── bump version in package.json + commit
-       ├── git tag -a v<version>
-       ├── yarn build:clean
-       ├── npm pack → rename tarball
-       ├── generate release notes (minimal)
-       ├── gh release create --draft (with tarball)
-       └── git push <each remote> master v<version>
-       │
-       ▼
-  review draft release on GitHub
-       │
-       ▼
-  click "Publish" on draft
-       │
-       ▼
-  .github/workflows/publish-npm.yml triggers
-  on release: [published]
-       │
-       ├── yarn install --frozen-lockfile
-       ├── yarn build:clean
-       ├── yarn test
-       ├── yarn circular-dependencies
-       └── npm publish --provenance (OIDC, no NPM_TOKEN needed)
-       │
-       ▼
-  package live on npm
+│
+▼
+merge to master (manual, --no-ff recommended, or --auto-merge)
+│
+▼
+update README.md ─────────────────────┐
+│                                     │
+│ (manual)                            │ (--auto [--strict])
+│                                     │ AI harness reads
+│                                     │ release-readme-prompt.md
+│                                     │ + git log context
+│ ◄───────────────────────────────────┘
+▼
+workflows/release.sh <version> [flags]
+│
+├── (optional) git merge developer (--auto-merge)
+├── yarn precommit (build + lint + test + circular-deps)
+│   (skippable with --skip-precommit)
+├── (optional) AI README update via harness
+├── bump version in package.json + commit
+├── git tag -a v<version> (or -s with --gpg)
+├── yarn build:clean
+│   (optionally --clean-tarballs before packing)
+├── npm pack → rename tarball
+├── generate release notes (minimal)
+│   (optionally persist to CHANGELOG.md with --changelog)
+├── gh release create --draft (with tarball)
+└── git push <each remote> master v<version>
+    (skippable with --skip-push)
+│
+▼
+review draft release on GitHub
+│
+▼
+click "Publish" on draft
+│
+▼
+.github/workflows/publish-npm.yml triggers
+on release: [published]
+│
+├── yarn install --frozen-lockfile
+├── yarn build:clean
+├── yarn test
+├── yarn circular-dependencies
+└── npm publish --provenance (OIDC, no NPM_TOKEN needed)
+│
+▼
+package live on npm
 ```
 
 ## Manual steps
 
-These are performed by a human before running `release.sh`:
+These are performed by a human before running `release.sh` (or automated via flags):
 
-1. **Merge `developer` into `master`** — `git checkout master && git merge --no-ff developer`
+1. **Merge `developer` into `master`** — `git checkout master && git merge --no-ff developer` (or use `--auto-merge`)
 2. **Update README.md** — add new features, API reference entries, code examples, deprecation notices (skip this if using `--auto`)
 3. **Review the draft release** on GitHub — polish release notes, add feature sections and code examples for major releases
 4. **Publish the draft release** — clicking "Publish" triggers the CI/CD pipeline
@@ -67,18 +74,20 @@ These are performed by a human before running `release.sh`:
 The script handles:
 
 - Pre-flight validation (semver, clean tree, master branch, gh auth, remotes)
-- Precommit checks (`yarn precommit`)
-- AI-assisted README update (when `--auto` or `--strict-auto` is passed)
+- Auto-merge `developer` into `master` (with `--auto-merge`, `--no-ff` by default)
+- Precommit checks (`yarn precommit`, skippable with `--skip-precommit`)
+- AI-assisted README update (when `--auto` is passed, optionally with `--strict`)
 - Version bump in `package.json` + git commit
-- Annotated tag creation
-- Build + pack + rename tarball
+- Annotated tag creation (GPG-signed with `--gpg`)
+- Build + pack + rename tarball (clean old tarballs with `--clean-tarballs`)
 - Minimal release notes generation (flat commit list with full 40-char hashes)
+- Changelog persistence to `CHANGELOG.md` (with `--changelog`)
 - Draft GitHub release creation (with tarball attached)
-- Push to all configured remotes
+- Push to all configured remotes (skippable with `--skip-push`)
 
 ## AI-assisted README update
 
-The `--auto` and `--strict-auto` flags delegate README updates to an AI harness (e.g. `opencode`):
+The `--auto` and `--auto --strict` flags delegate README updates to an AI harness (e.g. `opencode`):
 
 ```bash
 # Warn and continue if harness fails
@@ -87,13 +96,16 @@ The `--auto` and `--strict-auto` flags delegate README updates to an AI harness 
 # Abort release if harness fails
 ./workflows/release.sh 0.9.0 --auto --strict
 
-# Override harness binary
+# Override harness executable
 ./workflows/release.sh 0.9.0 --auto --harness aider
+
+# Use custom prompt template
+./workflows/release.sh 0.9.0 --auto --notes-template my-prompt.md
 ```
 
 ### How it works
 
-1. The script reads `workflows/release-readme-prompt.md` and substitutes placeholders (`${PREV_VERSION}`, `${NEW_VERSION}`, `${COMMITS}`) with the git log since the last tag
+1. The script reads `workflows/release-readme-prompt.md` (or custom template via `--notes-template`) and substitutes placeholders (`${PREV_VERSION}`, `${NEW_VERSION}`, `${COMMITS}`) with the git log since the last tag
 2. It invokes the harness with the resolved prompt — the harness has full repo access and commits changes itself
 3. On success: script validates the working tree is clean (harness committed its changes)
 4. On failure with `--auto`: warns and continues (README can be updated manually later)
@@ -105,13 +117,13 @@ Set in `.env` (gitignored, template in `.env.example`):
 
 | Variable | Description | Default |
 |---|---|---|
-| `RELEASE_HARNESS` | Harness binary name | `opencode` |
+| `RELEASE_HARNESS` | Harness executable name | `opencode` |
 | `RELEASE_HARNESS_MODEL` | Model identifier | `nvidia/z-ai/glm-5.1` |
 | `RELEASE_HARNESS_ARGS` | Extra CLI arguments | `--dangerously-skip-permissions` |
 
 ### Prompt template
 
-`workflows/release-readme-prompt.md` is committed to the repo and fully customizable. It contains placeholders the script resolves at runtime:
+`workflows/release-readme-prompt.md` is committed to the repo and fully customizable. Override with `--notes-template <file>`. It contains placeholders the script resolves at runtime:
 
 - `${PREV_VERSION}` — previous tag (e.g. `v0.8.0`)
 - `${NEW_VERSION}` — new version (e.g. `v0.9.0`)
@@ -156,6 +168,16 @@ The script generates **minimal** release notes — a flat list of non-merge comm
 
 Full 40-char hashes are used because GitHub renders them as auto-links in plain text. For **major releases**, manually enrich the draft with feature sections, code examples, and migration notes before publishing.
 
+### Changelog persistence
+
+With `--changelog`, release notes are also appended to `CHANGELOG.md` in the project root:
+
+```bash
+./workflows/release.sh 0.9.0 --changelog
+```
+
+This is useful for repos that maintain a persistent changelog file alongside GitHub releases.
+
 ## Troubleshooting
 
 ### Tag already exists
@@ -199,6 +221,14 @@ for remote in $(git remote); do git push "$remote" :refs/tags/v<version>; done
 
 Commit or stash your changes before running `release.sh`. The script requires a clean tree for reproducibility.
 
+### Auto-merge conflicts
+
+If `--auto-merge` fails due to merge conflicts:
+
+1. Resolve conflicts manually on `master`
+2. Commit the merge
+3. Re-run `release.sh` (without `--auto-merge` since the merge is done)
+
 ## Script reference
 
 ```
@@ -212,6 +242,14 @@ workflows/release.sh [<version> | --bump [major|minor|patch]] [options]
 | `--rc [<number>]` | Append `-rc.<number>` to `<version>` (e.g. `0.9.0-rc.2`). Requires `<version>`. Number omitted: auto-calculate from existing tags (next rc number, or 1 if none) |
 | `--beta [<number>]` | Append `-beta[.<number>]` to `<version>` (e.g. `0.9.0-beta`, `0.9.0-beta.2`). Requires `<version>`. Number omitted: auto-calculate from existing tags (next beta number, or bare `-beta` if none) |
 | `--alpha [<number>]` | Append `-alpha[.<number>]` to `<version>` (e.g. `0.9.0-alpha`, `0.9.0-alpha.2`). Requires `<version>`. Number omitted: auto-calculate from existing tags (next alpha number, or bare `-alpha` if none) |
+| `--auto-merge` | Merge `developer` into `master` before release (`--no-ff` by default, `--ff` to opt-in to fast-forward) |
+| `--ff` | Compose with `--auto-merge` to use fast-forward merge instead of `--no-ff` |
+| `--skip-push` | Perform all local steps but skip pushing to remotes |
+| `--skip-precommit` | Skip precommit hook (for emergency hotfixes where tests are known-passing) |
+| `--clean-tarballs` | Remove old `type-utils-*.tgz` files before packing |
+| `--gpg` | Create GPG-signed annotated tags (`git tag -s`) instead of default (`git tag -a`) |
+| `--changelog` | Persist release notes to `CHANGELOG.md` alongside GitHub release |
+| `--notes-template <f>` | Override default prompt template (`workflows/release-readme-prompt.md`) for custom prompts |
 | `--dry-run` | Validate and generate changelog only, no mutations |
 | `--auto` | Enable AI README update; warn and continue on harness failure |
 | `--strict` | Compose with `--auto` to abort release on harness failure |
@@ -225,20 +263,54 @@ workflows/release.sh [<version> | --bump [major|minor|patch]] [options]
 - When `<number>` is omitted, the script scans existing git tags to find the highest prerelease number for that version+type and increments it
 - `--rc` always starts at `1` when no prior tags exist (e.g. `0.9.0-rc.1`)
 - `--beta` and `--alpha` use a bare suffix when no prior tags exist (e.g. `0.9.0-beta`, `0.9.0-alpha`), then number sequentially on subsequent runs (e.g. `0.9.0-beta.2`)
+- If a bare prerelease tag exists (e.g. `v0.9.0-beta`), the next run auto-increments to `.2` (e.g. `0.9.0-beta.2`)
 - Examples:
-  ```bash
-  # First alpha for 0.9.0 → 0.9.0-alpha
-  ./workflows/release.sh 0.9.0 --alpha
+```bash
+# First alpha for 0.9.0 → 0.9.0-alpha
+./workflows/release.sh 0.9.0 --alpha
 
-  # Second alpha (auto-detected) → 0.9.0-alpha.2
-  ./workflows/release.sh 0.9.0 --alpha
+# Second alpha (auto-detected) → 0.9.0-alpha.2
+./workflows/release.sh 0.9.0 --alpha
 
-  # Explicit beta number → 0.9.0-beta.5
-  ./workflows/release.sh 0.9.0 --beta 5
+# Explicit beta number → 0.9.0-beta.5
+./workflows/release.sh 0.9.0 --beta 5
 
-  # First rc for 0.9.0 → 0.9.0-rc.1
-  ./workflows/release.sh 0.9.0 --rc
+# First rc for 0.9.0 → 0.9.0-rc.1
+./workflows/release.sh 0.9.0 --rc
 
-  # Second rc (auto-detected) → 0.9.0-rc.2
-  ./workflows/release.sh 0.9.0 --rc
-  ```
+# Second rc (auto-detected) → 0.9.0-rc.2
+./workflows/release.sh 0.9.0 --rc
+```
+
+### Flag composition examples
+
+```bash
+# Full automation: merge, auto README, strict harness
+./workflows/release.sh 0.9.0 --auto-merge --auto --strict
+
+# Emergency hotfix: skip precommit, skip push
+./workflows/release.sh 0.8.1 --skip-precommit --skip-push
+
+# GPG-signed release with changelog and clean tarballs
+./workflows/release.sh 1.0.0 --gpg --changelog --clean-tarballs
+
+# Prerelease with auto-merge and custom prompt
+./workflows/release.sh 0.9.0 --rc --auto-merge --auto --notes-template rc-prompt.md
+
+# Dry-run with all flags to preview
+./workflows/release.sh 0.9.0 --dry-run --auto-merge --auto --gpg --changelog
+```
+
+## Test suite
+
+All `workflows/` scripts are tested in `workflows/__test__/`:
+
+```bash
+# Run all tests
+./workflows/__test__/run-tests.sh
+
+# Run specific test file
+./workflows/__test__/run-tests.sh test-args.sh
+```
+
+Test files are POSIX sh compatible (`#!/bin/sh`) and use a custom test framework (`test-helper.sh`) with assertions for equality, containment, exit codes, and file existence.

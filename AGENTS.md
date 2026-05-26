@@ -192,6 +192,29 @@ for remote in $(git remote); do git push "$remote" --delete feat/<topic> || echo
 
 Restore the main repo to its original branch if needed.
 
+## Release Automation (`workflows/`)
+
+All scripts under `workflows/` (including `release/release.sh`, test helpers, and future additions) must follow these constraints:
+
+- **POSIX sh only**: Shebang `#!/bin/sh`, no Bashisms, no ZSHisms, no shell-specific extensions
+- **Forbidden constructs**: `[[ ]]`, `$BASH_SOURCE`, `mapfile`, `declare`, `source` (use `.`), `(( ))`, `${var//pattern/replacement}`, `${var:offset:length}`, arrays beyond positional params, `local` (use naming convention `_var` instead), `function` keyword
+- **Allowed POSIX**: `[ ]` tests, `case/esac`, parameter expansion (`${var#pattern}`, `${var%pattern}`, `${var%%pattern}`, `${var:-default}`), `$(command)`, `read`, `printf`, `set -eu`, `trap`, `while/for/until`
+- **Directory structure**: Each workflow tool lives in its own subdirectory (e.g. `workflows/release/`). Tests go in `workflows/<tool>/__test__/`. The global orchestrator `workflows/__test__/run-tests.sh` discovers all `workflows/**/__test__/test-*.sh` files (excluding `test-helper.sh`)
+- **Testing**: All scripts must have corresponding test suites in their `__test__/` subdirectory, runnable via `workflows/__test__/run-tests.sh`
+- **Test scripts themselves**: Also POSIX sh — the test framework (`test-helper.sh`) and every `test-*.sh` file must be `/bin/sh` compatible
+- **External tools**: `tr`, `sed`, `sort`, `tail`, `head`, `cut`, `git`, `node` (for JSON manipulation) — assume these are available; do not depend on `jq`, `yq`, or other non-standard CLI tools
+
+## TODO.md Handling
+
+`TODO.md` is the single source of truth for planned work. All AI harness sessions must follow these rules:
+
+1. **Read first**: At session start, read `TODO.md` to understand outstanding work
+2. **No done items**: Never keep completed items in `TODO.md`. Remove them immediately after implementation is verified. Strikethrough + "Done" markers are forbidden — just delete the line
+3. **Scope-structured**: Organize items by scope (e.g. component, module, subsystem), not by status. Use `###` subheadings to group related items
+4. **Update as you go**: When new work is discovered during implementation, add it to `TODO.md` under the appropriate scope before starting on it
+5. **No duplication**: Each planned item appears exactly once. If an item spans multiple scopes, file it under the primary scope and reference it from others
+6. **Concise entries**: One line per item. Include enough context to be actionable (flag names, file paths, expected behavior) but avoid prose
+
 ## Important Notes
 
 - **`yarn` not `npm`**: `npm install` fails with eresolve errors in this repo. Always use `yarn install`.

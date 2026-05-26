@@ -5,9 +5,9 @@ dist
 types
 !src/**/types
 umd
-!.env.example
 .env
 .env.*
+!.env.example
 **/*.draft.*
 **/*.draft
 yarn-error.log
