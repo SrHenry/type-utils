@@ -7,12 +7,88 @@ PROMPT_TEMPLATE="$SCRIPT_DIR/release-readme-prompt.md"
 ENV_FILE="$PROJECT_ROOT/.env"
 CHANGELOG_FILE="$PROJECT_ROOT/CHANGELOG.md"
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-NC='\033[0m'
+if [ "${NO_COLOR:-}" ]; then
+    RED=""
+    GREEN=""
+    YELLOW=""
+    CYAN=""
+    BOLD=""
+    NC=""
+else
+    RED=$(printf '\033[0;31m')
+    GREEN=$(printf '\033[0;32m')
+    YELLOW=$(printf '\033[0;33m')
+    CYAN=$(printf '\033[0;36m')
+    BOLD=$(printf '\033[1m')
+    NC=$(printf '\033[0m')
+fi
+
+# --- Harness adapters ---
+# Each adapter implements: _harness_run_<name> and _harness_cleanup_<name>
+# To add a new adapter, implement both functions and register the name in
+# _HARNESS_ADAPTERS below.
+
+_HARNESS_ADAPTERS="opencode"
+
+_harness_adapter_name() {
+    case "$1" in
+    opencode) printf 'opencode' ;;
+    claude|claude-code) printf 'claude' ;;
+    codex) printf 'codex' ;;
+    hermes) printf 'hermes' ;;
+    openclaw) printf 'openclaw' ;;
+    antigravity) printf 'antigravity' ;;
+    *) printf '' ;;
+    esac
+}
+
+_harness_adapter_check() {
+    _ha_name=$(_harness_adapter_name "$1")
+    if [ -z "$_ha_name" ]; then
+        return 1
+    fi
+    case "$_ha_name" in
+    $_HARNESS_ADAPTERS) return 0 ;;
+    *) return 1 ;;
+    esac
+}
+
+# --- opencode adapter ---
+
+_harness_run_opencode() {
+    _hro_bin="$1"
+    _hro_model="$2"
+    _hro_args="$3"
+    _hro_title="$4"
+    _hro_prompt="$5"
+
+    _hro_output=$( \
+        OPENCODE= OPENCODE_PID= OPENCODE_RUN_ID= OPENCODE_PROCESS_ROLE= \
+        OPENCODE_SERVER_USERNAME= OPENCODE_SERVER_PASSWORD= \
+        "$_hro_bin" run \
+            --model "$_hro_model" \
+            $_hro_args \
+            --title "$_hro_title" \
+            --format json \
+            "$_hro_prompt" \
+            2>&1 \
+    ) && _hro_rc=0 || _hro_rc=$?
+
+    printf '%s' "$_hro_output"
+    return $_hro_rc
+}
+
+_harness_cleanup_opencode() {
+    _hco_bin="$1"
+    _hco_session_id="$2"
+    if [ -n "$_hco_session_id" ]; then
+        "$_hco_bin" session delete "$_hco_session_id" 2>/dev/null || true
+    fi
+}
+
+_harness_session_id_opencode() {
+    printf '%s' "$1" | sed -n 's/.*"sessionID":"\([^"]*\)".*/\1/p' | head -1
+}
 
 info() { printf "${CYAN}[INFO]${NC} %s\n" "$*"; }
 ok()   { printf "${GREEN}[OK]${NC} %s\n" "$*"; }
@@ -52,13 +128,16 @@ ${BOLD}Options${NC}
   --dry-run             Validate and generate changelog only, no mutations
   --auto                Enable AI-assisted README update via harness
   --strict              Compose with --auto to abort on harness failure
-  --harness <exec>      Override the harness executable (default: \$RELEASE_HARNESS from .env)
-  -h, --help            Show this help message
+--harness <exec> Override the harness executable (default: \$RELEASE_HARNESS from .env)
+ Must be a supported adapter: opencode
+ -h, --help Show this help message
 
 ${BOLD}Environment${NC} (loaded from .env)
-  RELEASE_HARNESS        Harness executable name (default: opencode)
-  RELEASE_HARNESS_MODEL  Model for harness (default: nvidia/z-ai/glm-5.1)
-  RELEASE_HARNESS_ARGS   Extra harness arguments (default: --dangerously-skip-permissions)
+RELEASE_HARNESS Harness executable name (default: opencode)
+ Must match a supported adapter
+RELEASE_HARNESS_MODEL Model for harness (default: nvidia/z-ai/glm-5.1)
+RELEASE_HARNESS_ARGS Extra harness arguments (default: --dangerously-skip-permissions)
+NO_COLOR Set to any value to disable colored output
 EOF
     exit 0
 }
@@ -347,9 +426,14 @@ PREV_TAG=$(git describe --tags --abbrev=0 HEAD 2>/dev/null) || die "No previous 
 
 AUTO_ENABLED=false
 if [ "$AUTO" = true ]; then
-    AUTO_ENABLED=true
-    HARNESS_BIN="${HARNESS_OVERRIDE:-$RELEASE_HARNESS}"
-    command -v "$HARNESS_BIN" >/dev/null 2>&1 || die "Harness executable '$HARNESS_BIN' not found in PATH"
+AUTO_ENABLED=true
+HARNESS_BIN="${HARNESS_OVERRIDE:-$RELEASE_HARNESS}"
+HARNESS_ADAPTER=$(_harness_adapter_name "$HARNESS_BIN")
+if [ -z "$HARNESS_ADAPTER" ]; then
+die "Harness '$HARNESS_BIN' is not a supported adapter. Supported: $(echo $_HARNESS_ADAPTERS | tr ' ' ', ')"
+fi
+_harness_adapter_check "$HARNESS_BIN" || die "Harness adapter '$HARNESS_ADAPTER' is not implemented yet. Implemented: $(echo $_HARNESS_ADAPTERS | tr ' ' ', ')"
+command -v "$HARNESS_BIN" >/dev/null 2>&1 || die "Harness executable '$HARNESS_BIN' not found in PATH"
 
     if [ -n "$NOTES_TEMPLATE" ]; then
         EFFECTIVE_TEMPLATE="$NOTES_TEMPLATE"
@@ -398,9 +482,9 @@ if [ -n "$NOTES_TEMPLATE" ]; then
     echo "  Notes template: ${NOTES_TEMPLATE}"
 fi
 if [ "$AUTO_ENABLED" = true ]; then
-    echo "  Harness: ${HARNESS_BIN}"
-    echo "  Model: ${RELEASE_HARNESS_MODEL}"
-    echo "  Strict: ${STRICT}"
+echo " Harness: ${HARNESS_BIN} (adapter: ${HARNESS_ADAPTER})"
+echo " Model: ${RELEASE_HARNESS_MODEL}"
+echo " Strict: ${STRICT}"
 fi
 echo ""
 
@@ -447,22 +531,37 @@ if [ "$AUTO_ENABLED" = true ]; then
         echo "  Would run harness with template: $EFFECTIVE_TEMPLATE"
         rm -f /tmp/release-readme-prompt-resolved.txt
     else
-        info "Invoking harness..."
+    info "Invoking harness..."
         HARNESS_PROMPT=$(cat /tmp/release-readme-prompt-resolved.txt)
         rm -f /tmp/release-readme-prompt-resolved.txt
 
-        if $HARNESS_BIN run --model "$RELEASE_HARNESS_MODEL" $RELEASE_HARNESS_ARGS "$HARNESS_PROMPT"; then
+        _HARNESS_SESSION_TITLE="release-automation-v${VERSION}"
+        _HARNESS_OUTPUT=$(_harness_run_"$HARNESS_ADAPTER" \
+            "$HARNESS_BIN" \
+            "$RELEASE_HARNESS_MODEL" \
+            "$RELEASE_HARNESS_ARGS" \
+            "$_HARNESS_SESSION_TITLE" \
+            "$HARNESS_PROMPT" \
+        ) && _HARNESS_RC=0 || _HARNESS_RC=$?
+
+        _HARNESS_SESSION_ID=$(_harness_session_id_"$HARNESS_ADAPTER" "$_HARNESS_OUTPUT")
+
+        if [ "$_HARNESS_RC" -eq 0 ]; then
             ok "Harness completed successfully"
+            _harness_cleanup_"$HARNESS_ADAPTER" "$HARNESS_BIN" "$_HARNESS_SESSION_ID"
+            if [ -n "$_HARNESS_SESSION_ID" ]; then
+                info "Harness session $_HARNESS_SESSION_ID archived"
+            fi
 
             if [ -n "$(git status --porcelain)" ]; then
                 die "Harness exited 0 but left uncommitted changes. Commit or stash them, then re-run."
             fi
         else
-            HARNESS_EXIT=$?
+            _harness_cleanup_"$HARNESS_ADAPTER" "$HARNESS_BIN" "$_HARNESS_SESSION_ID"
             if [ "$STRICT" = true ]; then
-                die "Harness exited with code ${HARNESS_EXIT} (--strict: aborting release)"
+                die "Harness exited with code ${_HARNESS_RC} (--strict: aborting release)"
             else
-                warn "Harness exited with code ${HARNESS_EXIT} (--auto: continuing without README update)"
+                warn "Harness exited with code ${_HARNESS_RC} (--auto: continuing without README update)"
                 if [ -n "$(git status --porcelain)" ]; then
                     warn "Harness left uncommitted changes. Resetting..."
                     git checkout -- .

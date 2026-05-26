@@ -2,6 +2,16 @@
 
 ## Release pipeline (`workflows/release/release.sh`)
 
+### Harness adapters
+
+- Implement `claude` adapter (Claude Code CLI)
+- Implement `codex` adapter (OpenAI Codex CLI)
+- Implement `hermes` adapter
+- Implement `openclaw` adapter
+- Implement `antigravity` adapter
+- Register each new adapter name in `_HARNESS_ADAPTERS` and `_harness_adapter_name()`
+- Add adapter-specific env vars to `.env.example` (e.g. CLAUDE_CODE_MODEL)
+
 ### Merge & conflict handling
 
 - `--auto-merge` with conflict detection and resolution hints

@@ -250,7 +250,7 @@ it "shows harness executable in dry-run with --auto"
     _FAKE_REPO_DIR="$_TMP_DIR/auto-harness"
     create_fake_repo "$_FAKE_REPO_DIR"
     run_release_dry 0.9.0 --auto
-    assert_contains "$_RUN_OUTPUT" "Harness: echo"
+    assert_contains "$_RUN_OUTPUT" "Harness: opencode (adapter: opencode)"
     test_pass
     cleanup_fake_repo "$_FAKE_REPO_DIR"
 
