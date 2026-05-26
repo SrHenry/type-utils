@@ -29,7 +29,12 @@ jobs:
           run: |
             corepack enable
             corepack prepare yarn@1 --activate
-            yarn --version
+            YARN_VERSION=$(yarn --version)
+            echo "Yarn version: $YARN_VERSION"
+            if ! echo "$YARN_VERSION" | grep -qE '^1\.'; then
+              echo "::error::Expected Yarn 1.x but got $YARN_VERSION. Aborting."
+              exit 1
+            fi
 
             - name: Install dependencies
               run: yarn install --frozen-lockfile
