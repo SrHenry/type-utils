@@ -197,6 +197,11 @@ Restore the main repo to its original branch if needed.
 
 When performing a release (running `release.sh`, creating tags, drafting GitHub releases, or any release-related task), **always** follow the README update guidelines in [`workflows/release/release-readme-prompt.md`](workflows/release/release-readme-prompt.md). This file defines what belongs in `README.md` (user-facing APIs only) vs. what belongs in `CHANGELOG.md` or GitHub Release Notes (bug fixes, changelog entries, internal changes). Never add bug fix notes, per-version callouts, or internal tooling docs to the README.
 
+## Release Assets
+
+- **Tarball naming**: `type-utils-<tag>.tgz` or `type-utils-<tag>.tar.gz` — `<tag>` is the version without `v` prefix (e.g. `type-utils-0.8.1.tgz`). Never use the scoped package name (e.g. ~~`srhenry-type-utils-0.8.1.tgz`~~)
+- **Tarball cleanup**: Remove local tarball(s) immediately after uploading to the GitHub release (`rm -f type-utils-*.tgz srhenry-type-utils-*.tgz`). Do not leave release artifacts in the working tree
+
 ## Release Automation (`workflows/`)
 
 All scripts under `workflows/` (including `release/release.sh`, test helpers, and future additions) must follow these constraints:

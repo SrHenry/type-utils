@@ -150,7 +150,7 @@ The draft release must be manually published on GitHub to trigger this pipeline.
 
 ## Tarball naming
 
-`type-utils-<version>.tgz` — no `v` prefix. Produced by `npm pack` + rename from `srhenry-type-utils-<version>.tgz`.
+`type-utils-<tag>.tgz` or `type-utils-<tag>.tar.gz` — `<tag>` is the version without `v` prefix (e.g. `type-utils-0.8.1.tgz`). Never use the scoped package name (e.g. ~~`srhenry-type-utils-0.8.1.tgz`~~). Produced by `npm pack` + rename from `srhenry-type-utils-<version>.tgz`. Local tarball(s) must be removed immediately after uploading to the GitHub release (`rm -f type-utils-*.tgz srhenry-type-utils-*.tgz`).
 
 ## Release notes format
 
