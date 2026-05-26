@@ -1,62 +1,62 @@
 {
-    "name": "@srhenry/type-utils",
-    "version": "0.8.0",
-    "description": "Type utilities for Typescript and also Javascript",
-    "type": "module",
-    "main": "./dist/cjs/index.js",
-    "module": "./dist/esm/index.js",
-    "types": "./types/index.d.ts",
-    "scripts": {
-	"test": "vitest run",
-	"test:inspect": "vitest run --inspect",
-	"test:coverage": "vitest run --coverage",
-        "clear": "run-script-os",
-        "clear:win32": "rmdir /s /q dist && rmdir /s /q types",
-        "clear:default": "(rm -rf ./dist || exit 0) && (rm -rf ./types || exit 0)",
-        "build:esm": "tsc -p ./tsconfig.esm.json",
-        "build:cjs": "tsc -p ./tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > ./dist/cjs/package.json",
-        "build:fix-declarations": "find ./types -name '*.d.ts' -exec sed -i -E \"s/(['\\\"])(\\.\\.?\\/[^'\\\"]*)\\.ts(['\\\"])/\\1\\2.js\\3/g\" {} +",
-        "build": "yarn build:esm && yarn build:cjs && yarn build:fix-declarations",
-        "prebuild:clean": "npm run clear",
-        "build:clean": "npm run build",
-        "docs": "npx typedoc",
-        "clear-docs": "run-script-os",
-        "clear-docs:win32": "rmdir /s /q docs",
-        "clear-docs:default": "rm -rf ./docs || exit 0",
-        "predocs:clean": "npm run clear-docs",
-        "docs:clean": "npm run docs",
-        "release": "sh workflows/release/release.sh",
-        "build:tsc:umd": "npx tsc -p ./umd.tsconfig.jsonc",
-        "prebuild:umd": "npm run build:cjs",
-        "build:umd": "npx webpack --entry=./dist/cjs/umd.js --output-path=./umd --output-filename=index.min.js --mode=production --target=web",
-        "prebuild:umd:dev": "npm run build:cjs",
-        "build:umd:dev": "npx webpack --entry=./dist/cjs/umd.js --output-path=./umd --output-filename=index.js --mode=development --target=web --library=TypeUtils --library-type=umd --library-target=web",
-        "lint": "biome lint ./src",
-        "lint:fix": "biome lint --write ./src",
-        "format": "prettier --check \"src/**/*.ts\"",
-        "format:fix": "prettier --write \"src/**/*.ts\"",
-        "check": "biome lint ./src && prettier --check \"src/**/*.ts\"",
-        "check:fix": "biome lint --write ./src && prettier --write \"src/**/*.ts\"",
-        "circular-dependencies": "madge --ts-config tsconfig.json --circular --extensions ts src",
-        "circular-dependencies:graph": "madge --ts-config tsconfig.json --circular --extensions ts --image .madge/circular-dependencies.graph.svg src",
-        "precommit": "npm run build:clean && npm run check:fix && npm run test && npm run circular-dependencies"
-    },
-    "repository": "github:SrHenry/type-utils.git",
-    "keywords": [
-        "type",
-        "type guard",
-        "typescript",
-        "type utils",
-        "utils",
-        "validation"
-    ],
-    "author": "SrHenry",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/SrHenry/type-utils/issues"
-    },
-    "homepage": "https://github.com/SrHenry/type-utils#readme",
-"dependencies": {},
+  "name": "@srhenry/type-utils",
+  "version": "0.8.1",
+  "description": "Type utilities for Typescript and also Javascript",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./types/index.d.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:inspect": "vitest run --inspect",
+    "test:coverage": "vitest run --coverage",
+    "clear": "run-script-os",
+    "clear:win32": "rmdir /s /q dist && rmdir /s /q types",
+    "clear:default": "(rm -rf ./dist || exit 0) && (rm -rf ./types || exit 0)",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > ./dist/cjs/package.json",
+    "build:fix-declarations": "find ./types -name '*.d.ts' -exec sed -i -E \"s/(['\\\"])(\\.\\.?\\/[^'\\\"]*)\\.ts(['\\\"])/\\1\\2.js\\3/g\" {} +",
+    "build": "yarn build:esm && yarn build:cjs && yarn build:fix-declarations",
+    "prebuild:clean": "npm run clear",
+    "build:clean": "npm run build",
+    "docs": "npx typedoc",
+    "clear-docs": "run-script-os",
+    "clear-docs:win32": "rmdir /s /q docs",
+    "clear-docs:default": "rm -rf ./docs || exit 0",
+    "predocs:clean": "npm run clear-docs",
+    "docs:clean": "npm run docs",
+    "release": "sh workflows/release/release.sh",
+    "build:tsc:umd": "npx tsc -p ./umd.tsconfig.jsonc",
+    "prebuild:umd": "npm run build:cjs",
+    "build:umd": "npx webpack --entry=./dist/cjs/umd.js --output-path=./umd --output-filename=index.min.js --mode=production --target=web",
+    "prebuild:umd:dev": "npm run build:cjs",
+    "build:umd:dev": "npx webpack --entry=./dist/cjs/umd.js --output-path=./umd --output-filename=index.js --mode=development --target=web --library=TypeUtils --library-type=umd --library-target=web",
+    "lint": "biome lint ./src",
+    "lint:fix": "biome lint --write ./src",
+    "format": "prettier --check \"src/**/*.ts\"",
+    "format:fix": "prettier --write \"src/**/*.ts\"",
+    "check": "biome lint ./src && prettier --check \"src/**/*.ts\"",
+    "check:fix": "biome lint --write ./src && prettier --write \"src/**/*.ts\"",
+    "circular-dependencies": "madge --ts-config tsconfig.json --circular --extensions ts src",
+    "circular-dependencies:graph": "madge --ts-config tsconfig.json --circular --extensions ts --image .madge/circular-dependencies.graph.svg src",
+    "precommit": "npm run build:clean && npm run check:fix && npm run test && npm run circular-dependencies"
+  },
+  "repository": "github:SrHenry/type-utils.git",
+  "keywords": [
+    "type",
+    "type guard",
+    "typescript",
+    "type utils",
+    "utils",
+    "validation"
+  ],
+  "author": "SrHenry",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SrHenry/type-utils/issues"
+  },
+  "homepage": "https://github.com/SrHenry/type-utils#readme",
+  "dependencies": {},
   "peerDependencies": {
     "typescript": ">=5.8"
   },
@@ -81,88 +81,88 @@
     "webpack": "^5.106.2",
     "webpack-cli": "^7.0.2"
   },
-	"resolutions": {
-		"glob/minimatch": "^9.0.7",
-		"typedoc/minimatch": "^9.0.7",
-		"madge/**/@typescript-eslint/typescript-estree/minimatch": "^9.0.7",
-		"madge/**/glob/minimatch": "^3.1.3",
-		"madge/**/glob/minimatch/brace-expansion": "^1.1.14",
-		"webpack/**/ajv/fast-uri": "^3.1.2"
-	},
-    "exports": {
-        ".": {
-            "types": "./types/index.d.ts",
-            "import": "./dist/esm/index.js",
-            "require": "./dist/cjs/index.js",
-            "default": "./dist/cjs/index.js"
-        },
-        "./experimental": {
-            "types": "./types/Experimental.d.ts",
-            "import": "./dist/esm/Experimental.js",
-            "require": "./dist/cjs/Experimental.js",
-            "default": "./dist/cjs/Experimental.js"
-        },
-        "./helpers": {
-            "types": "./types/helpers/index.d.ts",
-            "import": "./dist/esm/helpers/index.js",
-            "require": "./dist/cjs/helpers/index.js",
-            "default": "./dist/cjs/helpers/index.js"
-        },
-        "./types": {
-            "types": "./types/types/index.d.ts",
-            "import": "./dist/esm/types/index.js",
-            "require": "./dist/cjs/types/index.js",
-            "default": "./dist/cjs/types/index.js"
-        },
-        "./schema": {
-            "types": "./types/schema/index.d.ts",
-            "import": "./dist/esm/schema/index.js",
-            "require": "./dist/cjs/schema/index.js",
-            "default": "./dist/cjs/schema/index.js"
-        },
-        "./rules": {
-            "types": "./types/rules/index.d.ts",
-            "import": "./dist/esm/rules/index.js",
-            "require": "./dist/cjs/rules/index.js",
-            "default": "./dist/cjs/rules/index.js"
-        },
-        "./rules/array": {
-            "types": "./types/rules/array/index.d.ts",
-            "import": "./dist/esm/rules/array/index.js",
-            "require": "./dist/cjs/rules/array/index.js",
-            "default": "./dist/cjs/rules/array/index.js"
-        },
-        "./rules/number": {
-            "types": "./types/rules/number/index.d.ts",
-            "import": "./dist/esm/rules/number/index.js",
-            "require": "./dist/cjs/rules/number/index.js",
-            "default": "./dist/cjs/rules/number/index.js"
-        },
-        "./rules/record": {
-            "types": "./types/rules/record/index.d.ts",
-            "import": "./dist/esm/rules/record/index.js",
-            "require": "./dist/cjs/rules/record/index.js",
-            "default": "./dist/cjs/rules/record/index.js"
-        },
-        "./rules/string": {
-            "types": "./types/rules/string/index.d.ts",
-            "import": "./dist/esm/rules/string/index.js",
-            "require": "./dist/cjs/rules/string/index.js",
-            "default": "./dist/cjs/rules/string/index.js"
-        },
-        "./match": {
-            "types": "./types/match/index.d.ts",
-            "import": "./dist/esm/match/index.js",
-            "require": "./dist/cjs/match/index.js",
-            "default": "./dist/cjs/match/index.js"
-        },
-        "./standard-schema": {
-            "types": "./types/validators/standard-schema/index.d.ts",
-            "import": "./dist/esm/validators/standard-schema/index.js",
-            "require": "./dist/cjs/validators/standard-schema/index.js",
-            "default": "./dist/cjs/validators/standard-schema/index.js"
-        },
-        "./*": "./dist/esm/*",
-        "./package.json": "./package.json"
-    }
+  "resolutions": {
+    "glob/minimatch": "^9.0.7",
+    "typedoc/minimatch": "^9.0.7",
+    "madge/**/@typescript-eslint/typescript-estree/minimatch": "^9.0.7",
+    "madge/**/glob/minimatch": "^3.1.3",
+    "madge/**/glob/minimatch/brace-expansion": "^1.1.14",
+    "webpack/**/ajv/fast-uri": "^3.1.2"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/cjs/index.js"
+    },
+    "./experimental": {
+      "types": "./types/Experimental.d.ts",
+      "import": "./dist/esm/Experimental.js",
+      "require": "./dist/cjs/Experimental.js",
+      "default": "./dist/cjs/Experimental.js"
+    },
+    "./helpers": {
+      "types": "./types/helpers/index.d.ts",
+      "import": "./dist/esm/helpers/index.js",
+      "require": "./dist/cjs/helpers/index.js",
+      "default": "./dist/cjs/helpers/index.js"
+    },
+    "./types": {
+      "types": "./types/types/index.d.ts",
+      "import": "./dist/esm/types/index.js",
+      "require": "./dist/cjs/types/index.js",
+      "default": "./dist/cjs/types/index.js"
+    },
+    "./schema": {
+      "types": "./types/schema/index.d.ts",
+      "import": "./dist/esm/schema/index.js",
+      "require": "./dist/cjs/schema/index.js",
+      "default": "./dist/cjs/schema/index.js"
+    },
+    "./rules": {
+      "types": "./types/rules/index.d.ts",
+      "import": "./dist/esm/rules/index.js",
+      "require": "./dist/cjs/rules/index.js",
+      "default": "./dist/cjs/rules/index.js"
+    },
+    "./rules/array": {
+      "types": "./types/rules/array/index.d.ts",
+      "import": "./dist/esm/rules/array/index.js",
+      "require": "./dist/cjs/rules/array/index.js",
+      "default": "./dist/cjs/rules/array/index.js"
+    },
+    "./rules/number": {
+      "types": "./types/rules/number/index.d.ts",
+      "import": "./dist/esm/rules/number/index.js",
+      "require": "./dist/cjs/rules/number/index.js",
+      "default": "./dist/cjs/rules/number/index.js"
+    },
+    "./rules/record": {
+      "types": "./types/rules/record/index.d.ts",
+      "import": "./dist/esm/rules/record/index.js",
+      "require": "./dist/cjs/rules/record/index.js",
+      "default": "./dist/cjs/rules/record/index.js"
+    },
+    "./rules/string": {
+      "types": "./types/rules/string/index.d.ts",
+      "import": "./dist/esm/rules/string/index.js",
+      "require": "./dist/cjs/rules/string/index.js",
+      "default": "./dist/cjs/rules/string/index.js"
+    },
+    "./match": {
+      "types": "./types/match/index.d.ts",
+      "import": "./dist/esm/match/index.js",
+      "require": "./dist/cjs/match/index.js",
+      "default": "./dist/cjs/match/index.js"
+    },
+    "./standard-schema": {
+      "types": "./types/validators/standard-schema/index.d.ts",
+      "import": "./dist/esm/validators/standard-schema/index.js",
+      "require": "./dist/cjs/validators/standard-schema/index.js",
+      "default": "./dist/cjs/validators/standard-schema/index.js"
+    },
+    "./*": "./dist/esm/*",
+    "./package.json": "./package.json"
+  }
 }
