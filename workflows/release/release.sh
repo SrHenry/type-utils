@@ -128,9 +128,9 @@ ${BOLD}Options${NC}
   --dry-run             Validate and generate changelog only, no mutations
   --auto                Enable AI-assisted README update via harness
   --strict              Compose with --auto to abort on harness failure
---harness <exec> Override the harness executable (default: \$RELEASE_HARNESS from .env)
- Must be a supported adapter: opencode
- -h, --help Show this help message
+  --harness <exec>      Override the harness executable (default: \$RELEASE_HARNESS from .env)
+                        Must be a supported adapter: opencode
+  -h, --help            Show this help message
 
 ${BOLD}Environment${NC} (loaded from .env)
 RELEASE_HARNESS Harness executable name (default: opencode)
