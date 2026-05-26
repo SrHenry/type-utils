@@ -214,6 +214,44 @@ All scripts under `workflows/` (including `release/release.sh`, test helpers, an
 - **Test scripts themselves**: Also POSIX sh — the test framework (`test-helper.sh`) and every `test-*.sh` file must be `/bin/sh` compatible
 - **External tools**: `tr`, `sed`, `sort`, `tail`, `head`, `cut`, `git`, `node` (for JSON manipulation) — assume these are available; do not depend on `jq`, `yq`, or other non-standard CLI tools
 
+## Self-Updating Knowledge
+
+This file is a living document. The AI harness **must** keep it current as new knowledge is discovered during sessions.
+
+### What to persist
+
+Automatically write new knowledge to `AGENTS.md` when any of the following is learned:
+
+- A non-obvious project quirk, gotcha, or constraint not already documented here
+- A build/toolchain failure and its root cause (e.g., "npm install fails with eresolve — use yarn")
+- A convention the codebase enforces but isn't written down yet
+- A workflow step that was missing or incorrect and caused issues
+- A dependency version constraint or incompatibility discovered at runtime
+- A useful shortcut, debug technique, or recovery procedure
+
+### What NOT to persist
+
+- Information already covered by an existing section
+- Transient findings (e.g., a one-time CI flake)
+- Preferences that belong in `TODO.md` or user-level config
+
+### Contradiction protocol
+
+If the new knowledge **contradicts** something already in this file:
+
+1. **Do not silently overwrite** — present the contradiction to the user
+2. Explain what the current guidance says vs. what was just discovered
+3. Ask the user which version is correct before updating
+4. If the contradiction reveals a deeper misunderstanding, flag it explicitly
+
+### Sanity check
+
+If the new knowledge seems unusual, surprising, or counterintuitive (a "grain of madness"), **ask the user before committing it** — even if it doesn't contradict anything. Better to confirm than to enshrine a misunderstanding.
+
+### Placement
+
+Add new knowledge to the most relevant existing section. If no section fits, add it to **Important Notes**. Do not create new top-level sections without user approval.
+
 ## TODO.md Handling
 
 `TODO.md` is the single source of truth for planned work. All AI harness sessions must follow these rules:
