@@ -15,7 +15,10 @@ Auto-discovered by: OpenCode, Claude Code, Codex, Cursor, Windsurf, Copilot, Gem
 
 Do **NOT** create branches, worktrees, or write code until all of the following are confirmed:
 
-1. **Base branch** — which branch to target (default: `developer`)
+1. **Base branch** — which branch to target:
+   - `developer` for features, refactors, and non-urgent changes (default)
+   - `master` for hotfixes and urgent production fixes
+   - If the user requests a different base, analyze the case against industry standard practices (e.g., main/master for hotfixes, integration branch for features) and question the user before proceeding
 2. **Related issues** — GitHub issue numbers, URLs, or external references (or explicitly "none")
 3. **Scope delimited** — what's included, what's excluded, expected behavior for edge cases
 4. **User confirms** — restate understanding and get explicit go-ahead before proceeding
@@ -123,7 +126,7 @@ This is the standard workflow for AI harness sessions producing pull requests.
 
 This is a **blocking gate** — do not proceed to step 2 until all items below are resolved.
 
-- **Base branch**: Ask the user which branch to target (usually `developer`). If unspecified, default to `developer`.
+- **Base branch**: Default to `developer` for features/refactors, `master` for hotfixes/urgent fixes. If the user requests otherwise, analyze against industry standard practices and question before proceeding.
 - **Related issues**: Ask the user for GitHub issue numbers, URLs, or any external references. Fetch issue details with `gh issue view <number>` or `gh issue view <url>`.
 - **Scope clarification**: Confirm what the PR should accomplish. If the user provides a vague request, ask targeted questions before starting.
 
