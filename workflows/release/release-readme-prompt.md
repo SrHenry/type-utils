@@ -15,4 +15,6 @@ Guidelines:
 - Use the existing README formatting conventions: markdown tables for API reference, TypeScript code blocks for examples, anchor links for cross-references
 - Do NOT remove or alter existing content unless it is being replaced by a newer API
 - Do NOT modify version numbers or badges
+- Do NOT add bug fix notes, changelog entries, or per-version callouts to the README — these belong in CHANGELOG.md or GitHub Release Notes
+- Do NOT document internal tooling, CI/CD, or build pipeline changes (e.g. release automation, test runner, harness adapters) — these are not user-facing APIs
 - Commit your changes with message: "docs: update README for ${NEW_VERSION}"

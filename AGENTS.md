@@ -193,6 +193,10 @@ for remote in $(git remote); do git push "$remote" --delete feat/<topic> || echo
 
 Restore the main repo to its original branch if needed.
 
+## Release Pipeline
+
+When performing a release (running `release.sh`, creating tags, drafting GitHub releases, or any release-related task), **always** follow the README update guidelines in [`workflows/release/release-readme-prompt.md`](workflows/release/release-readme-prompt.md). This file defines what belongs in `README.md` (user-facing APIs only) vs. what belongs in `CHANGELOG.md` or GitHub Release Notes (bug fixes, changelog entries, internal changes). Never add bug fix notes, per-version callouts, or internal tooling docs to the README.
+
 ## Release Automation (`workflows/`)
 
 All scripts under `workflows/` (including `release/release.sh`, test helpers, and future additions) must follow these constraints:
