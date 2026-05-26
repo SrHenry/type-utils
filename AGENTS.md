@@ -148,7 +148,7 @@ Create both together — the worktree stays alive for the entire PR lifecycle:
 git worktree add /tmp/<repo-name>-<topic> -b feat/<topic> origin/<base-branch>
 ```
 
-Work in the worktree (`/tmp/` prefix — ephemeral, not inside the main repo checkout). Run `yarn install` inside the worktree after creation.
+Work in the worktree (`/tmp/` prefix — ephemeral, not inside the main repo checkout). **The first step after creating the worktree must be `yarn install`** to set up dependencies and trigger the `prepare` script (which configures git hooks). Do not write code, run builds, or execute tests until `yarn install` completes.
 
 ### 3. Implement
 
