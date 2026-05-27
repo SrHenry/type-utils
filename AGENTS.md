@@ -59,6 +59,8 @@ If the request is vague or ambiguous: ask targeted questions. Better to over-cla
 | `yarn format:fix` | Prettier write only |
 | `yarn circular-dependencies` | Check for circular imports (madge) |
 | `yarn docs` | Generate TypeDoc documentation |
+| `yarn vitest run <path>` | Run tests matching a file path |
+| `yarn vitest run -t <pattern>` | Run tests matching a test name |
 
 ### Pre-commit Hook
 
@@ -72,7 +74,7 @@ This is slow but validates everything. Pre-commit hooks auto-format code — if 
 yarn tsc -p tsconfig.json --noEmit
 ```
 
-Always run this after code changes to verify type correctness.
+NEVER skip `tsc --noEmit` after code changes — typecheck is mandatory, not optional, regardless of whether `yarn test` passes.
 
 ## Code Conventions
 
@@ -153,8 +155,8 @@ Work in the worktree (`/tmp/` prefix — ephemeral, not inside the main repo che
 ### 3. Implement
 
 - Make changes in the worktree directory
-- Run `yarn check:fix` and `yarn test` frequently to stay green
-- Run typecheck (`yarn tsc -p tsconfig.json --noEmit`) after structural changes
+- Run `yarn check:fix` and `yarn test` after each logical change step — not just "frequently"
+- Run typecheck (`yarn tsc -p tsconfig.json --noEmit`) after each structural change — not just "after structural changes"
 - Commit using Conventional Commits format
 - If pre-commit hooks auto-format code, commit the formatting changes separately
 
@@ -218,22 +220,43 @@ All scripts under `workflows/` (including `release/release.sh`, test helpers, an
 
 This file is a living document. The AI harness **must** keep it current as new knowledge is discovered during sessions.
 
-### What to persist
+### Auto-persist criteria
 
-Automatically write new knowledge to `AGENTS.md` when any of the following is learned:
+Automatically write new knowledge to `AGENTS.md` only when **all three** criteria are met:
 
-- A non-obvious project quirk, gotcha, or constraint not already documented here
-- A build/toolchain failure and its root cause (e.g., "npm install fails with eresolve — use yarn")
-- A convention the codebase enforces but isn't written down yet
-- A workflow step that was missing or incorrect and caused issues
-- A dependency version constraint or incompatibility discovered at runtime
-- A useful shortcut, debug technique, or recovery procedure
+1. **Verifiable from source** — the fact can be confirmed by reading code, config, or dependency behavior (not subjective opinion)
+2. **Fills a gap** — no existing rule, gotcha, or entry already covers it
+3. **No behavior change** — the fact doesn't alter how the agent should act (that's propose-first territory)
 
-### What NOT to persist
+If any criterion is uncertain → propose first instead.
 
-- Information already covered by an existing section
-- Transient findings (e.g., a one-time CI flake)
-- Preferences that belong in `TODO.md` or user-level config
+### Section routing table
+
+| Discovery type | Target section |
+|----------------|---------------|
+| Build/runtime gotcha not covered | Important Notes |
+| Directory purpose not documented | Project Overview or Architecture table |
+| Missing Prohibition (behavior that must never happen) | Prohibitions |
+| New command or script not in table | Build & Development Commands |
+| Dependency behavioral quirk | Important Notes or External References |
+| Test convention or matcher | Code Conventions → Tests |
+| Import/resolution pattern | Code Conventions → Import style |
+| Release pipeline quirk | Release Pipeline, Release Assets, or Release Automation |
+
+### Dedup rule
+
+Before adding, scan existing content. Amend existing entries rather than adding parallel ones. Keeps the file tight and avoids contradiction.
+
+### Pending proposals protocol
+
+Unconfirmed proposals that the session ends before confirming must be persisted to `TASKS.md` as:
+
+```markdown
+- [ ] AGENTS.md: <proposed change summary>
+    - **Blocked**: needs-user-confirmation
+    - **Details**: <what to add/change and where>
+    - **Files**: AGENTS.md
+```
 
 ### Contradiction protocol
 
@@ -244,29 +267,89 @@ If the new knowledge **contradicts** something already in this file:
 3. Ask the user which version is correct before updating
 4. If the contradiction reveals a deeper misunderstanding, flag it explicitly
 
-### Sanity check
+### Retract mechanism
 
-If the new knowledge seems unusual, surprising, or counterintuitive (a "grain of madness"), **ask the user before committing it** — even if it doesn't contradict anything. Better to confirm than to enshrine a misunderstanding.
+If an auto-persisted fact is later discovered to be wrong:
+
+```markdown
+- ~~ALWAYS use X for Y — reason given~~ — retracted: <why it was wrong>
+- ALWAYS use Z for Y — <correct reason>
+```
 
 ### Placement
 
-Add new knowledge to the most relevant existing section. If no section fits, add it to **Important Notes**. Do not create new top-level sections without user approval.
+Add new knowledge to the most relevant existing section per the routing table above. If no section fits, add it to **Important Notes**. Do not create new top-level sections without user approval.
 
-## TODO.md Handling
+## Task Management
 
-`TODO.md` is the single source of truth for planned work. All AI harness sessions must follow these rules:
+`TASKS.md` is the single source of truth for planned work. All AI harness sessions must follow this protocol.
 
-1. **Read first**: At session start, read `TODO.md` to understand outstanding work
-2. **No done items**: Never keep completed items in `TODO.md`. Remove them immediately after implementation is verified. Strikethrough + "Done" markers are forbidden — just delete the line
-3. **Scope-structured**: Organize items by scope (e.g. component, module, subsystem), not by status. Use `###` subheadings to group related items
-4. **Update as you go**: When new work is discovered during implementation, add it to `TODO.md` under the appropriate scope before starting on it
-5. **No duplication**: Each planned item appears exactly once. If an item spans multiple scopes, file it under the primary scope and reference it from others
-6. **Concise entries**: One line per item. Include enough context to be actionable (flag names, file paths, expected behavior) but avoid prose
+### Core protocol
+
+1. **Read first** — on session start, read `TASKS.md` to understand outstanding work
+2. **Claim** — append `(@agent-name)` to the task checkbox when starting work
+3. **Complete** — remove the task entirely after implementation is verified. History lives in git log — no strikethrough or "Done" markers
+4. **Update as you go** — when new work is discovered during implementation, add it to `TASKS.md` before starting on it
+5. **No duplication** — each planned item appears exactly once. If an item spans multiple scopes, file it under the primary scope and reference it from others
+
+### Priority levels
+
+| Priority | Label | Meaning |
+|----------|-------|---------|
+| P0 | Critical | Blocks releases or causes data loss — fix immediately |
+| P1 | High | Important, should be in next release |
+| P2 | Medium | Valuable, scheduled when capacity allows |
+| P3 | Low | Nice-to-have, no firm timeline |
+
+### Core metadata fields
+
+These are always available and should be used whenever they add clarity:
+
+- `**ID**` — stable identifier for `**Blocked by**:` references (kebab-case)
+- `**Details**` — context the agent can't discover on its own
+- `**Files**` — starting points for the agent to read
+- `**Acceptance**` — testable criterion for "done"
+- `**Blocked by**` — comma-separated task IDs; unblocked when all referenced IDs no longer exist in file
+- `**Blocked**` — free-form reason for external blocks; any non-empty value marks task as blocked
+
+### Opt-in metadata fields
+
+The agent must evaluate whether each opt-in field fits the task. **If a task fits even one criterion, the corresponding field(s) must be populated.** A task with zero opt-in fields is fine; a task that should have had them is a violation.
+
+| Field | Add when |
+|-------|----------|
+| `**Plan**` | Task touches 3+ files or involves non-obvious implementation order |
+| `**Parent**` | Task was decomposed from another task that still exists in the file |
+| `**Research**` + `**Last-enriched**` | Task is blocked and agent has gathered context that would otherwise be lost between sessions |
+| `**Estimate**` | Task is non-trivial enough that context-budget planning matters |
+| `**Verification**` | "Done" can't be verified by a single test run — e.g. manual steps, specific command sequences |
+| `**Risk**` + `**Mitigation**` | Task involves migration, breaking changes, dependency swaps, or touching stable/production-critical code |
+| `**Hypothesis**` + `**Success**` + `**Pivot**` + `**Measurement**` + `**Anchor**` | Performance change, architectural refactor, or any change where "did it help?" is genuinely ambiguous |
+| `**Touches**` | Multiple tasks or agents may work in parallel on overlapping files |
+| `**Surfaced-by**` | Task originates from an automated sweep or audit loop rather than a human request |
+| `**Milestone**` | Project has phased roadmap and tasks should be filterable by milestone |
+
+### Sub-tasks
+
+Use nested checkboxes for decomposition within a single task. If a sub-task grows complex enough to need its own metadata, promote it to a top-level task with `**Parent**` referencing the original.
+
+### Writing good tasks
+
+- One line per item for the checkbox, metadata as indented sub-entries
+- Include enough context to be actionable (file paths, flag names, expected behavior) but avoid prose
+- `**Acceptance**` must be testable — "works" is not acceptable, "test X passes" is
+
+## Prohibitions
+
+- **NEVER use `npm install`** — `npm install` fails with eresolve errors in this repo. Always use `yarn install`.
+- **NEVER skip `tsc --noEmit` after code changes** — typecheck is mandatory, not optional, regardless of whether `yarn test` passes.
+- **NEVER commit with placeholder author identity** — stop and ask the user for correct identity before proceeding.
+- **NEVER silently overwrite established AGENTS.md guidelines** — always propose first and get confirmation, even when not in doubt.
+- **NEVER use `any` in production code** — Biome allows `any` in test files (`*.spec.ts`, `__tests__/`) only. Use proper types in `src/` code.
 
 ## Important Notes
 
 - **`yarn` not `npm`**: `npm install` fails with eresolve errors in this repo. Always use `yarn install`.
 - **Pre-commit hooks are expensive**: They run full build + lint + test + circular dependency checks. Expect 30–60 seconds per commit.
 - **`developer` vs `master`**: Most PRs target `developer`. If `developer` is behind `master`, merge `master` into `developer` first, then rebase the feature branch.
-- **No `any` in production**: Biome allows `any` in test files only. Use proper types in `src/` (non-test) code.
 - **Dual builds**: Changes must compile under both ESM and CJS tsconfigs. Run `yarn build` to verify.
