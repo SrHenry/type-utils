@@ -1,4 +1,5 @@
-import { array, string, object, number } from '../schema/index.ts'
+import { array, string, object, number, asEnum } from '../schema/index.ts'
+import type { TypeGuard } from '../../TypeGuards/index.ts'
 import type { Infer } from '../../types/index.ts'
 import type { StandardSchemaV1 } from '../standard-schema/types.ts'
 
@@ -49,6 +50,25 @@ describe('array — type inference', () => {
     it('infers any[] from array()', () => {
         const schema = array()
         expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<any[]>()
+    })
+
+    it('infers string[] from array(string()).optional() — known: | undefined dropped by GetTypeGuard on FluentOptionalSchema', () => {
+        const schema = array(string()).optional()
+        expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<string[]>()
+    })
+
+    it('infers literal union array from array(asEnum(...))', () => {
+        const schema = array(asEnum(['a', 'b', 'c'] as const))
+        expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<('a' | 'b' | 'c')[]>()
+    })
+
+    it('infers element type from array(custom TypeGuard)', () => {
+        const isPoint: TypeGuard<{ x: number; y: number }> = (
+            v: unknown,
+        ): v is { x: number; y: number } =>
+            typeof v === 'object' && v !== null && 'x' in v && 'y' in v
+        const schema = array(isPoint)
+        expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<{ x: number; y: number }[]>()
     })
 })
 
