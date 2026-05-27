@@ -1,91 +1,95 @@
 import './validators/standard-schema/registerValidateCallback.ts'
 import './helpers/Experimental/pipeline/core/registerPipeTransformCheck.ts'
 
+function normalizePrimitive(obj: any, t: string): any | undefined {
+  if (t === 'undefined' || t === 'number' || t === 'boolean' || t === 'string' || t === 'bigint')
+    return obj
+
+  if (t === 'function') {
+    const fnStr = obj.toString()
+    const hash = fnv1aHash(fnStr)
+    return `[Function ${obj.name || 'anonymous'} | hash:${hash}]`
+  }
+
+  if (t === 'symbol') {
+    return `[Symbol ${String(obj.description) || 'anonymous'}]`
+  }
+
+  return undefined
+}
+
+function normalizeBuiltIn(obj: any, seen: WeakMap<any, string>, path: string): any | undefined {
+  if (obj instanceof Date) return `[Date ${obj.toISOString()}]`
+  if (obj instanceof RegExp) return `[RegExp ${obj.toString()}]`
+
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(obj)) {
+    return `[Buffer len:${obj.length} base64:${obj.toString('base64').slice(0, 32)}…]`
+  }
+
+  if (ArrayBuffer.isView(obj)) {
+    const name = obj.constructor?.name || 'ArrayBufferView'
+    if ('length' in obj && typeof (obj as any).length === 'number') {
+      return `[TypedArray ${name} len:${(obj as any).length} byteLength:${obj.byteLength}]`
+    }
+    return `[ArrayBufferView ${name} byteLength:${obj.byteLength} byteOffset:${obj.byteOffset}]`
+  }
+
+  if (obj instanceof ArrayBuffer) return `[ArrayBuffer byteLength:${obj.byteLength}]`
+
+  if (obj instanceof Map) {
+    const mapObj: Record<string, any> = {}
+    for (const [k, v] of obj.entries()) {
+      const keyStr = String(k)
+      mapObj[`[MapKey:${keyStr}]`] = normalize(v, seen, `${path}[MapKey:${keyStr}]`)
+    }
+    return mapObj
+  }
+
+  if (obj instanceof Set) {
+    return Array.from(obj).map((v, i) => normalize(v, seen, `${path}[${i}]`))
+  }
+
+  return undefined
+}
+
 function normalize(obj: any, seen = new WeakMap<any, string>(), path = '$'): any {
-    if (obj === null) return null
+  if (obj === null) return null
 
-    const t = typeof obj
+  const t = typeof obj
+  const primitive = normalizePrimitive(obj, t)
+  if (primitive !== undefined) return primitive
 
-    if (t === 'undefined' || t === 'number' || t === 'boolean' || t === 'string' || t === 'bigint')
-        return obj
+  if (seen.has(obj)) {
+    // biome-ignore lint/style/noNonNullAssertion: has() guarantees existence, WeakMap.get() doesn't narrow
+    const circularPath = seen.get(obj)!
+    return `[Circular ${circularPath}]`
+  }
+  seen.set(obj, path)
 
-    if (t === 'function') {
-        const fnStr = obj.toString()
-        const hash = fnv1aHash(fnStr)
-        return `[Function ${obj.name || 'anonymous'} | hash:${hash}]`
+  const builtIn = normalizeBuiltIn(obj, seen, path)
+  if (builtIn !== undefined) return builtIn
+
+  if (obj.constructor && obj.constructor !== Object && !Array.isArray(obj)) {
+    return `[Instance ${obj.constructor.name}]`
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map((item, i) => normalize(item, seen, `${path}[${i}]`))
+  }
+
+  const result: Record<string, any> = {}
+  const keys = Reflect.ownKeys(obj).map(String).sort()
+
+  for (const key of keys) {
+    try {
+      const value = (obj as any)[key]
+      result[key] = normalize(value, seen, `${path}.${key}`)
+    } catch (err) {
+      result[key] = `[Unreachable: ${(err as Error).message}]`
     }
+  }
 
-    if (t === 'symbol') {
-        return `[Symbol ${String(obj.description) || 'anonymous'}]`
-    }
-    if (seen.has(obj)) {
-        // biome-ignore lint/style/noNonNullAssertion: has() guarantees existence, WeakMap.get() doesn't narrow
-        const circularPath = seen.get(obj)!
-        return `[Circular ${circularPath}]`
-    }
-    seen.set(obj, path)
-
-    if (obj instanceof Date) {
-        return `[Date ${obj.toISOString()}]`
-    }
-
-    if (obj instanceof RegExp) {
-        return `[RegExp ${obj.toString()}]`
-    }
-
-    if (typeof Buffer !== 'undefined' && Buffer.isBuffer(obj)) {
-        return `[Buffer len:${obj.length} base64:${obj.toString('base64').slice(0, 32)}…]`
-    }
-
-    if (ArrayBuffer.isView(obj)) {
-        const name = obj.constructor?.name || 'ArrayBufferView'
-
-        if ('length' in obj && typeof (obj as any).length === 'number') {
-            return `[TypedArray ${name} len:${(obj as any).length} byteLength:${obj.byteLength}]`
-        }
-
-        return `[ArrayBufferView ${name} byteLength:${obj.byteLength} byteOffset:${obj.byteOffset}]`
-    }
-
-    if (obj instanceof ArrayBuffer) {
-        return `[ArrayBuffer byteLength:${obj.byteLength}]`
-    }
-
-    if (obj instanceof Map) {
-        const mapObj: Record<string, any> = {}
-        for (const [k, v] of obj.entries()) {
-            const keyStr = String(k)
-            mapObj[`[MapKey:${keyStr}]`] = normalize(v, seen, `${path}[MapKey:${keyStr}]`)
-        }
-        return mapObj
-    }
-
-    if (obj instanceof Set) {
-        const arr = Array.from(obj).map((v, i) => normalize(v, seen, `${path}[${i}]`))
-        return arr
-    }
-
-    if (obj.constructor && obj.constructor !== Object && !Array.isArray(obj)) {
-        return `[Instance ${obj.constructor.name}]`
-    }
-
-    if (Array.isArray(obj)) {
-        return obj.map((item, i) => normalize(item, seen, `${path}[${i}]`))
-    }
-
-    const result: Record<string, any> = {}
-    const keys = Reflect.ownKeys(obj).map(String).sort()
-
-    for (const key of keys) {
-        try {
-            const value = (obj as any)[key]
-            result[key] = normalize(value, seen, `${path}.${key}`)
-        } catch (err) {
-            result[key] = `[Unreachable: ${(err as Error).message}]`
-        }
-    }
-
-    return result
+  return result
 }
 
 function fnv1aHash(str: string): string {
