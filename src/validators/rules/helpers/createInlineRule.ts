@@ -1,7 +1,3 @@
-// export function createInlineRule<T>(rule: T): T {
-//     return rule
-// }
-
 import type { Fn } from '../../../types/Func.ts'
 import type { Custom } from '../types/index.ts'
 import { createRule } from './createRule.ts'
@@ -11,28 +7,31 @@ export const InlineRuleName = 'Custom.Rule.<anonymous>' as const
 export type InlineRuleName = typeof InlineRuleName
 
 export function createInlineRule<TSubject, TRuleName extends string>(
-    name: TRuleName,
-    predicate: Fn<[subject: TSubject], boolean>
+  name: TRuleName,
+  predicate: Fn<[subject: TSubject], boolean>
 ): Custom<[], TRuleName, TSubject>
 export function createInlineRule<TSubject>(
-    name: string,
-    predicate: Fn<[subject: TSubject], boolean>
+  name: string,
+  predicate: Fn<[subject: TSubject], boolean>
 ): Custom<[], string, TSubject>
 export function createInlineRule<TSubject>(
-    predicate: Fn<[subject: TSubject], boolean>
+  predicate: Fn<[subject: TSubject], boolean>
 ): Custom<[], InlineRuleName, TSubject>
 
 export function createInlineRule<TSubject>(
-    ...args:
-        | [predicate: Fn<[subject: TSubject], boolean>]
-        | [name: string, predicate: Fn<[subject: TSubject], boolean>]
+  ...args:
+    | [predicate: Fn<[subject: TSubject], boolean>]
+    | [name: string, predicate: Fn<[subject: TSubject], boolean>]
 ): Custom<[], string | InlineRuleName, TSubject> {
-    const [predicate, name = InlineRuleName] = args.reverse() as
-        | [predicate: Fn<[subject: TSubject], boolean>]
-        | [predicate: Fn<[subject: TSubject], boolean>, name: string]
-
+  if (args.length === 1) {
     return createRule({
-        name,
-        handler: createRuleHandler(predicate),
+      name: InlineRuleName,
+      handler: createRuleHandler(args[0]),
     })()
+  }
+
+  return createRule({
+    name: args[0],
+    handler: createRuleHandler(args[1]),
+  })()
 }
