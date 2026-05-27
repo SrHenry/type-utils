@@ -9,6 +9,10 @@
 .typedoc.*
 .madge
 .vscode
+AGENTS.md
+TODO.md
+biome.json
+umd.tsconfig.jsonc
 coverage
 docs
 docs/**

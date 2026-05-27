@@ -77,7 +77,7 @@ declare type TypeOfTag =
 /**
  * Type helper to collapse object intersections that aren't merged already.
  *
- * @see https://www.totaltypescript.com/concepts/the-prettify-helper
+ * @see https://www.totaltypescript.com/concepts/the-prettier-helper
  */
 declare type Prettify<T> = {
     [K in keyof T]: T[K]

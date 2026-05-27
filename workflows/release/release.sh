@@ -296,15 +296,17 @@ fi
 # --- Load .env ---
 
 if [ -f "$ENV_FILE" ]; then
-    while IFS='=' read -r _ek _ev; do
-        case "$_ek" in
-            ''|'#'*) continue ;;
-        esac
-        # Remove leading/trailing quotes from value
-        _ev="${_ev#\"}" ; _ev="${_ev%\"}"
-        _ev="${_ev#'}" ; _ev="${_ev%'}"
-        eval "${_ek}=\${_ev}"
-    done < "$ENV_FILE"
+  while IFS='=' read -r _ek _ev; do
+    case "$_ek" in
+      ''|'#'*) continue ;;
+    esac
+    case "$_ek" in
+      *[!A-Za-z0-9_]*) warn "Skipping invalid .env key: $_ek" ; continue ;;
+    esac
+    _ev="${_ev#\"}" ; _ev="${_ev%\"}"
+    _ev="${_ev#'}" ; _ev="${_ev%'}"
+    export "${_ek}=${_ev}"
+  done < "$ENV_FILE"
 fi
 
 RELEASE_HARNESS="${RELEASE_HARNESS:-opencode}"

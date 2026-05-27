@@ -17,7 +17,9 @@ _needs_precommit() {
 }
 
 if _needs_precommit; then
-    yarn precommit
+  yarn precommit
 fi
 
-git add -u
+if git diff --cached --name-only --diff-filter=ACMR | grep -q .; then
+  git add -u
+fi
