@@ -10,13 +10,17 @@ import { createRuleHandler } from './createRuleHandler.ts'
 export const InlineRuleName = 'Custom.Rule.<anonymous>' as const
 export type InlineRuleName = typeof InlineRuleName
 
-export function createInlineRule<TSubject>(
-    predicate: Fn<[subject: TSubject], boolean>
-): Custom<[], InlineRuleName, TSubject>
 export function createInlineRule<TSubject, TRuleName extends string>(
     name: TRuleName,
     predicate: Fn<[subject: TSubject], boolean>
 ): Custom<[], TRuleName, TSubject>
+export function createInlineRule<TSubject>(
+    name: string,
+    predicate: Fn<[subject: TSubject], boolean>
+): Custom<[], string, TSubject>
+export function createInlineRule<TSubject>(
+    predicate: Fn<[subject: TSubject], boolean>
+): Custom<[], InlineRuleName, TSubject>
 
 export function createInlineRule<TSubject>(
     ...args:
