@@ -10,7 +10,7 @@
 .madge
 .vscode
 AGENTS.md
-TODO.md
+TASKS.md
 biome.json
 umd.tsconfig.jsonc
 coverage

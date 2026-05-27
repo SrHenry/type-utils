@@ -346,6 +346,7 @@ Use nested checkboxes for decomposition within a single task. If a sub-task grow
 - **NEVER commit with placeholder author identity** — stop and ask the user for correct identity before proceeding.
 - **NEVER silently overwrite established AGENTS.md guidelines** — always propose first and get confirmation, even when not in doubt.
 - **NEVER use `any` in production code** — Biome allows `any` in test files (`*.spec.ts`, `__tests__/`) only. Use proper types in `src/` code.
+- **NEVER push YAML/JSON without validating** — after editing any `.yml`, `.yaml`, or `.json` file, run `npx prettier --check <file>` before committing. YAML is indentation-sensitive; even one-space drift silently breaks CI.
 
 ## Important Notes
 
@@ -356,3 +357,4 @@ Use nested checkboxes for decomposition within a single task. If a sub-task grow
 - **No wildcard exports**: `package.json` `exports` does not include a `./*` catch-all. All subpath exports must be listed explicitly. The `"default"` condition is omitted from all export entries — `import` and `require` cover all modern consumers.
 - **`.env` files are untrusted**: The release script loads `.env` via validated `export` statements (not `eval`). Variable names must match `[A-Za-z0-9_]` — invalid keys are skipped with a warning. Never store secrets in `.env` without encrypting them.
 - **CI workflow**: PRs targeting `developer` and `master` run a full validation pipeline (typecheck, lint, test, circular dependencies, build) via `.github/workflows/ci.yml`. The typedoc concurrency group intentionally uses `cancel-in-progress: true` so newer deployments supersede older ones.
+- **YAML is indentation-sensitive**: Prettier validates YAML structure (not just style). Always run `npx prettier --check <path>` after editing `.yml`/`.yaml` files — it catches indentation errors that visual inspection misses. `yarn run check` only covers `src/**/*.ts`, not workflow files.
