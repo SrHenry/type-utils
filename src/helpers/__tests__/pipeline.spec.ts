@@ -340,6 +340,69 @@ describe('pipeAsync', () => {
 
         expect(result2).toBe('error')
     })
+
+    it('should flatten Awaited<U> when pipeAsync callback returns a sync/async union', async () => {
+        const maybeAsync = (cond: boolean): Promise<{ x: number }> | { x: number } =>
+            cond ? Promise.resolve({ x: 1 }) : { x: 2 }
+
+        const syncResult = await pipe(true)
+            .pipeAsync(maybeAsync)
+            .pipeAsync(v => v.x)
+            .depipe()
+
+        expect(syncResult).toBe(1)
+
+        const asyncResult = await pipe(Promise.resolve(false))
+            .pipeAsync(maybeAsync)
+            .pipeAsync(v => v.x)
+            .depipe()
+
+        expect(asyncResult).toBe(2)
+    })
+
+    it('should flatten Awaited<U> when pipeAsync on AsyncPipelineBox returns a sync/async union', async () => {
+        const maybeAsync = (cond: boolean): Promise<{ x: number }> | { x: number } =>
+            cond ? Promise.resolve({ x: 1 }) : { x: 2 }
+
+        const result = await pipe(Promise.resolve(true))
+            .pipeAsync(maybeAsync)
+            .pipeAsync(v => v.x)
+            .depipe()
+
+        expect(result).toBe(1)
+    })
+
+    it('should correctly type chained pipeAsync with mixed sync/async callbacks', async () => {
+        const step1 = (n: number) => n * 2
+        const step2 = (n: number): Promise<number> | number =>
+            n > 2 ? Promise.resolve(n + 10) : n + 1
+        const step3 = (n: number): Promise<string> | string =>
+            n > 10 ? Promise.resolve(`big: ${n}`) : `small: ${n}`
+
+        const resultSmall = await pipe(1)
+            .pipeAsync(step1)
+            .pipeAsync(step2)
+            .pipeAsync(step3)
+            .depipe()
+
+        expect(resultSmall).toBe('small: 3')
+
+        const resultBig = await pipe(5).pipeAsync(step1).pipeAsync(step2).pipeAsync(step3).depipe()
+
+        expect(resultBig).toBe('big: 20')
+    })
+
+    it('should flatten Awaited<U> in pipe catch-all overload with sync/async union', async () => {
+        const maybeAsync = (cond: boolean): Promise<{ x: number }> | { x: number } =>
+            cond ? Promise.resolve({ x: 1 }) : { x: 2 }
+
+        const result = await pipe(Promise.resolve(true))
+            .pipe(maybeAsync)
+            .pipeAsync(v => v.x)
+            .depipe()
+
+        expect(result).toBe(1)
+    })
 })
 
 describe('createPipeline', () => {

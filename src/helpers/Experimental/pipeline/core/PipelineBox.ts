@@ -26,6 +26,9 @@ export class PipelineBox<T> {
 
     pipe<U>(fn: (value: T) => Exclude<U, Promise<any>>): PipelineBox<U>
     pipe<U>(fn: (value: T) => Promise<U>): AsyncPipelineBox<U>
+    pipe<U>(
+        fn: (value: T) => U | Promise<U>
+    ): U extends Promise<any> ? AsyncPipelineBox<Awaited<U>> : PipelineBox<U>
     pipe<U>(fn: (value: T) => U | Promise<U>): PipelineBox<U> | AsyncPipelineBox<U> {
         if (isCallWithTransform(fn)) {
             const result = (this._value as (...args: any[]) => any)(...fn.__callWithArgs)
@@ -49,10 +52,10 @@ export class PipelineBox<T> {
         return new PipelineBox(result as U) as PipelineBox<U>
     }
 
-    pipeAsync<U>(fn: (value: T) => U | Promise<U>): AsyncPipelineBox<U> {
+    pipeAsync<U>(fn: (value: T) => U | Promise<U>): AsyncPipelineBox<Awaited<U>> {
         const result = fn(this._value)
         const promise = result instanceof Promise ? result : Promise.resolve(result)
-        return new AsyncPipelineBox(promise as Promise<U>)
+        return new AsyncPipelineBox(promise as Promise<Awaited<U>>)
     }
 
     tap(fn: (value: T) => void, options?: TapOptions): PipelineBox<T> {
@@ -93,6 +96,7 @@ export class AsyncPipelineBox<T> {
 
     pipe<U>(fn: (value: T) => Exclude<U, Promise<any>>): AsyncPipelineBox<U>
     pipe<U>(fn: (value: T) => Promise<U>): AsyncPipelineBox<U>
+    pipe<U>(fn: (value: T) => U | Promise<U>): AsyncPipelineBox<Awaited<U>>
     pipe<U>(fn: (value: T) => U | Promise<U>): AsyncPipelineBox<U> {
         return new AsyncPipelineBox(
             this._promise.then(v => {
@@ -113,8 +117,8 @@ export class AsyncPipelineBox<T> {
         )
     }
 
-    pipeAsync<U>(fn: (value: T) => U | Promise<U>): AsyncPipelineBox<U> {
-        return new AsyncPipelineBox(this._promise.then(fn))
+    pipeAsync<U>(fn: (value: T) => U | Promise<U>): AsyncPipelineBox<Awaited<U>> {
+        return new AsyncPipelineBox(this._promise.then(fn) as Promise<Awaited<U>>)
     }
 
     tap(fn: (value: T) => void, options?: TapOptions): AsyncPipelineBox<T> {
