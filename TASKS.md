@@ -62,3 +62,8 @@
     - **Acceptance**: Strict-mode object validator rejects unknown keys at runtime, tests pass
 
 ## P3 — Low
+
+- [ ] Configure GPG signing key for AI harness commit author
+    - **ID**: gpg-signing-key
+    - **Details**: Key must match the author email configured in the repo's local/global git config
+    - **Acceptance**: `git commit -S` succeeds without prompt for the configured author

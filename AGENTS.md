@@ -48,7 +48,7 @@ If the request is vague or ambiguous: ask targeted questions. Better to over-cla
 |---------|---------|
 | `yarn install` | Install dependencies (required after checkout) |
 | `yarn build` | Build ESM + CJS outputs |
-| `yarn build:clean` | Clean + build (`npm run clear` then `yarn build`) |
+| `yarn build:clean` | Clean + build (`yarn run clear` then `yarn build`) |
 | `yarn test` | Run all tests (Vitest, single run) |
 | `yarn test:coverage` | Run tests with coverage |
 | `yarn check` | Biome lint + Prettier check (no writes) |
@@ -90,7 +90,7 @@ NEVER skip `tsc --noEmit` after code changes — typecheck is mandatory, not opt
 ### Lint (Biome)
 
 - No enums
-- No `any` in production code (allowed in `*.spec.ts` and `__tests__/`)
+- `noExplicitAny: warn` — flags new `any` usage as warnings without blocking the build. Overridden to `off` in `*.spec.ts`, `__tests__/**`, `Experimental/**`, and setup files (`vitest.setup.ts`, `jest.setup.ts`). Note: Biome 2.x doesn't honor suppression comments for `warn`-level rules, so inline `biome-ignore` comments for `noExplicitAny` are not effective at this level
 - `useImportType: warn` — prefer `import type` for type-only imports
 - `noNonNullAssertion: warn` — avoid `!` operator
 - Cognitive complexity cap: 20 (relaxed to 25–30 in specific files via overrides)
@@ -346,10 +346,15 @@ Use nested checkboxes for decomposition within a single task. If a sub-task grow
 - **NEVER commit with placeholder author identity** — stop and ask the user for correct identity before proceeding.
 - **NEVER silently overwrite established AGENTS.md guidelines** — always propose first and get confirmation, even when not in doubt.
 - **NEVER use `any` in production code** — Biome allows `any` in test files (`*.spec.ts`, `__tests__/`) only. Use proper types in `src/` code.
+- **NEVER push YAML/JSON without validating** — after editing any `.yml`, `.yaml`, or `.json` file, run `npx prettier --check <file>` before committing. YAML is indentation-sensitive; even one-space drift silently breaks CI.
 
 ## Important Notes
 
-- **`yarn` not `npm`**: `npm install` fails with eresolve errors in this repo. Always use `yarn install`.
-- **Pre-commit hooks are expensive**: They run full build + lint + test + circular dependency checks. Expect 30–60 seconds per commit.
+- **`yarn` not `npm`**: `npm install` fails with eresolve errors in this repo. Always use `yarn install`. This applies to all script commands too — use `yarn run <script>` instead of `npm run <script>`.
+- **Pre-commit hooks are expensive**: They run full build + lint + test + circular dependency checks. Expect 30–60 seconds per commit. The hook only runs when relevant files (`.ts`, `tsconfig*.json`, `package.json`, `yarn.lock`, `biome.json`, `.prettierrc*`, `vitest.config.*`) are staged. `git add -u` is conditional — only runs if there are staged files that may have been modified by the hook.
 - **`developer` vs `master`**: Most PRs target `developer`. If `developer` is behind `master`, merge `master` into `developer` first, then rebase the feature branch.
-- **Dual builds**: Changes must compile under both ESM and CJS tsconfigs. Run `yarn build` to verify.
+- **Dual builds**: Changes must compile under both ESM and CJS tsconfigs. Run `yarn build` to verify. The `build:fix-declarations` step uses `scripts/fix-declarations.mjs` (Node.js ESM) to rewrite `.ts` extensions to `.js` in `.d.ts` files — this replaces the previous `sed` approach for portability.
+- **No wildcard exports**: `package.json` `exports` does not include a `./*` catch-all. All subpath exports must be listed explicitly. The `"default"` condition is omitted from all export entries — `import` and `require` cover all modern consumers.
+- **`.env` files are untrusted**: The release script loads `.env` via validated `export` statements (not `eval`). Variable names must match `[A-Za-z0-9_]` — invalid keys are skipped with a warning. Never store secrets in `.env` without encrypting them.
+- **CI workflow**: PRs targeting `developer` and `master` run a full validation pipeline (typecheck, lint, test, circular dependencies, build) via `.github/workflows/ci.yml`. The typedoc concurrency group intentionally uses `cancel-in-progress: true` so newer deployments supersede older ones.
+- **YAML is indentation-sensitive**: Prettier validates YAML structure (not just style). Always run `npx prettier --check <path>` after editing `.yml`/`.yaml` files — it catches indentation errors that visual inspection misses. `yarn run check` only covers `src/**/*.ts`, not workflow files.
