@@ -52,9 +52,9 @@ describe('array — type inference', () => {
         expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<any[]>()
     })
 
-    it('infers string[] from array(string()).optional() — known: | undefined dropped by GetTypeGuard on FluentOptionalSchema', () => {
+    it('infers string[] | undefined from array(string()).optional()', () => {
         const schema = array(string()).optional()
-        expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<string[]>()
+        expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<string[] | undefined>()
     })
 
     it('infers literal union array from array(asEnum(...))', () => {
@@ -64,7 +64,7 @@ describe('array — type inference', () => {
 
     it('infers element type from array(custom TypeGuard)', () => {
         const isPoint: TypeGuard<{ x: number; y: number }> = (
-            v: unknown,
+            v: unknown
         ): v is { x: number; y: number } =>
             typeof v === 'object' && v !== null && 'x' in v && 'y' in v
         const schema = array(isPoint)
