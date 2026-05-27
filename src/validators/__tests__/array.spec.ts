@@ -19,7 +19,7 @@ function mockStdSchema<T>(
     }
 }
 
-describe('array — type inference', () => {
+describe('array — type inference (merged overload)', () => {
     it('infers string[] from array(string())', () => {
         const schema = array(string())
         expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<string[]>()
