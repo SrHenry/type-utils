@@ -4,6 +4,7 @@ import type { V3 } from '../types/index.ts'
 
 import { getStructMetadata } from './getStructMetadata.ts'
 import { hasStructMetadata } from './hasStructMetadata.ts'
+import { hasOptionalFlag, setOptionalFlag } from './optionalFlag.ts'
 import { setStructMetadata } from './setStructMetadata.ts'
 export function copyStructMetadata<Target>(
     source: TypeGuard<any>,
@@ -34,5 +35,9 @@ export function copyStructMetadata<T, Target>(
 
     const metadata = deepMerge(getStructMetadata(source), update)
 
-    return setStructMetadata(metadata as V3.AnyStruct, target as TypeGuard<T>) as Target
+    const taggedTarget = setStructMetadata(metadata as V3.AnyStruct, target as TypeGuard<T>)
+
+    if (hasOptionalFlag(source)) setOptionalFlag(taggedTarget)
+
+    return taggedTarget as Target
 }

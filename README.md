@@ -332,6 +332,26 @@ const objectMaybeHasFoo = object({
 // if it hasn't then pass anyway as it is optional property.
 ```
 
+When using `object<T>({...})`, include every key from `T` in the schema tree. Optional
+properties in `T` must still be present in the tree with `.optional()` so the runtime validator
+knows which properties may be omitted:
+
+```typescript
+import { object, string } from '@srhenry/type-utils'
+
+interface Item {
+    id: string
+    name?: string
+}
+
+const isItem = object<Item>({
+    id: string(),
+    name: string().optional()
+})
+
+isItem({ id: 'item-1' }) // true
+```
+
 ### Schema helpers
 
 #### [`Schema.and`](https://srhenry.github.io/type-utils/variables/and.html)
