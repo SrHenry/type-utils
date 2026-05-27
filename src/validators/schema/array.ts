@@ -29,9 +29,9 @@ function _fn(): TypeGuard<any[]>
 function _fn(rules: ArrayRule[]): TypeGuard<any[]>
 function _fn<T>(rules: ArrayRule[], schema: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T[]>
 function _fn<T>(schema: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T[]>
+function _fn<T>(tree: ValidatorMap<T>): TypeGuard<T[]>
 // biome-ignore lint/complexity/noBannedTypes: {} used as wildcard object type for overload
 function _fn(tree: {}): TypeGuard<{}[]>
-function _fn<T>(tree: ValidatorMap<T>): TypeGuard<T[]>
 function _fn<T>(
     rules?: ArrayRule[] | TypeGuard<T> | StandardSchemaV1<T, T> | null | undefined,
     schema?: TypeGuard<T> | StandardSchemaV1<T, T>
@@ -99,9 +99,9 @@ type OptionalizedArray = CallableFunction & {
         schema: TypeGuard<T> | StandardSchemaV1<T, T>
     ): TypeGuard<T[] | undefined>
     <T>(schema: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T[] | undefined>
+    <T>(tree: ValidatorMap<T>): TypeGuard<T[] | undefined>
     // biome-ignore lint/complexity/noBannedTypes: {} used as wildcard object type for overload
     (tree: {}): TypeGuard<{}[] | undefined>
-    <T>(tree: ValidatorMap<T>): TypeGuard<T[] | undefined>
 }
 
 export const _array = optionalizeOverloadFactory(_fn).optionalize<OptionalizedArray>()
