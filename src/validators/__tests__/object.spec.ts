@@ -8,10 +8,15 @@ describe('object', () => {
             name?: string
         }
 
-        // @ts-expect-error object<T>() intentionally requires optional keys in ValidatorMap<T>.
-        object<Item>({
-            id: string(),
-        })
+        // Compile-time: omitting an optional key from object<T>() is a type error.
+        // Wrapped in a function so it never executes at runtime.
+        function _typeCheck() {
+            // @ts-expect-error object<T>() intentionally requires optional keys in ValidatorMap<T>.
+            object<Item>({
+                id: string(),
+            })
+        }
+        void _typeCheck
 
         const schema = object<Item>({
             id: string(),
