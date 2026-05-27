@@ -30,3 +30,9 @@
 ### UX & interactivity
 
 - Interactive mode: prompt for confirmation at each step
+
+## Schema / Validators
+
+### object()
+
+- Strict mode: `object<T>().strict()` or `FluentSchema.strict()` that rejects unknown properties at runtime (no extra keys beyond the validator tree)
