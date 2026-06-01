@@ -7,12 +7,7 @@ export default defineConfig({
 		exclude: ['**/node_modules/**', '**/dist/**', 'src/test/**'],
 		setupFiles: ['./src/vitest.setup.ts'],
 		globals: true,
-		pool: 'threads',
-		poolOptions: {
-			threads: {
-				maxThreads: '50%',
-			},
-		},
+    maxWorkers: '50%',
 	},
 	resolve: {
 		alias: [
