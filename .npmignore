@@ -10,9 +10,14 @@
 .madge
 .vscode
 AGENTS.md
+CLAUDE.md
 TASKS.md
 biome.json
 umd.tsconfig.jsonc
+tsconfig.json
+tsconfig.*.json
+*.tsconfig.json
+vitest.config.ts
 coverage
 docs
 docs/**
@@ -31,22 +36,22 @@ typedoc.json
 **/*.draft
 **/*.spec.*
 
-./src/jest.setup.ts
-./src/jest.setup.ts.map
+./src/{j,vit}est.setup.ts
+./src/{j,vit}est.setup.ts.map
 ./src/test/rules-test.spec.ts
 ./src/test/rules-test.spec.ts.map
 ./src/test/rules-test.*.spec.ts
 ./src/test/rules-test.*.spec.ts.map
 
-./dist/jest.setup.js
-./dist/jest.setup.js.map
+./dist/{j,vit}est.setup.js
+./dist/{j,vit}est.setup.js.map
 ./dist/test/rules-test.spec.js
 ./dist/test/rules-test.spec.js.map
 ./dist/test/rules-test.*.spec.js
 ./dist/test/rules-test.*.spec.js.map
 
-./types/jest.setup.d.ts
-./types/jest.setup.d.ts.map
+./types/{j,vit}est.setup.d.ts
+./types/{j,vit}est.setup.d.ts.map
 ./types/test/rules-test.spec.d.ts
 ./types/test/rules-test.spec.d.ts.map
 ./types/test/rules-test.*.spec.d.ts
