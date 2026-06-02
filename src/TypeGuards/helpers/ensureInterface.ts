@@ -10,9 +10,7 @@ import { isNativeSchema } from '../../validators/schema/helpers/isNativeSchema.t
 import { isStandardSchema } from '../../validators/standard-schema/isStandardSchema.ts'
 import { isTypeGuard } from './isTypeGuard.ts'
 
-function resolveValidator<Interface>(
-    validator: unknown
-): TypeGuard<Interface> {
+function resolveValidator<Interface>(validator: unknown): TypeGuard<Interface> {
     if (isNativeSchema(validator)) return validator as TypeGuard<Interface>
     if (isStandardSchema(validator))
         return fromStandardSchema(validator as StandardSchemaV1<Interface>)
@@ -35,9 +33,9 @@ export function ensureInterface<Interface>(
 export function ensureInterface<Interface, Instance = unknown>(
     value: Instance | ((value: unknown) => boolean) | StandardSchemaV1<Interface>,
     validator:
-    | ((value: unknown) => boolean)
-    | StandardSchemaV1<Interface>
-    | symbol = __curry_param__
+        | ((value: unknown) => boolean)
+        | StandardSchemaV1<Interface>
+        | symbol = __curry_param__
 ): Interface | ((value: Instance) => Interface) {
     if (validator === __curry_param__) {
         const firstArg = value as ((value: unknown) => boolean) | StandardSchemaV1<Interface>
