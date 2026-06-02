@@ -9,6 +9,21 @@ import { hasMessage } from './hasMessage.ts'
 import { isNativeSchema } from '../../validators/schema/helpers/isNativeSchema.ts'
 import { isStandardSchema } from '../../validators/standard-schema/isStandardSchema.ts'
 import { isTypeGuard } from './isTypeGuard.ts'
+
+function resolveValidator<Interface>(
+    validator: unknown
+): TypeGuard<Interface> {
+    if (isNativeSchema(validator)) return validator as TypeGuard<Interface>
+    if (isStandardSchema(validator))
+        return fromStandardSchema(validator as StandardSchemaV1<Interface>)
+    if (isTypeGuard(validator)) return validator as TypeGuard<Interface>
+    throw new TypeGuardError(
+        'Invalid validator. Must be a TypeGuard (function as predicate) or StandardSchemaV1.',
+        validator,
+        isTypeGuard
+    )
+}
+
 export function ensureInterface<Interface, Instance = unknown>(
     value: Instance,
     validator: StandardSchemaV1<Interface> | TypeGuard<Interface>
@@ -20,50 +35,25 @@ export function ensureInterface<Interface>(
 export function ensureInterface<Interface, Instance = unknown>(
     value: Instance | ((value: unknown) => boolean) | StandardSchemaV1<Interface>,
     validator:
-        | ((value: unknown) => boolean)
-        | StandardSchemaV1<Interface>
-        | symbol = __curry_param__
+    | ((value: unknown) => boolean)
+    | StandardSchemaV1<Interface>
+    | symbol = __curry_param__
 ): Interface | ((value: Instance) => Interface) {
     if (validator === __curry_param__) {
         const firstArg = value as ((value: unknown) => boolean) | StandardSchemaV1<Interface>
-        if (isNativeSchema(firstArg)) {
-            return (_: Instance): Interface => ensureInterface(_, firstArg as TypeGuard<Interface>)
-        }
-        if (isStandardSchema(firstArg)) {
-            return (_: Instance): Interface =>
-                ensureInterface(_, firstArg as StandardSchemaV1<Interface>)
-        }
-        return (_: Instance): Interface => ensureInterface(_, firstArg as TypeGuard)
+        const guard = resolveValidator<Interface>(firstArg)
+        return (_: Instance): Interface => ensureInterface(_, guard)
     }
 
-    if (!isNativeSchema(validator) && isStandardSchema(validator)) {
-        const guard = fromStandardSchema(validator as StandardSchemaV1<Interface>)
+    const guard = resolveValidator<Interface>(validator)
 
-        if (!guard(value)) {
-            const message = `Failed while ensuring interface type constraint of ${JSON.stringify(
-                value
-            )} against Standard Schema`
-
-            throw new TypeGuardError(message, value, guard)
-        }
-
-        return value as Interface
-    }
-
-    if (!isTypeGuard(validator))
-        throw new TypeGuardError(
-            'Invalid validator. must be a TypeGuard (function as predicate).',
-            validator,
-            isTypeGuard
-        )
-
-    if (!(validator as TypeGuard<Interface>)(value)) {
+    if (!guard(value)) {
         const message = `Failed while ensuring interface type constraint of ${JSON.stringify(
             value
-        )} against ${hasMessage(validator) ? getMessage(validator) : JSON.stringify(validator)}`
+        )} against ${hasMessage(guard) ? getMessage(guard) : JSON.stringify(guard)}`
 
-        throw new TypeGuardError(message, value, validator)
+        throw new TypeGuardError(message, value, guard)
     }
 
-    return value
+    return value as Interface
 }
