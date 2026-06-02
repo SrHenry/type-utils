@@ -1,6 +1,6 @@
 import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
 
-import { hasMetadata } from '../../../TypeGuards/helpers/index.ts'
+import { hasMetadata } from '../../../TypeGuards/helpers/hasMetadata.ts'
 import { __metadata__ } from './constants.ts'
 
 export function isNativeSchema(value: unknown): value is TypeGuard<any> {
