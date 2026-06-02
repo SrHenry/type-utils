@@ -1,5 +1,6 @@
 export type { StandardSchemaV1, InferInput, InferOutput } from './types.ts'
 export { isStandardSchema } from './isStandardSchema.ts'
+export { isNativeSchema } from '../schema/helpers/isNativeSchema.ts'
 export { attachStandardSchema } from './attachStandardSchema.ts'
 export { toStandardSchema } from './toStandardSchema.ts'
 export { fromStandardSchema } from './fromStandardSchema.ts'
