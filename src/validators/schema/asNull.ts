@@ -1,6 +1,6 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
-import type { FluentSchema } from './types/FluentSchema.ts'
+import type { NullSchema } from './types/NullSchema.ts'
 
 import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
@@ -23,8 +23,6 @@ function _fn(): TypeGuard<null> {
 }
 
 export const _null = optionalize(_fn)
-
-type NullSchema = CallableFunction & (() => FluentSchema<null>)
 
 export const asNull: NullSchema = (() => {
     const customRules: Custom<any[], string, null>[] = []

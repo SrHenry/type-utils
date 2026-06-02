@@ -1,6 +1,6 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
-import type { FluentSchema } from './types/FluentSchema.ts'
+import type { SymbolSchema } from './types/SymbolSchema.ts'
 
 import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
@@ -34,8 +34,6 @@ function _fn(): TypeGuard<symbol> {
 type OptionalizedSymbol = () => TypeGuard<undefined | symbol>
 
 export const _symbol = optionalizeOverloadFactory(_fn).optionalize<OptionalizedSymbol>()
-
-type SymbolSchema = CallableFunction & (() => FluentSchema<symbol>)
 
 export const symbol: SymbolSchema = (() => {
     const customRules: Custom<any[], string, symbol>[] = []

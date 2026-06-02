@@ -1,7 +1,7 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
 import type { V3 } from './types/index.ts'
-import type { FluentSchema } from './types/FluentSchema.ts'
+import type { PrimitiveSchema } from './types/PrimitiveSchema.ts'
 
 import { Generics } from '../../Generics/index.ts'
 import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
@@ -32,8 +32,6 @@ function _fn(): TypeGuard<Generics.PrimitiveType> {
 }
 
 export const _primitive = optionalize(_fn)
-
-type PrimitiveSchema = CallableFunction & (() => FluentSchema<Generics.PrimitiveType>)
 
 export const primitive: PrimitiveSchema = (() => {
     const customRules: Custom<any[], string, Generics.PrimitiveType>[] = []
