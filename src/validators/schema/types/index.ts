@@ -16,6 +16,8 @@ import type {
     TypeGuardFactory,
     TypeGuardFactoryType,
 } from '../helpers/optional/types.ts'
+import type { ValidationError } from '../../ValidationError.ts'
+import type { ValidationErrors } from '../../ValidationErrors.ts'
 
 export type Optionalize<T> = {
     [K in keyof T]: T[K] extends () => TypeGuard<any | any[]>
@@ -685,7 +687,13 @@ export type * from './UnionSchema.ts'
 export type * from './IntersectionSchema.ts'
 export type * from './GetSchema.ts'
 
-export type { ValidateReturn } from '../../SchemaValidator.ts'
+export type ValidateReturn<T> =
+    | T
+    | ValidationErrors<
+        | ValidationError<unknown, T>
+        | ValidationError<unknown, T[Extract<keyof T, string>], Extract<keyof T, string>, T>
+        | ValidationError
+    >
 
 export type {
     Custom,
