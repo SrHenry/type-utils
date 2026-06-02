@@ -1,5 +1,6 @@
 import { string } from '../../schema/string.ts'
 import { object } from '../../schema/object.ts'
+import { is } from '../../../TypeGuards/helpers/is.ts'
 import { isStandardSchema } from '../isStandardSchema.ts'
 import { fromStandardSchema } from '../fromStandardSchema.ts'
 import { toStandardSchema } from '../toStandardSchema.ts'
@@ -149,12 +150,39 @@ describe('consumer: fromStandardSchema', () => {
 })
 
 describe('producer: toStandardSchema adapter for plain TypeGuards', () => {
-    it('should work for plain TypeGuard without struct metadata', () => {
-        const guard = (value: unknown): value is string => typeof value === 'string'
-        const std = toStandardSchema(guard)
-        const valid = std['~standard'].validate('hello') as SS.Result<string>
-        const invalid = std['~standard'].validate(42) as SS.Result<string>
-        expect(valid.success).toBe(true)
-        expect(invalid.success).toBe(false)
-    })
+  it('should work for plain TypeGuard without struct metadata', () => {
+    const guard = (value: unknown): value is string => typeof value === 'string'
+    const std = toStandardSchema(guard)
+    const valid = std['~standard'].validate('hello') as SS.Result<string>
+    const invalid = std['~standard'].validate(42) as SS.Result<string>
+    expect(valid.success).toBe(true)
+    expect(invalid.success).toBe(false)
+  })
+})
+
+describe('routing: is() takes native fast path for FluentSchema', () => {
+  it('should validate via direct call for native schemas (not fromStandardSchema roundtrip)', () => {
+    const guard = string()
+    expect(is('hello', guard)).toBe(true)
+    expect(is(42, guard)).toBe(false)
+  })
+
+  it('should validate via fromStandardSchema for external StandardSchemaV1', () => {
+    const externalSchema: StandardSchemaV1<string> = {
+      '~standard': {
+        version: 1,
+        vendor: 'test-lib',
+        validate: (value: unknown): SS.Result<string> => {
+          if (typeof value === 'string') return { success: true as const, value }
+          return {
+            success: false as const,
+            issues: [{ message: 'Expected string' }],
+          }
+        },
+      },
+    }
+
+    expect(is('hello', externalSchema)).toBe(true)
+    expect(is(42, externalSchema)).toBe(false)
+  })
 })
