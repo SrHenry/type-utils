@@ -12,9 +12,9 @@ describe('producer: ~standard auto-attached on schemas', () => {
         expect('~standard' in guard).toBe(true)
     })
 
-    it('should not be detected as isStandardSchema (it is a function, not a plain object)', () => {
+    it('should be detected as isStandardSchema (function with ~standard)', () => {
         const guard = string()
-        expect(isStandardSchema(guard)).toBe(false)
+        expect(isStandardSchema(guard)).toBe(true)
     })
 
     it('should make ~standard non-enumerable', () => {
