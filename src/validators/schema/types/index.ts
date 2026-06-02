@@ -671,3 +671,27 @@ export type GenericStruct<
 > = V3.GenericStruct<T, UnionOrIntersection>
 export type Struct<T = any> = V3.Struct<T>
 export type StructType = V3.StructType
+
+export type * from './BooleanSchema.ts'
+export type * from './NullSchema.ts'
+export type * from './UndefinedSchema.ts'
+export type * from './SymbolSchema.ts'
+export type * from './AnySchema.ts'
+export type * from './PrimitiveSchema.ts'
+export type * from './EnumSchema.ts'
+export type * from './ObjectSchema.ts'
+export type * from './TupleSchema.ts'
+export type * from './UnionSchema.ts'
+export type * from './IntersectionSchema.ts'
+export type * from './GetSchema.ts'
+
+export type { ValidateReturn } from '../../SchemaValidator.ts'
+
+export type {
+    Custom,
+    CustomFactory,
+    Rule,
+    RuleStruct,
+    CreateRuleArgs,
+    CUSTOM_RULE_BRAND,
+} from '../../rules/types/index.ts'
