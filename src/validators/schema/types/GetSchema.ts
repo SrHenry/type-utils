@@ -1,8 +1,8 @@
 import type { FluentSchema } from './FluentSchema.ts'
-import { StringRules } from '../../rules/String/index.ts'
-import { NumberRules } from '../../rules/Number/index.ts'
-import { ArrayRules } from '../../rules/Array/index.ts'
-import { RecordRules } from '../../rules/Record/index.ts'
+import type { StringRules } from '../../rules/String/index.ts'
+import type { NumberRules } from '../../rules/Number/index.ts'
+import type { ArrayRules } from '../../rules/Array/index.ts'
+import type { RecordRules } from '../../rules/Record/index.ts'
 import type { Sanitize } from '../../types/index.ts'
 
 type StringSchemaRules = Omit<typeof StringRules, 'optional'>
