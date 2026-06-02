@@ -54,12 +54,14 @@ function _fn<T>(
         | undefined = void 0,
     _schema: TypeGuard<T> | StandardSchemaV1<T, T> = any()
 ): TypeGuard<T[]> {
+    // Native schemas are functions, caught by typeof === 'object' gate on line above
     if (rules && typeof rules === 'object' && !Array.isArray(rules) && !isStandardSchema(rules))
         return _fn(object(rules) as unknown as TypeGuard<T>)
 
     const normalizeIfSchema = (s: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T> =>
         normalizeSchema(s)
 
+    // Native schemas are functions, caught by typeof === 'function' before isStandardSchema
     if (!rules || typeof rules === 'function' || isStandardSchema(rules)) {
         const schema = rules
             ? normalizeIfSchema(rules as TypeGuard<T> | StandardSchemaV1<T, T>)

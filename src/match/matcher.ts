@@ -20,8 +20,9 @@ export function matcher(
             patterns
                 .map(([pattern, expression]) => ({ pattern, expression }))
                 .find(({ pattern: p }) => {
+                    if (isNativeSchema(p)) return p(value)
                     if (typeof p === 'function') return p(value)
-                    if (!isNativeSchema(p) && isStandardSchema(p)) {
+                    if (isStandardSchema(p)) {
                         const result = p['~standard'].validate(value)
                         if (result instanceof Promise) {
                             throw new TypeError(
