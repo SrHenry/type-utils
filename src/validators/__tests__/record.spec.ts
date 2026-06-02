@@ -189,6 +189,13 @@ describe('record', () => {
         expect(schema({ foo: true, bar: undefined })).toBe(false)
     })
 
+    it('should not infinitely recurse when native schemas are used as key/value guards', () => {
+        const schema = record(string(), number())
+        expect(schema({ foo: 123 })).toBe(true)
+        expect(schema({ foo: 'bar' })).toBe(false)
+        expect(schema({})).toBe(true)
+    })
+
     it('should validate a record using own validator', () => {
         const schema = record()
 
