@@ -208,7 +208,7 @@ export const record: RecordSchema = ((
                 ? resolver(keyGuard, valueGuard)
                 : resolver(keyGuard, defaults.valueGuard)
         }
-        if (isStandardSchema(keyGuard)) {
+        if (!isNativeSchema(keyGuard) && isStandardSchema(keyGuard)) {
             return valueGuard
                 ? resolver(keyGuard, valueGuard)
                 : resolver(keyGuard, defaults.valueGuard)

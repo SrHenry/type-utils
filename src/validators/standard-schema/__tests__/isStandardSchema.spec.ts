@@ -25,7 +25,7 @@ describe('isStandardSchema', () => {
         expect(isStandardSchema(() => true)).toBe(false)
     })
 
-    it('should return true for a function with ~standard', () => {
+    it('should return true for a plain function with ~standard (non-TypeGuard)', () => {
         const funcSchema = (() => true) as unknown as StandardSchemaV1
         Object.defineProperty(funcSchema, '~standard', {
             value: {

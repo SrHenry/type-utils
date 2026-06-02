@@ -9,6 +9,7 @@ import type { StandardSchemaV1 } from '../standard-schema/types.ts'
 import { asTypeGuard } from '../../TypeGuards/index.ts'
 import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
+import { isNativeSchema } from './helpers/isNativeSchema.ts'
 import { isStandardSchema } from '../standard-schema/isStandardSchema.ts'
 import { normalizeSchema } from '../standard-schema/normalizeSchema.ts'
 import { SchemaValidator } from '../SchemaValidator.ts'
@@ -121,7 +122,8 @@ export const array: ArraySchema = ((
         const resolver = callStack['optional'] ? _array.optional : _array
         if (!tree_schema) return resolver(rules)
         if (typeof tree_schema === 'function') return resolver(rules, tree_schema)
-        if (isStandardSchema(tree_schema)) return resolver(rules, tree_schema)
+        if (!isNativeSchema(tree_schema) && isStandardSchema(tree_schema))
+            return resolver(rules, tree_schema)
         return resolver(rules, object(tree_schema))
     }
 
