@@ -6,6 +6,7 @@ import { __curry_param__ } from './constants.ts'
 import { fromStandardSchema } from '../../validators/standard-schema/fromStandardSchema.ts'
 import { getMessage } from './getMessage.ts'
 import { hasMessage } from './hasMessage.ts'
+import { isNativeSchema } from '../../validators/schema/helpers/isNativeSchema.ts'
 import { isStandardSchema } from '../../validators/standard-schema/isStandardSchema.ts'
 import { isTypeGuard } from './isTypeGuard.ts'
 export function ensureInterface<Interface, Instance = unknown>(
@@ -25,6 +26,9 @@ export function ensureInterface<Interface, Instance = unknown>(
 ): Interface | ((value: Instance) => Interface) {
     if (validator === __curry_param__) {
         const firstArg = value as ((value: unknown) => boolean) | StandardSchemaV1<Interface>
+        if (isNativeSchema(firstArg)) {
+            return (_: Instance): Interface => ensureInterface(_, firstArg as TypeGuard<Interface>)
+        }
         if (isStandardSchema(firstArg)) {
             return (_: Instance): Interface =>
                 ensureInterface(_, firstArg as StandardSchemaV1<Interface>)
@@ -32,7 +36,7 @@ export function ensureInterface<Interface, Instance = unknown>(
         return (_: Instance): Interface => ensureInterface(_, firstArg as TypeGuard)
     }
 
-    if (isStandardSchema(validator)) {
+    if (!isNativeSchema(validator) && isStandardSchema(validator)) {
         const guard = fromStandardSchema(validator as StandardSchemaV1<Interface>)
 
         if (!guard(value)) {
