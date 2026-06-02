@@ -37,36 +37,36 @@ export type GetSchema<T> =
             ? FluentSchema<string, StringSchemaRules>
             : never
         : T extends string
-          // String literal → all rules consumed (exact match overload)
-          ? FluentSchema<string, StringSchemaRules, [...(keyof StringSchemaRules)[]]>
+          ? // String literal → all rules consumed (exact match overload)
+            FluentSchema<string, StringSchemaRules, [...(keyof StringSchemaRules)[]]>
           : // Broad number type → number schema with all rules available
             [number] extends [T]
             ? T extends number
                 ? FluentSchema<number, NumberSchemaRules>
                 : never
             : T extends number
-              // Numeric literal → all rules consumed
-              ? FluentSchema<number, NumberSchemaRules, [...(keyof NumberSchemaRules)[]]>
+              ? // Numeric literal → all rules consumed
+                FluentSchema<number, NumberSchemaRules, [...(keyof NumberSchemaRules)[]]>
               : T extends bigint
-                  ? FluentSchema<bigint, NumberSchemaRules>
-                  : T extends boolean
-                      ? FluentSchema<boolean>
-                      : T extends null
-                          ? FluentSchema<null>
-                          : T extends undefined
-                              ? FluentSchema<undefined>
-                              : T extends symbol
-                                  ? FluentSchema<symbol>
-                                  : // Tuple: checked before array (readonly [...] catches tuples but not generic arrays)
-                                    T extends readonly [infer _A, ...infer _B]
-                                    ? FluentSchema<T>
-                                    : // Array: generic T[]
-                                      T extends (infer U)[]
-                                      ? FluentSchema<U[], ArraySchemaRules>
-                                      : // Record (all string keys) vs specific object
-                                        T extends Record<any, any>
-                                        ? string extends keyof T
-                                            ? FluentSchema<T, RecordSchemaRules>
-                                            : // Specific object: use Sanitize for optional prop normalization
-                                              FluentSchema<Sanitize<T>>
-                                        : never
+                ? FluentSchema<bigint, NumberSchemaRules>
+                : T extends boolean
+                  ? FluentSchema<boolean>
+                  : T extends null
+                    ? FluentSchema<null>
+                    : T extends undefined
+                      ? FluentSchema<undefined>
+                      : T extends symbol
+                        ? FluentSchema<symbol>
+                        : // Tuple: checked before array (readonly [...] catches tuples but not generic arrays)
+                          T extends readonly [infer _A, ...infer _B]
+                          ? FluentSchema<T>
+                          : // Array: generic T[]
+                            T extends (infer U)[]
+                            ? FluentSchema<U[], ArraySchemaRules>
+                            : // Record (all string keys) vs specific object
+                              T extends Record<any, any>
+                              ? string extends keyof T
+                                  ? FluentSchema<T, RecordSchemaRules>
+                                  : // Specific object: use Sanitize for optional prop normalization
+                                    FluentSchema<Sanitize<T>>
+                              : never

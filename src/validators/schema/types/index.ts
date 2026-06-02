@@ -690,10 +690,10 @@ export type * from './GetSchema.ts'
 export type ValidateReturn<T> =
     | T
     | ValidationErrors<
-        | ValidationError<unknown, T>
-        | ValidationError<unknown, T[Extract<keyof T, string>], Extract<keyof T, string>, T>
-        | ValidationError
-    >
+          | ValidationError<unknown, T>
+          | ValidationError<unknown, T[Extract<keyof T, string>], Extract<keyof T, string>, T>
+          | ValidationError
+      >
 
 export type {
     Custom,
