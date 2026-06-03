@@ -1,6 +1,6 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
-import type { V3 } from './types/index.ts'
+import type { V3 } from './types/v3/index.ts'
 import type { PrimitiveSchema } from './types/PrimitiveSchema.ts'
 
 import { Generics } from '../../Generics/index.ts'

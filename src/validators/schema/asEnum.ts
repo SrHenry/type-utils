@@ -1,7 +1,7 @@
 import type { Generics } from '../../Generics/index.ts'
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
-import type { V3 } from './types/index.ts'
+import type { V3 } from './types/v3/index.ts'
 import type { EnumSchema } from './types/EnumSchema.ts'
 
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'

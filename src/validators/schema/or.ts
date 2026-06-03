@@ -1,6 +1,6 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
-import type { V3 } from './types/index.ts'
+import type { V3 } from './types/v3/index.ts'
 import type { UnionSchema, UnionSchemaEntry, GetUnionEntryTypes } from './types/UnionSchema.ts'
 
 import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'

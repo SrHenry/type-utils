@@ -1,6 +1,6 @@
 import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
 import type { StandardSchemaV1 } from '../../standard-schema/types.ts'
-import type { V3 } from './index.ts'
+import type { TIntersection } from './v3/index.ts'
 import type { FluentSchema } from './FluentSchema.ts'
 
 export type IntersectionSchemaEntry<T = any> = TypeGuard<T> | StandardSchemaV1<T, T>
@@ -27,5 +27,5 @@ export type IntersectionSchema = CallableFunction & {
         ],
     >(
         ...guards: TEntries
-    ): FluentSchema<V3.TIntersection<GetIntersectionEntryTypes<TEntries>>>
+    ): FluentSchema<TIntersection<GetIntersectionEntryTypes<TEntries>>>
 }

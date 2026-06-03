@@ -1,6 +1,6 @@
 import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
 import type { StandardSchemaV1 } from '../../standard-schema/types.ts'
-import type { V3 } from './index.ts'
+import type { TUnion } from './v3/index.ts'
 import type { FluentSchema } from './FluentSchema.ts'
 
 export type UnionSchemaEntry<T = any> = TypeGuard<T> | StandardSchemaV1<T, T>
@@ -18,5 +18,5 @@ export type UnionSchema = CallableFunction & {
     <T1, T2>(guard1: UnionSchemaEntry<T1>, guard2: UnionSchemaEntry<T2>): FluentSchema<T1 | T2>
     <TEntries extends [UnionSchemaEntry<any>, UnionSchemaEntry<any>, ...UnionSchemaEntry[]]>(
         guards: TEntries
-    ): FluentSchema<V3.TUnion<GetUnionEntryTypes<TEntries>>>
+    ): FluentSchema<TUnion<GetUnionEntryTypes<TEntries>>>
 }

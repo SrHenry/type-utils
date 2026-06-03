@@ -1,6 +1,6 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
-import type { V3 } from './types/index.ts'
+import type { V3 } from './types/v3/index.ts'
 import type { TupleSchema, TupleSchemaEntry } from './types/TupleSchema.ts'
 
 import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'
