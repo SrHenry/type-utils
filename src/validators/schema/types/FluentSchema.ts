@@ -1,4 +1,3 @@
-// import type Generics from '../../../Generics/index.ts'
 import type { TypeGuard } from '../../../TypeGuards/index.ts'
 import type { Fn, ThrowFn } from '../../../types/Func.ts'
 import type { Custom } from '../../rules/types/index.ts'
@@ -6,12 +5,6 @@ import type { ValidateReturn } from '../../types/ValidateReturn.ts'
 import type { ValidationErrors } from '../../ValidationErrors.ts'
 import type { StandardSchemaV1 } from '../../standard-schema/types.ts'
 import type { FluentOptionalSchema } from './FluentOptionalSchema.ts'
-
-// type AppendMessageMethod<
-//     T,
-//     TRules extends { [x: string]: Fn<any[], any> } = {},
-//     TCalledRules extends [...(keyof TRules)[]] = []
-// > = T extends Generics.PrimitiveType? (message:string)=>FluentSchema<T, TRules, TCalledRules>
 
 export type FluentSchema<
     T,

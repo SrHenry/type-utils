@@ -22,15 +22,6 @@ export type Optionalize<T> = {
 
 export type GetSchemaStruct<T extends TypeGuard> = GetStruct<GetTypeGuard<T>>
 
-/* export type GetStruct<T> = T extends Array<infer Inner>
-? GetStruct<Inner>[]
-: T extends Generics.PrimitiveType
-? Struct<Generics.GetPrimitiveTag<T, T>
-: T extends Function
-? never
-: {
-    [K in keyof T]: GetStruct<T[K]>
-} */
 export type GetStruct<TFrom extends TypeGuard | TypeGuardFactory> =
     TFrom extends TypeGuard<infer T>
         ? V3.Struct<T>

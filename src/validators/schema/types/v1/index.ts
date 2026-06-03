@@ -119,21 +119,3 @@ export type Struct<T extends BaseTypes, U> = U extends Generics.PrimitiveType
         : U extends object
           ? ObjectStruct<U>
           : never
-
-export type PrimitiveStruct<T extends Generics.PrimitiveType = Generics.PrimitiveType> =
-    T extends Generics.PrimitiveType ? BaseStruct<'primitive', Generics.PrimitiveType> : never
-export type AnyStruct = BaseStruct<'any', any>
-export type UndefinedStruct<T = undefined> = T extends undefined
-    ? BaseStruct<'undefined', undefined>
-    : never
-export type NullStruct<T = null> = T extends null ? BaseStruct<'null', null> : never
-export type BooleanStruct<T extends boolean = boolean> = T extends boolean
-    ? BaseStruct<'boolean', T>
-    : never
-export type NumberStruct<T extends number = number> = T extends number
-    ? BaseStruct<'number', T>
-    : never
-export type StringStruct<T extends string = string> = T extends string
-    ? BaseStruct<'string', T>
-    : never
-export type SymbolStruct = BaseStruct<'symbol', symbol>

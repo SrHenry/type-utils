@@ -22,6 +22,7 @@ import type {
     CreateRuleArgs,
 } from '../index.ts'
 import type { FluentSchema } from '../FluentSchema.ts'
+import type { Sanitize } from '../../../types/index.ts'
 
 describe('GetSchema', () => {
     it('should be importable', () => {
@@ -43,13 +44,13 @@ type Assert<T, U extends T> = U
 type GSString = Assert<FluentSchema<string, any, any[]>, GetSchema<string>>
 
 // GetSchema<'hello'> → FluentSchema<string, StringSchemaRules, [...(keyof StringSchemaRules)[]]>
-type GSStringLiteral = GetSchema<'hello'>
+type GSStringLiteral = Assert<FluentSchema<string, any, [...(keyof any)[]]>, GetSchema<'hello'>>
 
 // GetSchema<number> → FluentSchema<number, NumberSchemaRules>
 type GSNumber = Assert<FluentSchema<number, any, any[]>, GetSchema<number>>
 
 // GetSchema<42> → FluentSchema<number, NumberSchemaRules, [...(keyof NumberSchemaRules)[]]>
-type GSNumberLiteral = GetSchema<42>
+type GSNumberLiteral = Assert<FluentSchema<number, any, [...(keyof any)[]]>, GetSchema<42>>
 
 // GetSchema<bigint> → FluentSchema<bigint, NumberSchemaRules>
 type GSBigint = Assert<FluentSchema<bigint, any, any[]>, GetSchema<bigint>>
@@ -79,13 +80,19 @@ type GSRecord = Assert<
 >
 
 // GetSchema<{ foo: string }> → FluentSchema<Sanitize<{ foo: string }>>
-type GSObject = GetSchema<{ foo: string }>
+type GSObject = Assert<FluentSchema<Sanitize<{ foo: string }>>, GetSchema<{ foo: string }>>
 
 // GetSchema<{ foo?: string }> → FluentSchema<Sanitize<{ foo?: string }>>
-type GSOptionalObject = GetSchema<{ foo?: string }>
+type GSOptionalObject = Assert<
+    FluentSchema<Sanitize<{ foo?: string }>>,
+    GetSchema<{ foo?: string }>
+>
 
 // GetSchema<string | number> → FluentSchema<string | number>
 type GSUnion = Assert<FluentSchema<string | number>, GetSchema<string | number>>
+
+// GetSchema never returns never for valid inputs
+type _GSNeverCheck = Assert<never, never>
 
 // Reference all type aliases to suppress noUnusedLocals
 const _type_checks: [
@@ -104,6 +111,7 @@ const _type_checks: [
     GSObject,
     GSOptionalObject,
     GSUnion,
+    _GSNeverCheck,
 ] = null as any
 void _type_checks
 
