@@ -1,9 +1,5 @@
-import type { GetTypeGuard, TypeGuard } from '../../../TypeGuards/types/index.ts'
-import type {
-    OptionalizeTypeGuard,
-    TypeGuardFactory,
-    TypeGuardFactoryType,
-} from '../helpers/optional/types.ts'
+import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
+import type { TypeGuardFactory, TypeGuardFactoryType } from '../helpers/optional/types.ts'
 
 import type * as V1 from './v1/index.ts'
 import type * as V2 from './v2/index.ts'
@@ -11,16 +7,20 @@ import type { V3 } from './v3/index.ts'
 
 export type { V1 }
 export type { V2 }
-export * from './v3/index.ts'
 export type { V3 } from './v3/index.ts'
 
-export type Optionalize<T> = {
-    [K in keyof T]: T[K] extends () => TypeGuard<any | any[]>
-        ? (...args: Parameters<T[K]>) => OptionalizeTypeGuard<ReturnType<T[K]>>
-        : T[K]
-}
-
-export type GetSchemaStruct<T extends TypeGuard> = GetStruct<GetTypeGuard<T>>
+// ─── Public V3 flat exports (explicit allowlist — no wildcard re-export) ───
+// The wildcard `export * from './v3/index.ts'` leaked ~25 internal composition
+// types (RequiredPartialStruct, OptionalPartialStruct, WithRulesStruct, MapToStructs,
+// ExactExtends, IsExactExtension, ObjectTree, ClassInstanceRef, ArrayEntries,
+// RecordMetadata, TupleMetadata, TupleToTypeGuardMap, TupleToStructMap,
+// AsPrimitiveStruct, FromUnionStruct, FromIntersectionStruct, FromRecordStruct,
+// FromClassInstanceStruct, FromTupleStruct, etc.) that are only meaningful as V3
+// namespace internals.  Consumers should access them via `V3.<Name>` if needed.
+// Only the 4 top-level flat exports are listed here:
+export type { BaseStruct } from './v3/index.ts'
+export type { TUnion, TIntersection } from './v3/index.ts'
+export type { TypeGuardTupleUnwrap } from './v3/index.ts'
 
 export type GetStruct<TFrom extends TypeGuard | TypeGuardFactory> =
     TFrom extends TypeGuard<infer T>
@@ -29,6 +29,7 @@ export type GetStruct<TFrom extends TypeGuard | TypeGuardFactory> =
           ? TypeGuardFactoryType<TFrom>
           : never
 
+// Top-level V3 aliases — backward compat with consumers importing bare names
 export type GenericStruct<
     T = any,
     UnionOrIntersection extends 'union' | 'intersection' | true | false = true,
@@ -59,11 +60,4 @@ export type * from './RecordSchema.ts'
 
 export type { ValidateReturn } from '../../types/ValidateReturn.ts'
 
-export type {
-    Custom,
-    CustomFactory,
-    Rule,
-    RuleStruct,
-    CreateRuleArgs,
-    CUSTOM_RULE_BRAND,
-} from '../../rules/types/index.ts'
+export type { Custom, CustomFactory, Rule, CreateRuleArgs } from '../../rules/types/index.ts'

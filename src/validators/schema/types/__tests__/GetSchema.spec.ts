@@ -18,9 +18,9 @@ import type {
     Custom,
     CustomFactory,
     Rule,
-    RuleStruct,
     CreateRuleArgs,
 } from '../index.ts'
+import type { RuleStruct } from '../../../rules/types/index.ts'
 import type { FluentSchema } from '../FluentSchema.ts'
 import type { Sanitize } from '../../../types/index.ts'
 
