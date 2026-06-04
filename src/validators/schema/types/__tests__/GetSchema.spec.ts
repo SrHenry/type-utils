@@ -91,6 +91,18 @@ type GSOptionalObject = Assert<
 // GetSchema<string | number> → FluentSchema<string | number>
 type GSUnion = Assert<FluentSchema<string | number>, GetSchema<string | number>>
 
+// GetSchema<any> → FluentSchema<any> (not FluentSchema<string, ...>)
+type GSAny = Assert<FluentSchema<any>, GetSchema<any>>
+
+// GetSchema<unknown> → FluentSchema<any> (catch-all, same as any schema)
+type GSUnknown = Assert<FluentSchema<any>, GetSchema<unknown>>
+
+// GetSchema<Record<number, string>> → FluentSchema<Record<number, string>, RecordSchemaRules>
+type GSRecordNumberKey = Assert<
+    FluentSchema<Record<number, string>, any, any[]>,
+    GetSchema<Record<number, string>>
+>
+
 // GetSchema never returns never for valid inputs
 type _GSNeverCheck = Assert<never, never>
 
@@ -111,6 +123,9 @@ const _type_checks: [
     GSObject,
     GSOptionalObject,
     GSUnion,
+    GSAny,
+    GSUnknown,
+    GSRecordNumberKey,
     _GSNeverCheck,
 ] = null as any
 void _type_checks
