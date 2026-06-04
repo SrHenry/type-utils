@@ -23,6 +23,7 @@ import type {
 import type { RuleStruct } from '../../../rules/types/index.ts'
 import type { FluentSchema } from '../FluentSchema.ts'
 import type { Sanitize } from '../../../types/index.ts'
+import type { RecordRules } from '../../../rules/Record/index.ts'
 
 describe('GetSchema', () => {
     it('should be importable', () => {
@@ -39,6 +40,21 @@ describe('Exported schema types are importable', () => {
 // Compile-time type assertions — verified by tsc --noEmit
 // Assert<T, U> forces U extends T; if not, compilation fails
 type Assert<T, U extends T> = U
+
+// Strict equality assertion: exact type match (both directions)
+type AssertExact<T, U> = [T] extends [U] ? ([U] extends [T] ? true : false) : false
+
+// GetSchema<any> → FluentSchema<any> (not FluentSchema<string, ...>)
+type GSAny = Assert<FluentSchema<any>, GetSchema<any>>
+
+// GetSchema<unknown> → FluentSchema<any> (catch-all, same as any schema)
+type GSUnknown = Assert<FluentSchema<any>, GetSchema<unknown>>
+
+// GetSchema<void> → FluentSchema<any>
+type GSVoid = Assert<FluentSchema<any>, GetSchema<void>>
+
+// GetSchema<never> → never (intentional — never inputs produce never output)
+type GSNever = AssertExact<GetSchema<never>, never>
 
 // GetSchema<string> → FluentSchema<string, StringSchemaRules>
 type GSString = Assert<FluentSchema<string, any, any[]>, GetSchema<string>>
@@ -74,40 +90,49 @@ type GSStringArray = Assert<FluentSchema<string[], any, any[]>, GetSchema<string
 type GSTuple = Assert<FluentSchema<[string, number]>, GetSchema<[string, number]>>
 
 // GetSchema<Record<string, number>> → FluentSchema<Record<string, number>, RecordSchemaRules>
-type GSRecord = Assert<
-    FluentSchema<Record<string, number>, any, any[]>,
-    GetSchema<Record<string, number>>
+// Strict: verify RecordSchemaRules is present (not {}), ensuring .nonEmpty() is available
+type RecordSchemaRules = Omit<typeof RecordRules, 'optional'>
+type GSRecord = Assert<FluentSchema<Record<string, number>, RecordSchemaRules, []>, GetSchema<Record<string, number>>>
+
+// GetSchema<Record<number, string>> → FluentSchema<Record<number, string>, RecordSchemaRules>
+// Strict: verify RecordSchemaRules is present for number-keyed records too
+type GSRecordNumberKey = Assert<
+    FluentSchema<Record<number, string>, RecordSchemaRules, []>,
+    GetSchema<Record<number, string>>
+>
+
+// GetSchema<Record<symbol, boolean>> → FluentSchema<Record<symbol, boolean>, RecordSchemaRules>
+// Strict: verify RecordSchemaRules is present for symbol-keyed records
+type GSRecordSymbolKey = Assert<
+    FluentSchema<Record<symbol, boolean>, RecordSchemaRules, []>,
+    GetSchema<Record<symbol, boolean>>
 >
 
 // GetSchema<{ foo: string }> → FluentSchema<Sanitize<{ foo: string }>>
 type GSObject = Assert<FluentSchema<Sanitize<{ foo: string }>>, GetSchema<{ foo: string }>>
 
 // GetSchema<{ foo?: string }> → FluentSchema<Sanitize<{ foo?: string }>>
-type GSOptionalObject = Assert<
-    FluentSchema<Sanitize<{ foo?: string }>>,
-    GetSchema<{ foo?: string }>
->
+type GSOptionalObject = Assert<FluentSchema<Sanitize<{ foo?: string }>>, GetSchema<{ foo?: string }>>
 
 // GetSchema<string | number> → FluentSchema<string | number>
 type GSUnion = Assert<FluentSchema<string | number>, GetSchema<string | number>>
 
-// GetSchema<any> → FluentSchema<any> (not FluentSchema<string, ...>)
-type GSAny = Assert<FluentSchema<any>, GetSchema<any>>
+// Negative test: GetSchema<() => void> → never (functions not supported)
+type GSFunction = AssertExact<GetSchema<() => void>, never>
 
-// GetSchema<unknown> → FluentSchema<any> (catch-all, same as any schema)
-type GSUnknown = Assert<FluentSchema<any>, GetSchema<unknown>>
+// Negative test: GetSchema<Date> → never (class instances not supported)
+type GSDate = AssertExact<GetSchema<Date>, never>
 
-// GetSchema<Record<number, string>> → FluentSchema<Record<number, string>, RecordSchemaRules>
-type GSRecordNumberKey = Assert<
-    FluentSchema<Record<number, string>, any, any[]>,
-    GetSchema<Record<number, string>>
->
-
-// GetSchema never returns never for valid inputs
-type _GSNeverCheck = Assert<never, never>
+// Verify Record types have .nonEmpty() method available
+type _recordHasNonEmpty = 'nonEmpty' extends keyof GetSchema<Record<string, number>> ? true : false
+type _assertNonEmpty = Assert<true, _recordHasNonEmpty>
 
 // Reference all type aliases to suppress noUnusedLocals
 const _type_checks: [
+    GSAny,
+    GSUnknown,
+    GSVoid,
+    GSNever,
     GSString,
     GSStringLiteral,
     GSNumber,
@@ -120,13 +145,15 @@ const _type_checks: [
     GSStringArray,
     GSTuple,
     GSRecord,
+    GSRecordNumberKey,
+    GSRecordSymbolKey,
     GSObject,
     GSOptionalObject,
     GSUnion,
-    GSAny,
-    GSUnknown,
-    GSRecordNumberKey,
-    _GSNeverCheck,
+    GSFunction,
+    GSDate,
+    _recordHasNonEmpty,
+    _assertNonEmpty,
 ] = null as any
 void _type_checks
 
