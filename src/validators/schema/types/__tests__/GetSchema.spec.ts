@@ -92,7 +92,10 @@ type GSTuple = Assert<FluentSchema<[string, number]>, GetSchema<[string, number]
 // GetSchema<Record<string, number>> → FluentSchema<Record<string, number>, RecordSchemaRules>
 // Strict: verify RecordSchemaRules is present (not {}), ensuring .nonEmpty() is available
 type RecordSchemaRules = Omit<typeof RecordRules, 'optional'>
-type GSRecord = Assert<FluentSchema<Record<string, number>, RecordSchemaRules, []>, GetSchema<Record<string, number>>>
+type GSRecord = Assert<
+    FluentSchema<Record<string, number>, RecordSchemaRules, []>,
+    GetSchema<Record<string, number>>
+>
 
 // GetSchema<Record<number, string>> → FluentSchema<Record<number, string>, RecordSchemaRules>
 // Strict: verify RecordSchemaRules is present for number-keyed records too
@@ -112,7 +115,10 @@ type GSRecordSymbolKey = Assert<
 type GSObject = Assert<FluentSchema<Sanitize<{ foo: string }>>, GetSchema<{ foo: string }>>
 
 // GetSchema<{ foo?: string }> → FluentSchema<Sanitize<{ foo?: string }>>
-type GSOptionalObject = Assert<FluentSchema<Sanitize<{ foo?: string }>>, GetSchema<{ foo?: string }>>
+type GSOptionalObject = Assert<
+    FluentSchema<Sanitize<{ foo?: string }>>,
+    GetSchema<{ foo?: string }>
+>
 
 // GetSchema<string | number> → FluentSchema<string | number>
 type GSUnion = Assert<FluentSchema<string | number>, GetSchema<string | number>>
