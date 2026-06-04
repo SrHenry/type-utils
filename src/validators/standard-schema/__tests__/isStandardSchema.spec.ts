@@ -25,7 +25,20 @@ describe('isStandardSchema', () => {
         expect(isStandardSchema(() => true)).toBe(false)
     })
 
-    it('should return false for a TypeGuard function even with ~standard', () => {
+    it('should return true for a plain function with ~standard (non-TypeGuard)', () => {
+        const funcSchema = (() => true) as unknown as StandardSchemaV1
+        Object.defineProperty(funcSchema, '~standard', {
+            value: {
+                version: 1,
+                vendor: 'test',
+                validate: () => ({ success: true as const, value: 'hello' }),
+            },
+            enumerable: false,
+        })
+        expect(isStandardSchema(funcSchema)).toBe(true)
+    })
+
+    it('should return true for a TypeGuard function with ~standard', () => {
         const guard = (value: unknown): value is string => typeof value === 'string'
         Object.defineProperty(guard, '~standard', {
             value: {
@@ -35,7 +48,7 @@ describe('isStandardSchema', () => {
             },
             enumerable: false,
         })
-        expect(isStandardSchema(guard)).toBe(false)
+        expect(isStandardSchema(guard)).toBe(true)
     })
 
     it('should return false for an object without ~standard', () => {

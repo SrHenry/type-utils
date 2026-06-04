@@ -8,6 +8,7 @@ import { and } from '../../schema/and.ts'
 import { record } from '../../schema/record.ts'
 import { asEnum } from '../../schema/asEnum.ts'
 import type { StandardSchemaV1 } from '../types.ts'
+import { normalizeSchema } from '../normalizeSchema.ts'
 
 function mockStdSchema<T>(
     vendor: string,
@@ -143,6 +144,20 @@ describe('asEnum — toStandardSchema()', () => {
             Promise<any>
         >
         expect(result.success).toBe(true)
+    })
+})
+
+describe('normalizeSchema — native schema identity', () => {
+    it('returns the same function reference for native schemas without wrapping', () => {
+        const guard = string()
+        const normalized = normalizeSchema(guard)
+        expect(normalized).toBe(guard)
+    })
+
+    it('returns the same function reference for native number schema', () => {
+        const guard = number()
+        const normalized = normalizeSchema(guard)
+        expect(normalized).toBe(guard)
     })
 })
 

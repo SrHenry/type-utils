@@ -8,6 +8,7 @@ import { asTypeGuard } from '../../TypeGuards/helpers/asTypeGuard.ts'
 import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
 import { type RecordRule, RecordRules } from '../rules/Record/index.ts'
+import { isNativeSchema } from './helpers/isNativeSchema.ts'
 import { isStandardSchema } from '../standard-schema/isStandardSchema.ts'
 import { normalizeSchema } from '../standard-schema/normalizeSchema.ts'
 import { SchemaValidator } from '../SchemaValidator.ts'
@@ -87,7 +88,7 @@ function _fn<K extends PropertyKey, T>(
         return _fn(defaults.keyGuard, defaults.valueGuard, _rules)
     }
 
-    if (isStandardSchema(keyGuard_or_rules)) {
+    if (!isNativeSchema(keyGuard_or_rules) && isStandardSchema(keyGuard_or_rules)) {
         const _kg = normalizeSchema(keyGuard_or_rules)
         const _vg =
             valueGuard === NULL
@@ -207,7 +208,7 @@ export const record: RecordSchema = ((
                 ? resolver(keyGuard, valueGuard)
                 : resolver(keyGuard, defaults.valueGuard)
         }
-        if (isStandardSchema(keyGuard)) {
+        if (!isNativeSchema(keyGuard) && isStandardSchema(keyGuard)) {
             return valueGuard
                 ? resolver(keyGuard, valueGuard)
                 : resolver(keyGuard, defaults.valueGuard)

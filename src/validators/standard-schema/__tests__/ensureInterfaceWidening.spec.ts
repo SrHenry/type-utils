@@ -44,4 +44,25 @@ describe('ensureInterface() with Standard Schema', () => {
         expect(ensureString('hello')).toBe('hello')
         expect(() => ensureString(42)).toThrow()
     })
+
+    it('should take native fast path for FluentSchema (not fromStandardSchema)', () => {
+        const guard = string()
+        expect(ensureInterface('hello', guard)).toBe('hello')
+        expect(() => ensureInterface(42, guard)).toThrow()
+    })
+
+    it('should take StandardSchema path for external StandardSchemaV1', () => {
+        const externalSchema: StandardSchemaV1<string> = {
+            '~standard': {
+                version: 1,
+                vendor: 'test-lib',
+                validate: (value: unknown) => {
+                    if (typeof value === 'string') return { success: true as const, value }
+                    return { success: false as const, issues: [{ message: 'Expected string' }] }
+                },
+            },
+        }
+        expect(ensureInterface('hello', externalSchema)).toBe('hello')
+        expect(() => ensureInterface(42, externalSchema)).toThrow()
+    })
 })

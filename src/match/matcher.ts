@@ -1,4 +1,5 @@
 import { $throw } from '../helpers/throw.ts'
+import { isNativeSchema } from '../validators/schema/helpers/isNativeSchema.ts'
 import { isStandardSchema } from '../validators/standard-schema/isStandardSchema.ts'
 
 const NO_PARAM = Symbol('matcher::NO_PARAM')
@@ -19,6 +20,7 @@ export function matcher(
             patterns
                 .map(([pattern, expression]) => ({ pattern, expression }))
                 .find(({ pattern: p }) => {
+                    if (isNativeSchema(p)) return p(value)
                     if (typeof p === 'function') return p(value)
                     if (isStandardSchema(p)) {
                         const result = p['~standard'].validate(value)
