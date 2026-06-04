@@ -347,6 +347,8 @@ Use nested checkboxes for decomposition within a single task. If a sub-task grow
 - **NEVER silently overwrite established AGENTS.md guidelines** — always propose first and get confirmation, even when not in doubt.
 - **NEVER use `any` in production code** — Biome allows `any` in test files (`*.spec.ts`, `__tests__/`) only. Use proper types in `src/` code.
 - **NEVER push YAML/JSON without validating** — after editing any `.yml`, `.yaml`, or `.json` file, run `npx prettier --check <file>` before committing. YAML is indentation-sensitive; even one-space drift silently breaks CI.
+- **NEVER disable GPG commit signing** — do not use `-c commit.gpgsign=false`, `--no-gpg-sign`, or any other mechanism to bypass GPG signing. If GPG signing fails (e.g. pinentry timeout in headless sessions), stop work and wait for user input — do not work around it.
+- **NEVER continue past GPG pinentry failures** — if `git commit` hangs or errors due to GPG pinentry, stop all work immediately and wait for the user to resolve or provide direction. Do not retry with signing disabled.
 
 ## Important Notes
 
