@@ -62,7 +62,7 @@ describe('match', () => {
                   bar: number
               }
             | {
-                  default: true
+                  default: boolean
                   data: { type: string }[]
               }
 

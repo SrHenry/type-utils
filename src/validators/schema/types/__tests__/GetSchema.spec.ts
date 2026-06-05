@@ -20,7 +20,7 @@ import type {
     Rule,
     CreateRuleArgs,
 } from '../index.ts'
-import type { RuleStruct } from '../../../rules/types/index.ts'
+import type { RuleStruct } from '../../../rules/types/index.ts' // internal path — RuleStruct excluded from public API
 import type { FluentSchema } from '../FluentSchema.ts'
 import type { Sanitize } from '../../../types/index.ts'
 import type { RecordRules } from '../../../rules/Record/index.ts'
@@ -86,6 +86,12 @@ type GSSymbol = Assert<FluentSchema<symbol>, GetSchema<symbol>>
 // GetSchema<string[]> → FluentSchema<string[], ArraySchemaRules>
 type GSStringArray = Assert<FluentSchema<string[], any, any[]>, GetSchema<string[]>>
 
+// GetSchema<readonly string[]> → FluentSchema<readonly string[], ArraySchemaRules>
+type GSReadonlyStringArray = Assert<
+    FluentSchema<readonly string[], any, any[]>,
+    GetSchema<readonly string[]>
+>
+
 // GetSchema<[string, number]> → FluentSchema<[string, number]>
 type GSTuple = Assert<FluentSchema<[string, number]>, GetSchema<[string, number]>>
 
@@ -149,6 +155,7 @@ const _type_checks: [
     GSUndefined,
     GSSymbol,
     GSStringArray,
+    GSReadonlyStringArray,
     GSTuple,
     GSRecord,
     GSRecordNumberKey,

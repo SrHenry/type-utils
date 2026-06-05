@@ -28,12 +28,13 @@ type RecordSchemaRules = Omit<typeof RecordRules, 'optional'>
  * GetSchema<undefined> → FluentSchema<undefined>
  * GetSchema<symbol> → FluentSchema<symbol>
  * GetSchema<string[]> → FluentSchema<string[], ArraySchemaRules>
+ * GetSchema<readonly string[]> → FluentSchema<readonly string[], ArraySchemaRules>
  * GetSchema<[string, number]> → FluentSchema<[string, number]>
  * GetSchema<Record<string, number>> → FluentSchema<Record<string, number>, RecordSchemaRules>
  * GetSchema<Record<number, string>> → FluentSchema<Record<number, string>, RecordSchemaRules>
  * GetSchema<Record<symbol, boolean>> → FluentSchema<Record<symbol, boolean>, RecordSchemaRules>
- * GetSchema<{ foo: string }> → FluentSchema<{ foo: string }>
- * GetSchema<{ foo?: string }> → FluentSchema<{ foo?: string }>
+ * GetSchema<{ foo: string }> → FluentSchema<Sanitize<{ foo: string }>>
+ * GetSchema<{ foo?: string }> → FluentSchema<Sanitize<{ foo?: string }>>
  * GetSchema<string | number> → FluentSchema<string | number>
  */
 export type GetSchema<T> =
@@ -83,19 +84,22 @@ export type GetSchema<T> =
                                 : // Tuple: checked before array (readonly [...] catches tuples but not generic arrays)
                                   T extends readonly [infer _A, ...infer _B]
                                   ? FluentSchema<T>
-                                  : // Array: generic T[]
-                                    T extends (infer U)[]
-                                    ? FluentSchema<U[], ArraySchemaRules>
-                                    : // Record (broad-keyed: string, number, or symbol keys) vs specific object
-                                      // PropertyKey (= string|number|symbol) can't be used directly because
-                                      // `symbol extends string` is false. Instead check each key type individually.
-                                      T extends Record<any, any>
-                                      ? string extends keyof T
-                                          ? FluentSchema<T, RecordSchemaRules>
-                                          : number extends keyof T
+                                  : // Readonly array: checked before mutable array (readonly U[] doesn't extend U[])
+                                    T extends readonly (infer U)[]
+                                    ? FluentSchema<readonly U[], ArraySchemaRules>
+                                    : // Array: generic T[]
+                                      T extends (infer U)[]
+                                      ? FluentSchema<U[], ArraySchemaRules>
+                                      : // Record (broad-keyed: string, number, or symbol keys) vs specific object
+                                        // PropertyKey (= string|number|symbol) can't be used directly because
+                                        // `symbol extends string` is false. Instead check each key type individually.
+                                        T extends Record<any, any>
+                                        ? string extends keyof T
                                             ? FluentSchema<T, RecordSchemaRules>
-                                            : symbol extends keyof T
+                                            : number extends keyof T
                                               ? FluentSchema<T, RecordSchemaRules>
-                                              : // Specific object: use Sanitize for optional prop normalization
-                                                FluentSchema<Sanitize<T>>
-                                      : never
+                                              : symbol extends keyof T
+                                                ? FluentSchema<T, RecordSchemaRules>
+                                                : // Specific object: use Sanitize for optional prop normalization
+                                                  FluentSchema<Sanitize<T>>
+                                        : never
