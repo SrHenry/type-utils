@@ -1,8 +1,7 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
-import type { StandardSchemaV1 } from '../standard-schema/types.ts'
-import type { V3 } from './types/index.ts'
-import type { FluentSchema } from './types/FluentSchema.ts'
+import type { V3 } from './types/v3/index.ts'
+import type { UnionSchema, UnionSchemaEntry, GetUnionEntryTypes } from './types/UnionSchema.ts'
 
 import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
@@ -16,17 +15,6 @@ import { setRuleMessage } from './helpers/setRuleMessage.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
 import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
-
-type UnionSchemaEntry<T = any> = TypeGuard<T> | StandardSchemaV1<T, T>
-
-type GetUnionEntryType<T> =
-    T extends TypeGuard<infer U> ? U : T extends StandardSchemaV1<infer U, any> ? U : never
-
-type GetUnionEntryTypes<T extends any[]> = T extends []
-    ? []
-    : T extends [infer U, ...infer V]
-      ? [GetUnionEntryType<U>, ...GetUnionEntryTypes<V>]
-      : any[]
 
 function _fn<T1, T2>(guard1: UnionSchemaEntry<T1>, guard2: UnionSchemaEntry<T2>): TypeGuard<T1 | T2>
 function _fn<TEntries extends UnionSchemaEntry[]>(
@@ -57,13 +45,6 @@ type OptionalizedOr = {
 }
 
 export const _or = optionalizeOverloadFactory(_fn).optionalize<OptionalizedOr>()
-
-type UnionSchema = CallableFunction & {
-    <T1, T2>(guard1: UnionSchemaEntry<T1>, guard2: UnionSchemaEntry<T2>): FluentSchema<T1 | T2>
-    <TEntries extends [UnionSchemaEntry<any>, UnionSchemaEntry<any>, ...UnionSchemaEntry[]]>(
-        guards: TEntries
-    ): FluentSchema<V3.TUnion<GetUnionEntryTypes<TEntries>>>
-}
 
 export const or: UnionSchema = ((
     guard1: UnionSchemaEntry<any>,

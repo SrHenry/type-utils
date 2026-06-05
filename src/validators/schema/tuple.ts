@@ -1,12 +1,12 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
-import type { StandardSchemaV1 } from '../standard-schema/types.ts'
-import type { V3 } from './types/index.ts'
-import type { FluentSchema } from './types/FluentSchema.ts'
+import type { V3 } from './types/v3/index.ts'
+import type { TupleSchema, TupleSchemaEntry } from './types/TupleSchema.ts'
 
 import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'
 import { setMessage } from '../../TypeGuards/helpers/setMessage.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
+import { isNativeSchema } from './helpers/isNativeSchema.ts'
 import { normalizeSchema } from '../standard-schema/normalizeSchema.ts'
 import { isStandardSchema } from '../standard-schema/isStandardSchema.ts'
 import { SchemaValidator } from '../SchemaValidator.ts'
@@ -17,8 +17,6 @@ import { optionalizeOverloadFactory } from './helpers/optional/index.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
 import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
-
-type TupleSchemaEntry<T = any> = TypeGuard<T> | StandardSchemaV1<T, T>
 
 const guardFactory =
     (schemas: TypeGuard<any>[]) =>
@@ -79,11 +77,6 @@ type OptionalizedTuple = CallableFunction & {
 
 export const _tuple = optionalizeOverloadFactory(_fn).optionalize<OptionalizedTuple>()
 
-type TupleSchema = CallableFunction & {
-    <const T extends TupleSchemaEntry[]>(schemas: T): FluentSchema<V3.TypeGuardTupleUnwrap<T>>
-    <const T extends TupleSchemaEntry[]>(...schemas: T): FluentSchema<V3.TypeGuardTupleUnwrap<T>>
-}
-
 export const tuple: TupleSchema = ((
     _schema?: TupleSchemaEntry | TupleSchemaEntry[],
     ...rest: TupleSchemaEntry[]
@@ -96,7 +89,8 @@ export const tuple: TupleSchema = ((
         if (!_schema) return resolver([])
         if (typeof _schema === 'function') return resolver([_schema, ...rest])
         if (Array.isArray(_schema)) return resolver(_schema)
-        if (isStandardSchema(_schema)) return resolver([_schema, ...rest])
+        if (!isNativeSchema(_schema) && isStandardSchema(_schema))
+            return resolver([_schema, ...rest])
         return resolver([_schema as TupleSchemaEntry, ...rest])
     }
 

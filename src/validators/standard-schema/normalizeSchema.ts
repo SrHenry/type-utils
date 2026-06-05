@@ -7,9 +7,11 @@ import { setMessage } from '../../TypeGuards/helpers/setMessage.ts'
 import { setStructMetadata } from '../schema/helpers/setStructMetadata.ts'
 import { setOptionalFlag } from '../schema/helpers/optionalFlag.ts'
 import { fromStandardSchema } from './fromStandardSchema.ts'
+import { isNativeSchema } from '../schema/helpers/isNativeSchema.ts'
 import { isStandardSchema } from './isStandardSchema.ts'
 
 export function normalizeSchema<T>(schema: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T> {
+    if (isNativeSchema(schema)) return schema as TypeGuard<T>
     if (isTypeGuard(schema)) return schema
 
     if (isStandardSchema(schema)) {

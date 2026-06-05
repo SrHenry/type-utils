@@ -1,8 +1,8 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
 import type { Sanitize, NormalizedValidatorMap, ValidatorMap } from '../types/index.ts'
-import type { V3 } from './types/index.ts'
-import type { FluentSchema } from './types/FluentSchema.ts'
+import type { V3 } from './types/v3/index.ts'
+import type { ObjectSchema } from './types/ObjectSchema.ts'
 
 import { join } from '../../helpers/Experimental/join.ts'
 import { map } from '../../helpers/Experimental/map.ts'
@@ -95,13 +95,6 @@ type OptionalizedObject = {
 }
 
 export const _object = optionalizeOverloadFactory(_fn).optionalize<OptionalizedObject>()
-
-type ObjectSchema = CallableFunction & {
-    <T extends {}>(tree: ValidatorMap<T>): FluentSchema<Sanitize<T>>
-    (): FluentSchema<Record<any, any>>
-    // biome-ignore lint/complexity/noBannedTypes: {} used as wildcard object type for overload
-    (tree: {}): FluentSchema<{}>
-}
 
 export const object: ObjectSchema = ((tree?: ValidatorMap<any>) => {
     const customRules: Custom<any[], string, object>[] = []

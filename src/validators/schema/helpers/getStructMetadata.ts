@@ -1,6 +1,6 @@
 import type { Generics } from '../../../Generics/index.ts'
 import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
-import type { V3 } from '../types/index.ts'
+import type { V3 } from '../types/v3/index.ts'
 
 import { getMetadata } from '../../../TypeGuards/helpers/getMetadata.ts'
 import { __metadata__ } from './constants.ts'

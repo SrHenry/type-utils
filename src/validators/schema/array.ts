@@ -2,13 +2,14 @@ import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import { ArrayRules, type ArrayRule } from '../rules/Array/index.ts'
 import type { Custom } from '../rules/types/index.ts'
 import type { ValidatorMap } from '../types/index.ts'
-import type { V3 } from './types/index.ts'
+import type { V3 } from './types/v3/index.ts'
 import type { ArraySchema } from './types/ArraySchema.ts'
 import type { StandardSchemaV1 } from '../standard-schema/types.ts'
 
 import { asTypeGuard } from '../../TypeGuards/index.ts'
 import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
+import { isNativeSchema } from './helpers/isNativeSchema.ts'
 import { isStandardSchema } from '../standard-schema/isStandardSchema.ts'
 import { normalizeSchema } from '../standard-schema/normalizeSchema.ts'
 import { SchemaValidator } from '../SchemaValidator.ts'
@@ -53,12 +54,14 @@ function _fn<T>(
         | undefined = void 0,
     _schema: TypeGuard<T> | StandardSchemaV1<T, T> = any()
 ): TypeGuard<T[]> {
+    // Native schemas are functions, caught by typeof === 'object' gate on line above
     if (rules && typeof rules === 'object' && !Array.isArray(rules) && !isStandardSchema(rules))
         return _fn(object(rules) as unknown as TypeGuard<T>)
 
     const normalizeIfSchema = (s: TypeGuard<T> | StandardSchemaV1<T, T>): TypeGuard<T> =>
         normalizeSchema(s)
 
+    // Native schemas are functions, caught by typeof === 'function' before isStandardSchema
     if (!rules || typeof rules === 'function' || isStandardSchema(rules)) {
         const schema = rules
             ? normalizeIfSchema(rules as TypeGuard<T> | StandardSchemaV1<T, T>)
@@ -121,7 +124,8 @@ export const array: ArraySchema = ((
         const resolver = callStack['optional'] ? _array.optional : _array
         if (!tree_schema) return resolver(rules)
         if (typeof tree_schema === 'function') return resolver(rules, tree_schema)
-        if (isStandardSchema(tree_schema)) return resolver(rules, tree_schema)
+        if (!isNativeSchema(tree_schema) && isStandardSchema(tree_schema))
+            return resolver(rules, tree_schema)
         return resolver(rules, object(tree_schema))
     }
 

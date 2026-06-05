@@ -1,5 +1,5 @@
 import type { TypeGuard } from '../../../TypeGuards/types/index.ts'
-import type { V3 } from '../types/index.ts'
+import type { V3 } from '../types/v3/index.ts'
 
 import { setMetadata } from '../../../TypeGuards/helpers/setMetadata.ts'
 import { __metadata__ } from './constants.ts'

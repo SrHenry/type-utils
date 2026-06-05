@@ -4,6 +4,7 @@ import { boolean } from '../../schema/boolean.ts'
 import { any } from '../../schema/any.ts'
 import { symbol } from '../../schema/symbol.ts'
 import { primitive } from '../../schema/primitive.ts'
+import { isStandardSchema } from '../isStandardSchema.ts'
 import type { StandardSchemaV1 as SS } from '../types.ts'
 
 describe('producer: .toStandardSchema() completeness', () => {
@@ -21,6 +22,10 @@ describe('producer: .toStandardSchema() completeness', () => {
             const invalid = std['~standard'].validate(null) as SS.Result<undefined>
             expect(valid.success).toBe(true)
             expect(invalid.success).toBe(false)
+        })
+
+        it('should be detected as isStandardSchema', () => {
+            expect(isStandardSchema(asUndefined())).toBe(true)
         })
 
         it('should return a pure Standard Schema object without TypeGuard methods', () => {
@@ -46,6 +51,10 @@ describe('producer: .toStandardSchema() completeness', () => {
             expect(invalid.success).toBe(false)
         })
 
+        it('should be detected as isStandardSchema', () => {
+            expect(isStandardSchema(asNull())).toBe(true)
+        })
+
         it('should return a pure Standard Schema object without TypeGuard methods', () => {
             const std = asNull().toStandardSchema()
             expect(typeof std).toBe('object')
@@ -67,6 +76,10 @@ describe('producer: .toStandardSchema() completeness', () => {
             const invalid = std['~standard'].validate('true') as SS.Result<boolean>
             expect(valid.success).toBe(true)
             expect(invalid.success).toBe(false)
+        })
+
+        it('should be detected as isStandardSchema', () => {
+            expect(isStandardSchema(boolean())).toBe(true)
         })
 
         it('should return a pure Standard Schema object without TypeGuard methods', () => {
@@ -94,6 +107,10 @@ describe('producer: .toStandardSchema() completeness', () => {
             expect(result3.success).toBe(true)
         })
 
+        it('should be detected as isStandardSchema', () => {
+            expect(isStandardSchema(any())).toBe(true)
+        })
+
         it('should return a pure Standard Schema object without TypeGuard methods', () => {
             const std = any().toStandardSchema()
             expect(typeof std).toBe('object')
@@ -115,6 +132,10 @@ describe('producer: .toStandardSchema() completeness', () => {
             const invalid = std['~standard'].validate('symbol') as SS.Result<symbol>
             expect(valid.success).toBe(true)
             expect(invalid.success).toBe(false)
+        })
+
+        it('should be detected as isStandardSchema', () => {
+            expect(isStandardSchema(symbol())).toBe(true)
         })
 
         it('should return a pure Standard Schema object without TypeGuard methods', () => {
@@ -146,6 +167,10 @@ describe('producer: .toStandardSchema() completeness', () => {
             expect(validUndefined.success).toBe(true)
             expect(validSymbol.success).toBe(true)
             expect(invalid.success).toBe(false)
+        })
+
+        it('should be detected as isStandardSchema', () => {
+            expect(isStandardSchema(primitive())).toBe(true)
         })
 
         it('should return a pure Standard Schema object without TypeGuard methods', () => {

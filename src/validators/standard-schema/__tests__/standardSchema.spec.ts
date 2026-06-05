@@ -1,5 +1,6 @@
 import { string } from '../../schema/string.ts'
 import { object } from '../../schema/object.ts'
+import { is } from '../../../TypeGuards/helpers/is.ts'
 import { isStandardSchema } from '../isStandardSchema.ts'
 import { fromStandardSchema } from '../fromStandardSchema.ts'
 import { toStandardSchema } from '../toStandardSchema.ts'
@@ -11,9 +12,9 @@ describe('producer: ~standard auto-attached on schemas', () => {
         expect('~standard' in guard).toBe(true)
     })
 
-    it('should not be detected as isStandardSchema (it is a function, not a plain object)', () => {
+    it('should be detected as isStandardSchema (function with ~standard)', () => {
         const guard = string()
-        expect(isStandardSchema(guard)).toBe(false)
+        expect(isStandardSchema(guard)).toBe(true)
     })
 
     it('should make ~standard non-enumerable', () => {
@@ -156,5 +157,32 @@ describe('producer: toStandardSchema adapter for plain TypeGuards', () => {
         const invalid = std['~standard'].validate(42) as SS.Result<string>
         expect(valid.success).toBe(true)
         expect(invalid.success).toBe(false)
+    })
+})
+
+describe('routing: is() takes native fast path for FluentSchema', () => {
+    it('should validate via direct call for native schemas (not fromStandardSchema roundtrip)', () => {
+        const guard = string()
+        expect(is('hello', guard)).toBe(true)
+        expect(is(42, guard)).toBe(false)
+    })
+
+    it('should validate via fromStandardSchema for external StandardSchemaV1', () => {
+        const externalSchema: StandardSchemaV1<string> = {
+            '~standard': {
+                version: 1,
+                vendor: 'test-lib',
+                validate: (value: unknown): SS.Result<string> => {
+                    if (typeof value === 'string') return { success: true as const, value }
+                    return {
+                        success: false as const,
+                        issues: [{ message: 'Expected string' }],
+                    }
+                },
+            },
+        }
+
+        expect(is('hello', externalSchema)).toBe(true)
+        expect(is(42, externalSchema)).toBe(false)
     })
 })

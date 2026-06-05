@@ -1,6 +1,6 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
-import type { FluentSchema } from './types/FluentSchema.ts'
+import type { BooleanSchema } from './types/BooleanSchema.ts'
 
 import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
@@ -24,8 +24,6 @@ function _fn(): TypeGuard<boolean> {
 }
 
 export const _boolean = optionalize(_fn)
-
-type BooleanSchema = CallableFunction & (() => FluentSchema<any>)
 
 export const boolean: BooleanSchema = (() => {
     const customRules: Custom<any[], string, boolean>[] = []
