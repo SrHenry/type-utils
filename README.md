@@ -310,7 +310,6 @@ const objectHasFoo = object({ foo: isAny }) //it checks if is object and if has 
 ```
 
 Supports the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
-```
 
 #### `Schema.optional`
 
