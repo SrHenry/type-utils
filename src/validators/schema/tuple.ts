@@ -1,8 +1,7 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
-import type { StandardSchemaV1 } from '../standard-schema/types.ts'
-import type { V3 } from './types/index.ts'
-import type { FluentSchema } from './types/FluentSchema.ts'
+import type { V3 } from './types/v3/index.ts'
+import type { TupleSchema, TupleSchemaEntry } from './types/TupleSchema.ts'
 
 import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'
 import { setMessage } from '../../TypeGuards/helpers/setMessage.ts'
@@ -18,8 +17,6 @@ import { optionalizeOverloadFactory } from './helpers/optional/index.ts'
 import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
 import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
-
-type TupleSchemaEntry<T = any> = TypeGuard<T> | StandardSchemaV1<T, T>
 
 const guardFactory =
     (schemas: TypeGuard<any>[]) =>
@@ -79,11 +76,6 @@ type OptionalizedTuple = CallableFunction & {
 }
 
 export const _tuple = optionalizeOverloadFactory(_fn).optionalize<OptionalizedTuple>()
-
-type TupleSchema = CallableFunction & {
-    <const T extends TupleSchemaEntry[]>(schemas: T): FluentSchema<V3.TypeGuardTupleUnwrap<T>>
-    <const T extends TupleSchemaEntry[]>(...schemas: T): FluentSchema<V3.TypeGuardTupleUnwrap<T>>
-}
 
 export const tuple: TupleSchema = ((
     _schema?: TupleSchemaEntry | TupleSchemaEntry[],

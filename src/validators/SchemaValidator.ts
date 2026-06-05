@@ -1,7 +1,10 @@
 import type { MessageFormator, TypeGuard } from '../TypeGuards/types/index.ts'
 import type { Merge } from '../types/index.ts'
 import type { GenericStruct, V3 } from './schema/types/index.ts'
+import type { ValidateReturn } from './types/ValidateReturn.ts'
 import type { ValidatorMessageMap } from './types/index.ts'
+
+export type { ValidateReturn } from './types/ValidateReturn.ts'
 
 import { asTypeGuard } from '../TypeGuards/helpers/asTypeGuard.ts'
 import { getMetadata } from '../TypeGuards/helpers/getMetadata.ts'
@@ -21,14 +24,6 @@ import {
     validateUnion,
     validateDefault,
 } from './schema/helpers/validate/index.ts'
-
-export type ValidateReturn<T> =
-    | T
-    | ValidationErrors<
-          | ValidationError<unknown, T>
-          | ValidationError<unknown, T[Extract<keyof T, string>], Extract<keyof T, string>, T>
-          | ValidationError
-      >
 
 type ValidateOptionalArgs<Name extends string = string, Parent = any> = {
     name?: Name

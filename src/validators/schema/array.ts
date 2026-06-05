@@ -2,7 +2,7 @@ import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import { ArrayRules, type ArrayRule } from '../rules/Array/index.ts'
 import type { Custom } from '../rules/types/index.ts'
 import type { ValidatorMap } from '../types/index.ts'
-import type { V3 } from './types/index.ts'
+import type { V3 } from './types/v3/index.ts'
 import type { ArraySchema } from './types/ArraySchema.ts'
 import type { StandardSchemaV1 } from '../standard-schema/types.ts'
 

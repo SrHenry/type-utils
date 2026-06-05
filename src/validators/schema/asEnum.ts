@@ -1,8 +1,8 @@
 import type { Generics } from '../../Generics/index.ts'
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
-import type { V3 } from './types/index.ts'
-import type { FluentSchema } from './types/FluentSchema.ts'
+import type { V3 } from './types/v3/index.ts'
+import type { EnumSchema } from './types/EnumSchema.ts'
 
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
 import { SchemaValidator } from '../SchemaValidator.ts'
@@ -41,9 +41,6 @@ function _fn<T extends Generics.PrimitiveType>(values: T[]): TypeGuard<T> {
 }
 
 export const _enum = optionalize(_fn)
-
-type EnumSchema = CallableFunction &
-    (<const T extends [...Generics.PrimitiveType[]]>(values: T) => FluentSchema<T[number]>)
 
 export const asEnum: EnumSchema = ((values: any[]) => {
     const customRules: Custom<any[], string, Generics.PrimitiveType>[] = []

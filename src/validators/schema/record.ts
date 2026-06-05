@@ -1,7 +1,7 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
 import type { Custom } from '../rules/types/index.ts'
 import type { StandardSchemaV1 } from '../standard-schema/types.ts'
-import type { V3 } from './types/index.ts'
+import type { V3 } from './types/v3/index.ts'
 import type { RecordSchema } from './types/RecordSchema.ts'
 
 import { asTypeGuard } from '../../TypeGuards/helpers/asTypeGuard.ts'
