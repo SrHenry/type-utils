@@ -17,85 +17,16 @@
 
 ## Table of Contents
 
-- [Type Utils](#type-utils)
-- [Table of Contents](#table-of-contents)
 - [Installing](#installing)
 - [Docs](#docs)
 - [Schema types](#schema-types)
-- [`Schema.string`](#schemastring)
-- [`Schema.number`](#schemanumber)
-- [`Schema.boolean`](#schemaboolean)
-- [`Schema.object`](#schemaobject)
-- [`Schema.array`](#schemaarray)
-- [`Schema.tuple`](#schematuple)
-- [`Schema.record`](#schemarecord)
-- [`Schema.symbol`](#schemasymbol)
-- [`Schema.bigint`](#schemabigint)
-- [`Schema.asEnum`](#schemaasenum)
-- [`Schema.asNull`](#schemaasnull)
-- [`Schema.asUndefined`](#schemaasundefined)
-- [`Schema.primitive`](#schemaprimitive)
-- [`Schema.any`](#schemaany)
-- [`Schema.optional`](#schemaoptional)
 - [Schema helpers](#schema-helpers)
-- [`Schema.and`](#schemaand)
-- [`Schema.or`](#schemaor)
-- [`Schema.useSchema`](#schemauseschema)
 - [Validation rules](#validation-rules)
-- [`Number.nonZero`](#numbernonzero)
-- [`Number.max`](#numbermax)
-- [`Number.min`](#numbermin)
-- [`Array.max`](#arraymax)
-- [`Array.min`](#arraymin)
-- [`Array.unique`](#arrayunique)
-- [`String.max`](#stringmax)
-- [`String.min`](#stringmin)
-- [`String.regex`](#stringregex)
-- [`String.nonEmpty`](#stringnonempty)
-- [`String.url`](#stringurl)
-- [`String.email`](#stringemail)
-- [`Record.nonEmpty`](#recordnonempty)
-- [`BigInt.nonZero`](#bigintnonzero)
-- [`BigInt.max`](#bigintmax)
-- [`BigInt.min`](#bigintmin)
-- [`Schema.use`](#schemause)
 - [Standard Schema Interop](#standard-schema-interop)
-- [`toStandardSchema(guard)`](#tostandardschemaguard)
-- [`fromStandardSchema(schema)`](#fromstandardschemaschema)
-- [`normalizeSchema(schema)`](#normalizeschemaschema)
-- [`isStandardSchema(value)`](#isstandardschemavalue)
-- [`StandardSchemaV1` type](#standardschemav1-type)
 - [Available validations](#available-validations)
-- [`is`](#is)
-- [`ensureInterface`](#ensureinterface)
 - [Match Pattern](#match-pattern)
--[`match()`](#match)
 - [Util types](#util-types)
-- [`Fn`](#fn)
-- [`AsyncFn`](#asyncfn)
-- [`Action`](#action)
-- [`Predicate`](#predicate)
-- [`Result`](#result)
-- [`AsyncResult`](#asyncresult)
-- [`TupleSlice`](#tupleslice)
-- [`Param`](#param)
-- [`Infer`](#infer)
-- [`Tag`](#tag)
 - [Experimental Features](#experimental-features)
-- [Lambda](#lambda)
-- [Function/Lambda Currying](#functionlambda-currying)
-- [Pipelines/Pipes](#pipelinespipes)
-- [pipe(value) / createPipeline(fn?)](#pipevalue--createpipelinefn)
-- [.pipe(transform)](#pipetransform)
-- [.pipe(callWith(...args))](#pipecallwithargs)
-- [.pipe(apply(fn, ...args))](#pipeapplyfn-args)
-- [tap / tapAsync](#tapfn-options--tapasyncfn-options)
-- [enpipe(value) / enpipe(fn, ...args)](#enpipevalue--enpipefn-args)
-- [Realistic async pipeline example](#realistic-async-pipeline-example)
-- [Switch Expression](#switch-expression)
-- [Reusable switcher](#reusable-switcher)
-- [Stored switcher](#stored-switcher)
-- [more complex matching logic / runtime branch evaluation](#more-complex-matching-logic--runtime-branch-evaluation)
 
 ## Installing
 
@@ -579,24 +510,21 @@ const isStringNumber = string().use(StringNumber())
 
 > Since [`v0.6.1`](https://github.com/SrHenry/type-utils/releases/tag/v0.6.1)
 
-It allows you to get a validator instance to validate a value against the schema.
+It allows you to get a validator instance to validate a value against the schema. By default, the validator throws on failure. Pass `false` to get a `ValidateReturn<T>` instead.
 
 ```typescript
-import { string, or, object, createInlineRule, createRule } from '@srhenry/type-utils'
+import { string, object } from '@srhenry/type-utils'
 
-const StringNumber = createRule({
-    name: "Custom.StringNumber",
-    message: "number",
-    handler: (value: string) => () => !Number.isNaN(Number(value)),
-});
+const validator = object({ name: string().min(1) }).validator()
+validator({ name: 'Alice' }) // { name: 'Alice' } — passes, returns the value
+validator({ name: '' })      // throws ValidationErrors
 
-const isStringNumberOrObject = or(
-    string()
-        .use(createInlineRule("Custom.StringNumber", (value: string) => !Number.isNaN(Number(value)))),
-    object({
-        foo: string().use(StringNumber()),
-        bar: string().optional()
-    }));
+const softValidator = object({ name: string().min(1) }).validator(false)
+softValidator({ name: 'Alice' }) // { name: 'Alice' }
+softValidator({ name: '' })      // ValidationErrors (no throw)
+
+// Also available as .validate on the validator:
+validator.validate({ name: 'Bob' }) // { name: 'Bob' }
 ```
 
 ### Standard Schema Interop
@@ -658,6 +586,23 @@ const schema = object({
 #### [`isStandardSchema(value)`](https://srhenry.github.io/type-utils/functions/isStandardSchema.html)
 
 Type guard that checks if a value implements the `StandardSchemaV1` interface (has the `'~standard'` property).
+
+#### [`isNativeSchema(value)`](https://srhenry.github.io/type-utils/functions/isNativeSchema.html)
+
+Type guard that checks if a value is a native type-utils `TypeGuard<T>` (has internal struct metadata). Useful for distinguishing type-utils guards from external Standard Schema validators:
+
+```typescript
+import { string, isNativeSchema } from '@srhenry/type-utils'
+import { isStandardSchema } from '@srhenry/type-utils/standard-schema'
+
+const guard = string()
+isNativeSchema(guard)         // true
+isStandardSchema(guard)       // true (type-utils guards also implement Standard Schema)
+
+import { z } from 'zod'
+isNativeSchema(z.string())    // false
+isStandardSchema(z.string())  // true
+```
 
 #### [`StandardSchemaV1` type](https://srhenry.github.io/type-utils/types/StandardSchemaV1.html)
 
@@ -890,6 +835,21 @@ declare const isArray = array()
 declare const res1: Infer<(a: unknown) => a is number> // res1: number
 declare const res2: Infer<(a: unknown) => a is string[]> // res2: string[]
 declare const res3: Infer<typeof isArray> // res3: any[]
+```
+
+#### [`GetSchema`](https://srhenry.github.io/type-utils/types/GetSchema.html)
+
+Maps a TypeScript type `T` to the `FluentSchema` result type you'd get from calling the corresponding schema builder function. Useful for building generic utilities that need to know the schema shape from a type.
+
+```typescript
+import type { GetSchema } from '@srhenry/type-utils'
+
+type T1 = GetSchema<string>     // FluentSchema<string, StringSchemaRules>
+type T2 = GetSchema<number>     // FluentSchema<number, NumberSchemaRules>
+type T3 = GetSchema<boolean>    // FluentSchema<boolean>
+type T4 = GetSchema<string[]>   // FluentSchema<string[], ArraySchemaRules>
+type T5 = GetSchema<{ foo: string }> // FluentSchema<{ foo: string }>
+type T6 = GetSchema<never>      // never
 ```
 
 #### [`Tag`](https://srhenry.github.io/type-utils/types/Tag.html)
