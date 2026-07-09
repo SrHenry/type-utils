@@ -13,4 +13,5 @@ umd
 yarn-error.log
 coverage
 .madge
+.worktree/
 docs
