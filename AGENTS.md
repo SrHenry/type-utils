@@ -40,7 +40,7 @@ If the request is vague or ambiguous: ask targeted questions. Better to over-cla
 - **Test runner**: Vitest
 - **Linter**: Biome (lint only, no formatting)
 - **Formatter**: Prettier
-- **TypeScript**: v6, strict mode
+- **TypeScript**: v7, strict mode
 
 ## Build & Development Commands
 
