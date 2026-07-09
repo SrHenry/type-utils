@@ -67,17 +67,17 @@
         }
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.4.15",
-        "@types/node": "^25.6.2",
-        "@vitest/coverage-v8": "^4.1.0",
-        "typescript": "6.0.3",
-        "vitest": "^4.1.0",
+        "@biomejs/biome": "2.4.16",
+        "@types/node": "25.9.2",
+        "@vitest/coverage-v8": "4.1.8",
+        "typescript": "7.0.2",
+        "vitest": "4.1.8",
         "madge": "^8.0.0",
-        "prettier": "^3.8.3",
+        "prettier": "3.8.3",
         "run-script-os": "^1.1.6",
         "ts-node": "^10.9.2",
         "tsx": "^4.21.0",
-        "typedoc": "^0.28.19",
+        "typedoc": "0.28.19",
         "uuid": "^14.0.0",
         "webpack": "^5.106.2",
         "webpack-cli": "^7.0.2"
@@ -88,6 +88,7 @@
         "madge/**/@typescript-eslint/typescript-estree/minimatch": "^9.0.7",
         "madge/**/glob/minimatch": "^3.1.3",
         "madge/**/glob/minimatch/brace-expansion": "^1.1.14",
+        "madge/**/typescript": "5.8.3",
         "webpack/**/ajv/fast-uri": "^3.1.2"
     },
     "exports": {
