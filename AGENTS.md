@@ -15,7 +15,7 @@ Auto-discovered by: OpenCode, Claude Code, Codex, Cursor, Windsurf, Copilot, Gem
 
 Do **NOT** create branches, worktrees, or write code until all of the following are confirmed:
 
-1. **Worktree required** — all code-producing work must happen in an ephemeral worktree (`/tmp/<repo-name>-<topic>`), **never** in the main repo checkout. The user may explicitly opt out (e.g. "work in the main checkout" or "no worktree") — but you must never assume this; always use a worktree unless told otherwise
+1. **Worktree required** — all code-producing work must happen in a local worktree at `.worktree/<topic>` (kept out of git via the `.gitignore`'s `.worktree/` entry), **never** directly in the main repo checkout's working tree. The user may explicitly opt out (e.g. "work in the main checkout" or "no worktree") — but you must never assume this; always use a worktree unless told otherwise
 2. **Base branch** — which branch to target:
 - `developer` for features, refactors, and non-urgent changes (default)
 - `master` for hotfixes and urgent production fixes
@@ -142,15 +142,15 @@ This is a **blocking gate** — do not proceed to step 2 until all items below a
 - **Related issues**: Ask the user for GitHub issue numbers, URLs, or any external references. Fetch issue details with `gh issue view <number>` or `gh issue view <url>`.
 - **Scope clarification**: Confirm what the PR should accomplish. If the user provides a vague request, ask targeted questions before starting.
 
-### 2. Create Ephemeral Worktree + Branch
+### 2. Create Local Worktree + Branch
 
 Create both together — the worktree stays alive for the entire PR lifecycle:
 
 ```sh
-git worktree add /tmp/<repo-name>-<topic> -b feat/<topic> origin/<base-branch>
+git worktree add .worktree/<topic> -b feat/<topic> origin/<base-branch>
 ```
 
-Work in the worktree (`/tmp/` prefix — ephemeral, not inside the main repo checkout). **The first step after creating the worktree must be `yarn install`** to set up dependencies and trigger the `prepare` script (which configures git hooks). Do not write code, run builds, or execute tests until `yarn install` completes.
+Work in the worktree (`.worktree/` prefix — local to the main repo checkout but gitignored, so it never pollutes the tracked tree or trips the pre-commit hook on unrelated paths). **The first step after creating the worktree must be `yarn install`** to set up dependencies and trigger the `prepare` script (which configures git hooks). Do not write code, run builds, or execute tests until `yarn install` completes.
 
 ### 3. Implement
 
@@ -187,7 +187,7 @@ Once the PR is merged, clean up everything:
 
 ```sh
 # From the main repo checkout (NOT the worktree):
-git worktree remove /tmp/<repo-name>-<topic>
+git worktree remove .worktree/<topic>
 git fetch --prune
 git branch -d feat/<topic>
 for remote in $(git remote); do git push "$remote" --delete feat/<topic> || echo "WARNING: delete from $remote failed"; done
