@@ -65,11 +65,7 @@ function _fn<K extends PropertyKey, T>(
 
 function _fn<K extends PropertyKey, T>(
     keyGuard_or_rules:
-        | TypeGuard<K>
-        | StandardSchemaV1<K, K>
-        | Partial<Rules>
-        | RecordRule[]
-        | typeof NULL = NULL,
+        TypeGuard<K> | StandardSchemaV1<K, K> | Partial<Rules> | RecordRule[] | typeof NULL = NULL,
     valueGuard: TypeGuard<T> | StandardSchemaV1<T, T> | typeof NULL = NULL,
     rules: Partial<Rules> | RecordRule[] | typeof NULL = NULL
 ): TypeGuard<Record<K, T>> | TypeGuard<Record<string, any>> {
@@ -109,9 +105,7 @@ function _fn<K extends PropertyKey, T>(
             type: 'record',
             schema: guard,
             keyMetadata: getStructMetadata(defaults.keyGuard) as unknown as
-                | V3.StringStruct
-                | V3.NumberStruct
-                | V3.SymbolStruct,
+                V3.StringStruct | V3.NumberStruct | V3.SymbolStruct,
             valueMetadata: getStructMetadata(defaults.valueGuard),
             rules: keyGuard_or_rules.map(getRuleStructMetadata<RecordRule>),
             optional: false,
@@ -158,9 +152,7 @@ function _fn<K extends PropertyKey, T>(
         type: 'record',
         schema: guard,
         keyMetadata: getStructMetadata(_keyGuard) as unknown as
-            | V3.StringStruct
-            | V3.NumberStruct
-            | V3.SymbolStruct,
+            V3.StringStruct | V3.NumberStruct | V3.SymbolStruct,
         valueMetadata: getStructMetadata(_valueGuard) as V3.GenericStruct<T>,
         rules: rules.map(getRuleStructMetadata<RecordRule>),
         optional: false,

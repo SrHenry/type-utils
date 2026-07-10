@@ -152,14 +152,13 @@ describe('match', () => {
             infer T extends number,
             ...infer Rest extends number[],
         ]
-            ?
-                  | import('../../TypeGuards/types/index.ts').TypeGuard<
-                        import('../../types/Func.ts').Fn<
-                            import('../../types/Tuple.ts').TupleTools.CreateTuple<T>,
-                            any
-                        >
+            ? | import('../../TypeGuards/types/index.ts').TypeGuard<
+                    import('../../types/Func.ts').Fn<
+                        import('../../types/Tuple.ts').TupleTools.CreateTuple<T>,
+                        any
                     >
-                  | MapFuncGuards<Rest>
+                >
+              | MapFuncGuards<Rest>
             : never
 
         function func<TParams extends [...any[]] = [], TReturn = any>(

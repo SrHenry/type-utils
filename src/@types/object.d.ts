@@ -65,14 +65,7 @@ declare var Array: ArrayConstructor
 
 /** string values returned by `typeof` operator */
 declare type TypeOfTag =
-    | 'undefined'
-    | 'boolean'
-    | 'string'
-    | 'number'
-    | 'bigint'
-    | 'symbol'
-    | 'object'
-    | 'function'
+    'undefined' | 'boolean' | 'string' | 'number' | 'bigint' | 'symbol' | 'object' | 'function'
 
 /**
  * Type helper to collapse object intersections that aren't merged already.

@@ -9,6 +9,5 @@ export function arrayToObject<O, T extends Array<readonly [string | symbol, any]
     array: T
 ): O | Record<T[number][0], T[number][1]> {
     return array.reduce((acc, [key, value]) => Object.assign(acc, { [key]: value }), {}) as
-        | O
-        | Record<T[number][0], T[number][1]>
+        O | Record<T[number][0], T[number][1]>
 }

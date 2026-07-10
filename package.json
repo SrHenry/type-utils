@@ -73,7 +73,7 @@
         "typescript": "7.0.2",
         "vitest": "4.1.8",
         "madge": "^8.0.0",
-        "prettier": "3.8.3",
+        "prettier": "3.9.5",
         "run-script-os": "^1.1.6",
         "ts-node": "^10.9.2",
         "tsx": "^4.21.0",
