@@ -38,6 +38,11 @@ import { nonEmptyFormator as recordNonEmptyFormator } from './Record/formators/n
 
 import { nonEmpty as recordNonEmptyHandler } from './Record/handlers/nonEmpty.ts'
 
+// <ObjectRules> import section:
+import { strictFormator as objectStrictFormator } from './Object/formators/strict.ts'
+
+import { strict as objectStrictHandler } from './Object/handlers/strict.ts'
+
 // <OptionalRules> import section:
 import { optional as optionalHandler } from './Optional/handlers/optional.ts'
 
@@ -58,6 +63,8 @@ export const keys = {
     'String.url': '__String.url__',
 
     'Record.nonEmpty': '__Record.nonEmpty__',
+
+    'Object.strict': '__Object.strict__',
 
     'optional': '__optional__',
 } as const
@@ -80,6 +87,8 @@ export const bindings = {
     [keys['String.url']]: setMessageFormator(stringUrlFormator, stringUrlHandler),
 
     [keys['Record.nonEmpty']]: setMessageFormator(recordNonEmptyFormator, recordNonEmptyHandler),
+
+    [keys['Object.strict']]: setMessageFormator(objectStrictFormator, objectStrictHandler),
 
     [keys.optional]: optionalHandler,
 } as const

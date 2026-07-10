@@ -1,6 +1,7 @@
 import type { MessageFormator } from '../../../TypeGuards/types/index.ts'
 import type { ArrayRule } from './../Array/index.ts'
 import type { NumberRule } from './../Number/index.ts'
+import type { ObjectRule } from './../Object/index.ts'
 import type { RecordRule } from './../Record/index.ts'
 import type { StringRule } from './../String/index.ts'
 import type { RuleTuple } from './RuleTuple.ts'
@@ -45,7 +46,7 @@ export type CustomFactory<
     Subject = unknown,
 > = (...args: Args) => Custom<Args, RuleName, Subject>
 
-export type Default = StringRule | NumberRule | ArrayRule | RecordRule
+export type Default = StringRule | NumberRule | ArrayRule | RecordRule | ObjectRule
 export type All<
     Args extends any[] = unknown[],
     RuleName extends string = string,
