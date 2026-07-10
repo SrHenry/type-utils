@@ -227,28 +227,28 @@ describe('SchemaValidator', () => {
             schema
         )
 
-        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
         const value1 = {
             a: 1,
             b: 'foo',
             c: true,
         }
 
-        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
         const value2 = {
             a: 0xff,
             b: 'bar',
             c: false,
             d: 0b11111111,
         }
-        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
         const value3 = {
             a: 0xff,
             b: 'bar',
             c: false,
             e: 'baz',
         }
-        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
         const value4 = {
             a: 0xff,
             b: 'bar',

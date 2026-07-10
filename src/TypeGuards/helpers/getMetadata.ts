@@ -22,7 +22,7 @@ export function getMetadata(
     schema?: TypeGuard
 ): unknown | undefined {
     if (from === __curry_param__)
-        // biome-ignore lint/nursery/noShadow: currying pattern — inner param fills outer's slot
+        // biome-ignore lint/suspicious/noShadow: currying pattern — inner param fills outer's slot
         return (from: object, schema?: TypeGuard): unknown => getMetadata(key, from, schema)
 
     const metadata = getOwnMetadata(key, from as object)

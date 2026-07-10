@@ -26,7 +26,7 @@ export function run(
     callback: Func<any[], any>,
     ...params: any[]
 ): Lambda<any[], Result<any> | AsyncResult<any>> | Result<any> | AsyncResult<any> {
-    // biome-ignore lint/nursery/noShadow: currying pattern — inner param fills outer's slot
+    // biome-ignore lint/suspicious/noShadow: currying pattern — inner param fills outer's slot
     const resolver = (...params: any[]): Result<any> | AsyncResult<any> => {
         try {
             const result = callback(...params)

@@ -92,7 +92,7 @@ const _b2 = getMetadata(__metadata__, f1, object({ a: number() }))
 
 console.log('metadata', _b, _b2)
 
-// biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+// biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
 const getMetadataOf = <T>(schema: TypeGuard<T>) =>
     console.log('metadata of schema', getStructMetadata(schema))
 

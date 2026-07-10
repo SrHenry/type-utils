@@ -20,10 +20,10 @@
     "linter": {
         "enabled": true,
         "rules": {
-            "recommended": true,
+            "preset": "recommended",
             "a11y": "off",
             "complexity": {
-                "recommended": true,
+                "preset": "recommended",
                 "noBannedTypes": "warn",
                 "noEmptyTypeParameters": "error",
                 "noExcessiveCognitiveComplexity": {
@@ -38,7 +38,7 @@
                 "useSimplifiedLogicExpression": "warn"
             },
             "correctness": {
-                "recommended": true,
+                "preset": "recommended",
                 "noConstAssign": "error",
                 "noEmptyPattern": "error",
                 "noInvalidUseBeforeDeclaration": "error",
@@ -60,9 +60,7 @@
                 "useYield": "error"
             },
             "nursery": {
-                "recommended": false,
-                "noShadow": "warn",
-                "noUnnecessaryConditions": "warn",
+                "preset": "none",
                 "noUnnecessaryTemplateExpression": "warn",
                 "noUselessTypeConversion": "warn",
                 "useExhaustiveSwitchCases": "warn",
@@ -70,17 +68,17 @@
                 "useReduceTypeParameter": "warn"
             },
             "performance": {
-                "recommended": true,
+                "preset": "recommended",
                 "noAccumulatingSpread": "warn",
                 "noDelete": "warn"
             },
             "security": {
-                "recommended": true,
+                "preset": "recommended",
                 "noGlobalEval": "error",
                 "noSecrets": "warn"
             },
             "style": {
-                "recommended": true,
+                "preset": "recommended",
                 "noDefaultExport": "off",
                 "noEnum": "error",
                 "noInferrableTypes": "error",
@@ -106,68 +104,70 @@
                 "useUnifiedTypeSignatures": "off"
             },
             "suspicious": {
-                "recommended": true,
+                "preset": "recommended",
                 "noApproximativeNumericConstant": "warn",
                 "noAssignInExpressions": "error",
                 "noConfusingVoidType": "error",
                 "noConstEnum": "error",
                 "noControlCharactersInRegex": "error",
                 "noDebugger": "error",
-            "noExplicitAny": "warn",
-            "noFallthroughSwitchClause": "error",
+                "noExplicitAny": "warn",
+                "noFallthroughSwitchClause": "error",
                 "noMisleadingInstantiator": "error",
-                "noRedeclare": "error"
+                "noRedeclare": "error",
+                "noShadow": "warn",
+                "noUnnecessaryConditions": "warn"
             }
         }
     },
     "overrides": [
-{
-      "includes": ["**/*.spec.ts", "**/__tests__/**"],
-      "linter": {
-        "rules": {
-          "complexity": {
-            "noExcessiveCognitiveComplexity": "off"
-          },
-          "security": {
-            "noSecrets": "off"
-          },
-          "suspicious": {
-            "noExplicitAny": "off",
-            "noDebugger": "off"
-          },
-          "style": {
-            "noNonNullAssertion": "off"
-          }
-        }
-      }
-    },
-{
-      "includes": ["**/Experimental/**"],
-      "linter": {
-        "rules": {
-          "suspicious": {
-            "noDebugger": "off",
-            "noExplicitAny": "off"
-          }
-        }
-      }
-    },
-{
-      "includes": ["**/jest.setup.ts", "**/vitest.setup.ts"],
-      "linter": {
-        "rules": {
-          "complexity": {
-            "noExcessiveCognitiveComplexity": {
-              "level": "off",
-              "options": { "maxAllowedComplexity": 30 }
+        {
+            "includes": ["**/*.spec.ts", "**/__tests__/**"],
+            "linter": {
+                "rules": {
+                    "complexity": {
+                        "noExcessiveCognitiveComplexity": "off"
+                    },
+                    "security": {
+                        "noSecrets": "off"
+                    },
+                    "suspicious": {
+                        "noExplicitAny": "off",
+                        "noDebugger": "off"
+                    },
+                    "style": {
+                        "noNonNullAssertion": "off"
+                    }
+                }
             }
-          },
-          "suspicious": {
-            "noExplicitAny": "off"
-          }
-        }
-      }
-    },
+        },
+        {
+            "includes": ["**/Experimental/**"],
+            "linter": {
+                "rules": {
+                    "suspicious": {
+                        "noDebugger": "off",
+                        "noExplicitAny": "off"
+                    }
+                }
+            }
+        },
+        {
+            "includes": ["**/jest.setup.ts", "**/vitest.setup.ts"],
+            "linter": {
+                "rules": {
+                    "complexity": {
+                        "noExcessiveCognitiveComplexity": {
+                            "level": "off",
+                            "options": { "maxAllowedComplexity": 30 }
+                        }
+                    },
+                    "suspicious": {
+                        "noExplicitAny": "off"
+                    }
+                }
+            }
+        },
         {
             "includes": ["**/validators/BaseValidator.ts"],
             "linter": {

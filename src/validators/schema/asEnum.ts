@@ -99,7 +99,7 @@ export const asEnum: EnumSchema = ((values: any[]) => {
 
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
     schema.use = (...customRules: Custom<any[], string, Generics.PrimitiveType>) =>
         addCall('use', [...customRules])
     schema.toStandardSchema = () =>

@@ -111,7 +111,7 @@ describe('pipe', () => {
             createPipeline().pipe(getFromDb).pipeAsync(updateFn).pipeAsync(updateDb).depipe()
 
         const updateFoo = () =>
-            // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+            // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
             updateDbPipeline(db => {
                 log.push('edit')
 
@@ -135,7 +135,7 @@ describe('pipe', () => {
         ])
 
         const updateHandsome = () =>
-            // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+            // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
             updateDbPipeline(db => {
                 log.push('edit')
                 db['handsome'] = false

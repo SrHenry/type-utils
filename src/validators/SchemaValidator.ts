@@ -111,7 +111,7 @@ function validate<T, Name extends string, Parent>(
     name_or_options?: Name | ValidateOptionalArgs<Name, Parent>,
     parent: Parent | NO_PARENT = NO_PARENT
 ): ValidateReturn<T> {
-    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
     const throws = shouldThrow(this)
     const metadata = getStructMetadata(schema) as V3.StructType
     const errors: ValidationError[] = []
@@ -210,42 +210,42 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
     public constructor(schema: TypeGuard<T>, throws: Throws)
     public constructor(
         protected schema: TypeGuard<T>,
-        // biome-ignore lint/nursery/noShadow: constructor param shadows module-level symbol
+        // biome-ignore lint/suspicious/noShadow: constructor param shadows module-level symbol
         protected throws = defaults['throws']
     ) {}
 
-    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
+    // biome-ignore lint/suspicious/noShadow: static method T intentionally shadows class T
     public static validate<T>(
         arg: unknown,
         schema: TypeGuard<T>,
-        // biome-ignore lint/nursery/noShadow: param shadows module-level function
+        // biome-ignore lint/suspicious/noShadow: param shadows module-level function
         shouldThrow: boolean = defaults['throws']
     ): ValidateReturn<T> {
         return validate.bind(setThrows(shouldThrow))(arg, schema)
     }
 
-    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
+    // biome-ignore lint/suspicious/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>,
         schema: TypeGuard<T>
     ): TypeGuard<T>
-    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
+    // biome-ignore lint/suspicious/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>
     ): (schema: TypeGuard<T>) => TypeGuard<T>
 
-    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
+    // biome-ignore lint/suspicious/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>,
         schema?: TypeGuard<T> | typeof NO_ARG
     ): TypeGuard<T> | (<U = T>(schema: TypeGuard<U>) => TypeGuard<U>)
-    // biome-ignore lint/nursery/noShadow: static method T intentionally shadows class T
+    // biome-ignore lint/suspicious/noShadow: static method T intentionally shadows class T
     public static setValidatorMessage<T>(
         message: ValidatorMessageMap<T>,
         schema: TypeGuard<T> | typeof NO_ARG = NO_ARG
     ) {
         if (schema === NO_ARG)
-            // biome-ignore lint/nursery/noShadow: currying param intentionally shadows outer param
+            // biome-ignore lint/suspicious/noShadow: currying param intentionally shadows outer param
             return (schema: TypeGuard<T>) => __SchemaValidator.setValidatorMessage(message, schema)
 
         if (typeof message === 'string') return setValidatorMessage(message, schema)
@@ -290,7 +290,7 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
     public validate<V>(value: V, shouldThrow: boolean): T | ValidationErrors
 
     @AutoBind()
-    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
     public validate<V>(value: V, shouldThrow: boolean = this.throws): T | ValidationErrors {
         return validate.bind(setThrows(shouldThrow))(value, this.schema)
     }

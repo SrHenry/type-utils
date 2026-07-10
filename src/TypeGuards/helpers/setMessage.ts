@@ -8,7 +8,7 @@ export function setMessage<T extends object>(
     arg: T | typeof __curry_param__ = __curry_param__
 ) {
     if (arg === __curry_param__)
-        // biome-ignore lint/nursery/noShadow: currying pattern — inner param fills outer's slot
+        // biome-ignore lint/suspicious/noShadow: currying pattern — inner param fills outer's slot
         return (arg: T): T => setMessage(message, arg)
 
     return setMetadata(__message__, message, arg)

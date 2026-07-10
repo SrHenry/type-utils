@@ -123,7 +123,7 @@ export const bigint: BigIntSchema = (() => {
     schema.max = (n: bigint) => addCall('max', [NumberRules.max(n)])
     schema.min = (n: bigint) => addCall('min', [NumberRules.min(n)])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
     schema.use = (...customRules: Custom<any[], string, bigint>) => addCall('use', [...customRules])
     schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<bigint>)
 

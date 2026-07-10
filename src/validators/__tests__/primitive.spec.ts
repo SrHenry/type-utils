@@ -71,14 +71,14 @@ describe('primitive', () => {
         expect(primitive()).toHaveProperty('optional')
         expect(typeof primitive().optional).toBe('function')
 
-        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
         const schema = primitive().optional()
 
         expect(typeof schema).toBe('function')
     })
 
     it('should return true if value is null or undefined when optional', () => {
-        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
         const schema = primitive().optional()
 
         expect(schema(null)).toBe(true)
@@ -86,7 +86,7 @@ describe('primitive', () => {
     })
 
     it('should return false if value is not a primitive when optional', () => {
-        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
         const schema = primitive().optional()
 
         for (const value of nonPrimitives) expect(schema(value)).toBe(false)

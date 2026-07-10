@@ -19,7 +19,7 @@ export function select<TObject extends {}, TKey extends keyof TObject>(...keys: 
             if (item === null) throw new TypeError(`expected not null object argument, given null`)
 
             return Object.fromEntries(
-                // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+                // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
                 Object.entries(item).filter(([key]) => keys.includes(key as TKey))
             )
         }

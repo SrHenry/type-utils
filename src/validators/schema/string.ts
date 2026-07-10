@@ -189,7 +189,7 @@ export const string = ((matcher?: string | RegExp) => {
     schema.url = () => addCall('url', [StringRules.url()])
     schema.email = () => addCall('email', [StringRules.email()])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
     schema.use = (...customRules: Custom<any[], string, string>) => addCall('use', [...customRules])
     schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<string>)
 

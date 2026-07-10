@@ -66,7 +66,7 @@ export type CreateRuleArgs<
 
 export type NoArgs = []
 
-// biome-ignore lint/nursery/noShadow: type param Rule intentionally shadows Rule type alias
+// biome-ignore lint/suspicious/noShadow: type param Rule intentionally shadows Rule type alias
 export type RuleStruct<Rule> =
     Rule extends RuleTuple<infer RuleName>
         ? {

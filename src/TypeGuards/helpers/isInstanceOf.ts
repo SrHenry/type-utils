@@ -14,7 +14,7 @@ export function isInstanceOf<Constructor extends ConstructorSignature>(
 export function isInstanceOf<Instance, Constructor extends ConstructorSignature>(
     value_or_type: Instance | Constructor,
     type: Constructor | symbol = __curry_param__
-    // biome-ignore lint/nursery/noShadow: type param in return type signature intentionally reuses Instance
+    // biome-ignore lint/suspicious/noShadow: type param in return type signature intentionally reuses Instance
 ): (<Instance>(value: Instance) => value is InstanceType<Constructor>) | boolean {
     if (type === __curry_param__) {
         const guard = (val: unknown): val is InstanceType<Constructor> =>
