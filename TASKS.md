@@ -67,7 +67,6 @@
     - **Acceptance**: `yarn install` succeeds without `ts-node` or `tsx` in `devDependencies`; `yarn test`, `yarn build:clean`, `yarn circular-dependencies` all pass; full CI pipeline green.
 - [ ] Migrate `src/helpers/decorators/stage-2/*` usage to TC39 stage-3 decorators; drop `experimentalDecorators`
     - **ID**: migrate-stage2-to-stage3-decorators
-    - **Blocked by**: ts7-upgrade
     - **Details**: Three src files (`src/TypeGuards/TypeErrors.ts:6,8`, `src/validators/SchemaValidator.ts:292`, `src/validators/ValidationError.ts:32,35`) import legacy stage-2 decorators (`@AutoBind()`, `@NonEnumerableProperty()`) from `src/helpers/decorators/stage-2/`. A parallel `src/helpers/decorators/stage-3/` implementation already exists alongside but is unused by these three files. TS 7.0 still supports `experimentalDecorators: true` so the status quo works, but TC39-stage decorators are the future and the flag will eventually be removed. Discovered during the TS7 upgrade when the planned `experimentalDecorators` removal broke `tsc --noEmit` with TS1240/TS1241 errors (verified empirically: restored flag → tsc passes under TS 7.0.2).
     - **Files**: `src/TypeGuards/TypeErrors.ts`, `src/validators/SchemaValidator.ts`, `src/validators/ValidationError.ts`, `tsconfig.json` (remove the `experimentalDecorators: true` line once all usage migrated), `src/helpers/decorators/stage-2/` (delete if migration is complete; otherwise leave for any thrashy edge cases)
     - **Plan**:
@@ -79,7 +78,6 @@
     - **Acceptance**: All three src files compile under TS 7.0.2 without `experimentalDecorators: true`; `yarn tsc -p tsconfig.json --noEmit` exits 0 after the flag is removed; `yarn test` passes (no behavioral regression in the auto-binding / non-enumerable-property semantics); `yarn build:clean` succeeds; `tsconfig.json` no longer contains `experimentalDecorators`.
 - [ ] Restore `yarn docs` (typedoc) under TypeScript 7
     - **ID**: typedoc-ts7-gap
-    - **Blocked by**: ts7-upgrade
     - **Details**: `typedoc@0.28.19` (and the latest stable `0.28.20`) declares `peerDependencies.typescript: 5.0.x || 5.1.x ... || 6.0.x` — TS 7 is not supported. typedoc uses `import ts from "typescript"` to invoke the programmatic Compiler API (`ts.readConfigFile`, `ts.sys.readFile`, `ts.createProgram`), which TS 7.0 deliberately omits (full programmatic API deferred to TS 7.1 per Microsoft's 7.0 release notes). Empirical failure: `yarn docs` errors with `TS6046: Argument for '--module' option must be: 'none','commonjs',...'node16','node18','nodenext','preserve'` and `TS5023: Unknown compiler option 'stableTypeOrdering'` when TS 7.0.2's empty API stub is used. Yarn 1.x `resolutions` cannot force a nested install of `typescript` for typedoc because typedoc declares it as a peer (not a regular dep); pinning `typedoc/typescript: 5.8.x` or `6.0.x` was attempted and didn't work. The TypeScript team published `@typescript/typescript6` (re-exports TS 6.0 API, ships `tsc6` binary) as the official side-by-side shim for tooling that needs the programmatic API.
     - **Files**: `package.json`, `yarn.lock`, (optionally) `typedoc.json`
     - **Plan**:
@@ -88,37 +86,6 @@
         3. If only dev-pre-releases are available: stay on TS 6 for typedoc via `@typescript/typescript6` (alias `typescript` to `npm:@typescript/typescript6` in a `typedoc-only` lockfile subtree using Yarn 1's `resolutions` `npm:` aliasing, or invoke typedoc with `node --require` shim that monkey-patches `require('typescript')` to return TS 6 inside the typedoc subprocess).
         4. Re-add `yarn docs` to CI (`yarn docs` is currently NOT in `.github/workflows/ci.yml` — only `tsc`, `check`, `test`, `circular-dependencies`, `build:clean` are).
     - **Acceptance**: `yarn docs` runs to completion under TS 7.0.2 (exit 0, HTML generated in `./docs`); the CI `.github/workflows/ci.yml` optionally re-runs `yarn docs` (or skip if API-doc regeneration is a release-only concern); the worktree does not regress when TS 7.1 launches with a stable programmatic API.
-- [ ] Re-tighten devDependencies from hard pins to caret ranges (post-stabilization)
-    - **ID**: retighten-devdep-ranges
-    - **Blocked by**: ts7-upgrade
-    - **Details**: The TS7 upgrade PR pinned several devDeps to exact versions (`@biomejs/biome: 2.4.16`, `@types/node: 25.9.2`, `@vitest/coverage-v8: 4.1.8`, `vitest: 4.1.8`, `prettier: 3.8.3`, `typedoc: 0.28.19`) to prevent the lockfile regeneration from pulling in patch-drift that breaks CI (biome 2.5.x deprecates `recommended` field, prettier 3.9.x flags 11 files that 3.8.x passed, `@types/node` 26.x major-bumps): these are pre-existing latent issues in the repo's outdated lockfile that the `^` ranges have since "drifted" to expose. Pinning exact versions preserves the main checkout's CI-green state. Once biome 2.5.x migration (`migrate-biome-preset`) and the prettier 3.9.x reformatting (`prettier-3-9-reflow`) landed, the pins can be loosened back to `^`-ranges without re-introducing CI breakage.
-    - **Files**: `package.json`, `yarn.lock`
-    - **Acceptance**: After biome 2.5.x and prettier 3.9.x migrations land, restore the original `^` ranges in `package.json`; run `yarn install` (regenerate lockfile with the latest patch versions); `yarn run check`, `yarn test`, `yarn build:clean`, `yarn circular-dependencies`, `yarn docs` (if typedoc TS7 gap also closed) all pass; CI on `developer` green.
-- [ ] Migrate `biome.json` to Biome 2.5.x (preset + removed deprecated fields)
-    - **ID**: migrate-biome-preset
-    - **Blocked by**: ts7-upgrade
-    - **Details**: Biome 2.5.0+ deprecates the `recommended` field inside the `linter` block in `biome.json`; replacement is `preset`. `yarn run check` against biome 2.5.x fails with `× Biome exited because the configuration resulted in errors. Please fix them.` and surfaces the deprecation message: `"Migrate the configuration with the proper command: $ biome migrate"`. Discovered during TS7 upgrade planning when the lockfile regeneration drifted `@biomejs/biome` from `2.4.16` to `2.5.3`. Mitigation in the TS7 PR was to pin `@biomejs/biome` to `2.4.16` to preserve CI-green state.
-    - **Files**: `biome.json`, `package.json` (`@biomejs/biome` version pin release), `yarn.lock`
-    - **Plan**:
-        1. `cd <worktree> && yarn install` with `@biomejs/biome: ^2.5.0` (or latest 2.x).
-        2. `yarn biome migrate --write` (auto-rewrite the `recommended` field to `preset`).
-        3. `yarn run check` to verify the migrated config passes.
-        4. `yarn test`, `yarn build:clean` to verify no behavioral breakage.
-        5. Loosen the `@biomejs/biome` pin in `package.json` (per `retighten-devdep-ranges` task).
-    - **Acceptance**: `biome.json` uses `preset` instead of `recommended`; `yarn run check` passes against biome `^2.5.0`; `package.json` no longer pins `@biomejs/biome` to `2.4.16`.
-- [ ] Reformat `src/**/*.ts` per Prettier 3.9.x
-    - **ID**: prettier-3-9-reflow
-    - **Blocked by**: ts7-upgrade, migrate-biome-preset
-    - **Details**: Prettier 3.9.x flags 11 files in `src/` (e.g. `src/Generics/index.ts`, `src/match/types/Expr.ts`, `src/match/types/Pattern.ts`, `src/TypeGuards/helpers/ensureInterface.ts`, `src/types/Result.ts`, `src/validators/schema/array.ts`, `src/validators/schema/record.ts`, `src/validators/schema/types/v3/index.ts`, `src/@types/object.d.ts`, `src/helpers/arrayToObject.ts`, `src/match/__tests__/match.spec.ts`) as having style issues that 3.8.x accepted. Discovered during TS7 upgrade planning when the lockfile regeneration drifted `prettier` from `3.8.3` to `3.9.5`; mitigation in the TS7 PR was to pin `prettier` to `3.8.3` to preserve CI-green state. Files reformatted by `yarn format:fix` (prettier 3.9.x writes) will require a CI green verification post-format.
-    - **Files**: 11 files listed in **Details** above; `package.json` (`prettier` version pin release); `yarn.lock`.
-    - **Plan**:
-        1. Loosen `prettier` pin to `^3.9.0` (or whatever 3.9.x version is then-current), run `yarn install`.
-        2. `yarn format:fix` — writes in-place formatting changes to the 11 files.
-        3. `yarn tsc -p tsconfig.json --noEmit` — verify type-coverage unaffected.
-        4. `yarn test` — verify behavioral invariants pass.
-        5. `yarn run check` — verify final CI-green state.
-        6. Commit as `style(format): apply prettier 3.9.x reflow`.
-    - **Acceptance**: `yarn run check` passes against `prettier@^3.9.x`; the 11 files are reformatted; `package.json` no longer pins `prettier` to `3.8.3`.
 
 ## P3 — Low
 
