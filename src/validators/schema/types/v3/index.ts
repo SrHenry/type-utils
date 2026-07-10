@@ -2,6 +2,7 @@ import type Generics from '../../../../Generics/index.ts'
 import type { ConstructorSignature, TypeGuard } from '../../../../TypeGuards/types/index.ts'
 import type { ArrayRule } from '../../../rules/Array/index.ts'
 import type { NumberRule } from '../../../rules/Number/index.ts'
+import type { ObjectRule } from '../../../rules/Object/index.ts'
 import type { RecordRule } from '../../../rules/Record/index.ts'
 import type { StringRule } from '../../../rules/String/index.ts'
 import type { StandardSchemaV1 } from '../../../standard-schema/types.ts'
@@ -139,7 +140,7 @@ export namespace V3 {
     export type ObjectStruct<
         T extends {},
         Rules extends CustomRule<any[], string, T> = CustomRule<any[], string, T>,
-    > = BaseStruct<'object', T> & ObjectTree<T> & WithRulesStruct<Rules>
+    > = BaseStruct<'object', T> & ObjectTree<T> & WithRulesStruct<ObjectRule | Rules>
 
     export type ClassInstanceRef<T extends {}, ClassNameStr = string> = {
         constructor: ConstructorSignature<T>
