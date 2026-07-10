@@ -76,7 +76,7 @@ function _fn<K extends PropertyKey, T>(
     if (keyGuard_or_rules === NULL) return _fn(defaults.keyGuard, defaults.valueGuard)
 
     const handleRulesObject = (
-        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
         rules: Partial<Rules>
     ) => {
         const _rules = []
@@ -266,7 +266,7 @@ export const record: RecordSchema = ((
     schema.optional = () => addCall('optional')
     schema.nonEmpty = () => addCall('nonEmpty', [RecordRules.nonEmpty()])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
     schema.use = (...customRules: Custom<any[], string, Record<PropertyKey, any>>) =>
         addCall('use', [...customRules])
     schema.toStandardSchema = () =>

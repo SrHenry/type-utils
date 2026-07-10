@@ -7,11 +7,11 @@ import { isCallWithTransform } from '../callWith.ts'
 export class PipelineBox<T> {
     protected constructor(protected readonly _value: T) {}
 
-    // biome-ignore lint/nursery/noShadow: type parameter T intentionally shadows class generic
+    // biome-ignore lint/suspicious/noShadow: type parameter T intentionally shadows class generic
     static wrap<T>(value: Exclude<T, Promise<any>>): PipelineBox<T>
-    // biome-ignore lint/nursery/noShadow: type parameter T intentionally shadows class generic
+    // biome-ignore lint/suspicious/noShadow: type parameter T intentionally shadows class generic
     static wrap<T>(value: Promise<T>): AsyncPipelineBox<T>
-    // biome-ignore lint/nursery/noShadow: type parameter T intentionally shadows class generic
+    // biome-ignore lint/suspicious/noShadow: type parameter T intentionally shadows class generic
     static wrap<T>(value: T | Promise<T>): PipelineBox<T> | AsyncPipelineBox<T> {
         if (value instanceof Promise)
             return new AsyncPipelineBox(value as Promise<T>) as AsyncPipelineBox<T>

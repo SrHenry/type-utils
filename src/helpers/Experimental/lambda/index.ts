@@ -43,7 +43,7 @@ export function lambda<TGuard extends TypeGuard<any>>(
 export function lambda<TFunc extends (...args: any) => any>(lambda: TFunc): AsLambda<TFunc>
 export function lambda(lambda: (...args: unknown[]) => unknown): Lambda<any[], any>
 
-// biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+// biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
 export function lambda<TFunc extends (...args: any) => any>(lambda: TFunc): AsLambda<TFunc> {
     try {
         if (isLambda<TFunc>(lambda)) return lambda

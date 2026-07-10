@@ -183,7 +183,7 @@ export const array: ArraySchema = ((
     schema.min = (n: number) => addCall('min', [ArrayRules.min(n)])
     schema.max = (n: number) => addCall('max', [ArrayRules.max(n)])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
     schema.use = (...customRules: Custom<any[], string, any[]>) => addCall('use', [...customRules])
     schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<any[]>)
 

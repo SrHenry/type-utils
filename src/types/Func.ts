@@ -1,4 +1,4 @@
-// biome-ignore-all lint/nursery/noShadow: type parameters inherently reuse names across sibling type aliases
+// biome-ignore-all lint/suspicious/noShadow: type parameters inherently reuse names across sibling type aliases
 
 import type { Tag } from './Tag.ts'
 import type { TupleTools } from './Tuple.ts'

@@ -54,21 +54,21 @@ describe('asUndefined', () => {
         expect(asUndefined()).toHaveProperty('optional')
         expect(typeof asUndefined().optional).toBe('function')
 
-        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
         const schema = asUndefined().optional()
 
         expect(typeof schema).toBe('function')
     })
 
     it('should return true if value is undefined with optional schema', () => {
-        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
         const schema = asUndefined().optional()
 
         expect(schema(undefined)).toBe(true)
     })
 
     it('should return false if value is not undefined with optional schema', () => {
-        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
         const schema = asUndefined().optional()
 
         for (const value of values) expect(schema(value)).toBe(false)

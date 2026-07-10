@@ -116,7 +116,7 @@ describe('regression: brand-based validation replaces handler(void 0) spec check
             name: 'valid',
             handler: (n: number) => () => n > 0,
         })
-        // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+        // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
         const tuple = rule()
 
         const handler = tuple[2]

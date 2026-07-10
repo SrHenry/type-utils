@@ -77,7 +77,7 @@ export const asNull: NullSchema = (() => {
 
     schema.optional = () => addCall('optional')
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
-    // biome-ignore lint/nursery/noShadow: callback destructuring — name matches outer scope intentionally
+    // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
     schema.use = (...customRules: Custom<any[], string, null>) => addCall('use', [...customRules])
     schema.toStandardSchema = () => toStandardSchema(schema as unknown as TypeGuard<null>)
 
