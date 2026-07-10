@@ -53,7 +53,7 @@ function _fn<T extends {}>(
                 tree: {},
                 rules: rules.map(getRuleStructMetadata<ObjectRule>),
             },
-            setRuleMessage('object', guard)
+            setRuleMessage('object', guard, rules)
         )
     }
 
@@ -97,7 +97,7 @@ function _fn<T extends {}>(
         rules: rules.map(getRuleStructMetadata<ObjectRule>),
     }
 
-    return setStructMetadata<T>(metadata, setRuleMessage(message, guard))
+    return setStructMetadata<T>(metadata, setRuleMessage(message, guard, rules))
 }
 
 type OptionalizedObject = {
