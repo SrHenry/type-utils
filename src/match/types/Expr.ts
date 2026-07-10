@@ -13,8 +13,7 @@ export type ExtractSpecificExprs<T extends readonly (readonly [any, any])[]> = T
     ...infer R,
 ]
     ? L extends readonly [infer E, infer P]
-        ?
-              | (unknown extends P ? (P extends unknown ? never : E) : E)
-              | (R extends readonly (readonly [any, any])[] ? ExtractSpecificExprs<R> : never)
+        ? | (unknown extends P ? (P extends unknown ? never : E) : E)
+          | (R extends readonly (readonly [any, any])[] ? ExtractSpecificExprs<R> : never)
         : never
     : never

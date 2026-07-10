@@ -34,12 +34,7 @@ function _fn<T>(tree: ValidatorMap<T> | TypeGuard<T> | StandardSchemaV1<T, T>): 
 function _fn(tree: {}): TypeGuard<{}[]>
 function _fn<T>(
     rules?:
-        | ArrayRule[]
-        | ValidatorMap<T>
-        | TypeGuard<T>
-        | StandardSchemaV1<T, T>
-        | null
-        | undefined,
+        ArrayRule[] | ValidatorMap<T> | TypeGuard<T> | StandardSchemaV1<T, T> | null | undefined,
     schema?: TypeGuard<T> | StandardSchemaV1<T, T>
 ): TypeGuard<T[]>
 

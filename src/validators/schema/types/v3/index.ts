@@ -239,22 +239,21 @@ export namespace V3 {
         // biome-ignore lint/complexity/noBannedTypes: Function used in conditional type for type-level dispatch
     > = T extends Function
         ? AnyStruct<Rules> & { schema: TypeGuard<T> }
-        :
-              | Struct<T, Rules>
-              | CustomStruct<T, Rules>
-              | (UnionOrIntersection extends false
-                    ? never
-                    : UnionOrIntersection extends 'union'
-                      ? T extends any[]
-                          ? UnionStruct<T, Rules>
-                          : never
-                      : UnionOrIntersection extends 'intersection'
-                        ? T extends any[]
-                            ? IntersectionStruct<T, Rules>
-                            : never
-                        : T extends any[]
-                          ? UnionStruct<T, Rules> | IntersectionStruct<T, Rules>
-                          : never)
+        : | Struct<T, Rules>
+          | CustomStruct<T, Rules>
+          | (UnionOrIntersection extends false
+                ? never
+                : UnionOrIntersection extends 'union'
+                  ? T extends any[]
+                      ? UnionStruct<T, Rules>
+                      : never
+                  : UnionOrIntersection extends 'intersection'
+                    ? T extends any[]
+                        ? IntersectionStruct<T, Rules>
+                        : never
+                    : T extends any[]
+                      ? UnionStruct<T, Rules> | IntersectionStruct<T, Rules>
+                      : never)
 
     export type AsPrimitiveStruct<
         T extends Generics.PrimitiveType,
@@ -307,10 +306,9 @@ export namespace V3 {
             ? ArrayStruct<U, Rules>
             : // biome-ignore lint/complexity/noBannedTypes: {} used in conditional type for object detection
               T extends {}
-              ?
-                    | ObjectStruct<T, Rules>
-                    | RecordStruct<keyof T, T[keyof T], Rules>
-                    | ClassInstanceStruct<T, Rules>
+              ? | ObjectStruct<T, Rules>
+                | RecordStruct<keyof T, T[keyof T], Rules>
+                | ClassInstanceStruct<T, Rules>
               : never
 
     export type StructType<

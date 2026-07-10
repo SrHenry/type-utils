@@ -33,9 +33,7 @@ export function ensureInterface<Interface>(
 export function ensureInterface<Interface, Instance = unknown>(
     value: Instance | ((value: unknown) => boolean) | StandardSchemaV1<Interface>,
     validator:
-        | ((value: unknown) => boolean)
-        | StandardSchemaV1<Interface>
-        | symbol = __curry_param__
+        ((value: unknown) => boolean) | StandardSchemaV1<Interface> | symbol = __curry_param__
 ): Interface | ((value: Instance) => Interface) {
     if (validator === __curry_param__) {
         const firstArg = value as ((value: unknown) => boolean) | StandardSchemaV1<Interface>

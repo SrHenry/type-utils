@@ -42,13 +42,7 @@ export namespace Generics {
         [key: string]: T
     }
     export declare type PrimitiveType =
-        | string
-        | number
-        | bigint
-        | boolean
-        | symbol
-        | null
-        | undefined
+        string | number | bigint | boolean | symbol | null | undefined
     export declare type Primitives = (typeof Primitives)[number]
 
     export declare type GetPrimitiveTag<T extends PrimitiveType> = T extends string

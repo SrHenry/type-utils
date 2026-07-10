@@ -33,10 +33,7 @@ export type OmitPattern<T, P> = T extends readonly [infer L, ...infer R]
 export type ExtractSpecificPatterns<T extends readonly (readonly [any, any])[]> =
     T extends readonly [infer L, ...infer R]
         ? L extends readonly [infer _, infer P]
-            ?
-                  | (unknown extends P ? (P extends unknown ? never : P) : P)
-                  | (R extends readonly (readonly [any, any])[]
-                        ? ExtractSpecificPatterns<R>
-                        : never)
+            ? | (unknown extends P ? (P extends unknown ? never : P) : P)
+              | (R extends readonly (readonly [any, any])[] ? ExtractSpecificPatterns<R> : never)
             : never
         : never
