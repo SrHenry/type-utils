@@ -2,6 +2,7 @@ import { object } from '../schema/object.ts'
 import { string } from '../schema/string.ts'
 import { ValidationErrors } from '../ValidationErrors.ts'
 import { getStructMetadata } from '../schema/helpers/getStructMetadata.ts'
+import type { StandardSchemaV1 as SS } from '../standard-schema/types.ts'
 
 describe('object - strict mode', () => {
     describe('boolean guard', () => {
@@ -67,10 +68,32 @@ describe('object - strict mode', () => {
             const standard = schema.toStandardSchema()
             // The StandardSchemaV1 type widens validate()'s return to Result | Promise<Result>
             // (the spec admits async implementations), but our impl is always synchronous.
-            // Cast through any to read `.success` — matches the pattern in array.spec.ts.
-            const result = (standard['~standard'].validate as any)({ id: 'abc', extra: 'x' })
+            // Cast through SS.Result<T> to read `.success` — matches the pattern in
+            // standardSchemaCompleteness.spec.ts and compositionWidening.spec.ts.
+            const result = standard['~standard'].validate({
+                id: 'abc',
+                extra: 'x',
+            }) as SS.Result<{ id: string }>
 
             expect(result.success).toBe(false)
+        })
+
+        it('returns false for null and undefined inputs (strict handler bypasses, shape check rejects)', () => {
+            const schema = object({ id: string() }).strict()
+
+            // Tracing through object.ts for schema(null) / schema(undefined):
+            //  - branchIfOptional returns false (no .optional() chained, so no optional rule).
+            //  - isFollowingRules runs the strict handler, which short-circuits to true for
+            //    `arg === null || typeof arg !== 'object'` (defensive bypass — see strict.ts).
+            //  - BaseValidator.hasValidProperties(arg, config) is then evaluated: it calls
+            //    ensureInstanceOf(arg, Object), which throws for both null and undefined
+            //    (`null instanceof Object` and `undefined instanceof Object` are both false),
+            //    so hasValidProperties catches and returns false.
+            //  - Guard result: `false || (true && false)` === false.
+            // This is a documented quirk: the strict handler intentionally bypasses non-objects
+            // so the shape check (not strict) is what rejects them.
+            expect(schema(null)).toBe(false)
+            expect(schema(undefined)).toBe(false)
         })
     })
 
@@ -160,7 +183,7 @@ describe('object - strict mode', () => {
             const metadata = getStructMetadata(schema) as any
 
             expect(Array.isArray(metadata.rules)).toBe(true)
-            expect(metadata.rules.length).toBeGreaterThan(0)
+            expect(metadata.rules.length).toBe(1)
         })
 
         it('getStructMetadata(schema).rules contains the strict rule struct', () => {
