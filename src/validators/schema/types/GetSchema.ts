@@ -1,6 +1,7 @@
 import type { FluentSchema } from './FluentSchema.ts'
 import type { StringRules } from '../../rules/String/index.ts'
 import type { NumberRules } from '../../rules/Number/index.ts'
+import type { ObjectRules } from '../../rules/Object/index.ts'
 import type { ArrayRules } from '../../rules/Array/index.ts'
 import type { RecordRules } from '../../rules/Record/index.ts'
 import type { Sanitize } from '../../types/index.ts'
@@ -9,6 +10,7 @@ type StringSchemaRules = Omit<typeof StringRules, 'optional'>
 type NumberSchemaRules = Omit<typeof NumberRules, 'optional'>
 type ArraySchemaRules = Omit<typeof ArrayRules, 'optional'>
 type RecordSchemaRules = Omit<typeof RecordRules, 'optional'>
+type ObjectSchemaRules = typeof ObjectRules
 
 /**
  * Maps a TypeScript type T to the FluentSchema result type you'd get from
@@ -100,6 +102,7 @@ export type GetSchema<T> =
                                               ? FluentSchema<T, RecordSchemaRules>
                                               : symbol extends keyof T
                                                 ? FluentSchema<T, RecordSchemaRules>
-                                                : // Specific object: use Sanitize for optional prop normalization
-                                                  FluentSchema<Sanitize<T>>
+                                                : // Specific object: use Sanitize for optional prop normalization;
+                                                  // ObjectSchemaRules exposes .strict() to generic consumers
+                                                  FluentSchema<Sanitize<T>, ObjectSchemaRules>
                                         : never

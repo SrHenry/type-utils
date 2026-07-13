@@ -1,4 +1,5 @@
 import type { TypeGuard } from '../../TypeGuards/types/index.ts'
+import type { ObjectRule } from '../rules/Object/index.ts'
 import type { Custom } from '../rules/types/index.ts'
 import type { Sanitize, NormalizedValidatorMap, ValidatorMap } from '../types/index.ts'
 import type { V3 } from './types/v3/index.ts'
@@ -11,11 +12,13 @@ import { getMessage } from '../../TypeGuards/helpers/getMessage.ts'
 import { BaseValidator } from '../BaseValidator.ts'
 import { normalizeSchema } from '../standard-schema/normalizeSchema.ts'
 import { useCustomRules } from '../rules/helpers/useCustomRules.ts'
+import { ObjectRules } from '../rules/Object/index.ts'
 import { SchemaValidator } from '../SchemaValidator.ts'
 import { branchIfOptional } from './helpers/branchIfOptional.ts'
 import { copyStructMetadata } from './helpers/copyStructMetadata.ts'
 import { getRuleStructMetadata } from './helpers/getRuleStructMetadata.ts'
 import { getStructMetadata } from './helpers/getStructMetadata.ts'
+import { isFollowingRules } from './helpers/isFollowingRules.ts'
 import { optionalizeOverloadFactory } from './helpers/optional/index.ts'
 import { hasOptionalFlag } from './helpers/optionalFlag.ts'
 import { setRuleMessage } from './helpers/setRuleMessage.ts'
@@ -23,24 +26,34 @@ import { setStructMetadata } from './helpers/setStructMetadata.ts'
 import { validateCustomRules } from './helpers/validateCustomRules.ts'
 import { toStandardSchema } from '../standard-schema/toStandardSchema.ts'
 
-function _fn<T extends {}>(tree: ValidatorMap<T>): TypeGuard<Sanitize<T>>
+function _fn<T extends {}>(tree: ValidatorMap<T>, rules: ObjectRule[]): TypeGuard<Sanitize<T>>
 // function _fn<T extends ValidatorMap<any>>(tree: T): TypeGuard<GetTypeFromValidatorMap<T>>
 
-function _fn(): TypeGuard<Record<any, any>>
+function _fn(tree: undefined, rules: ObjectRule[]): TypeGuard<Record<any, any>>
 // biome-ignore lint/complexity/noBannedTypes: {} used as wildcard object type for overload
-function _fn(tree: {}): TypeGuard<{}>
+function _fn(tree: {}, rules: ObjectRule[]): TypeGuard<{}>
 // biome-ignore lint/complexity/noBannedTypes: {} used as generic constraint for any non-nullish value
-function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, any> | {}> {
+function _fn<T extends {}>(
+    tree?: ValidatorMap<T>,
+    rules: ObjectRule[] = []
+): TypeGuard<T | Record<any, any> | {}> {
     const isBlankObject = (arg: unknown) =>
         typeof arg === 'object' && !!arg && Object.keys(arg).length === 0
     if (!tree || isBlankObject(tree)) {
         // biome-ignore lint/complexity/noBannedTypes: {} used as type for empty object guard
         const guard = (arg: unknown): arg is Record<any, any> | {} =>
-            tree !== null && typeof arg === 'object'
+            branchIfOptional(arg, rules) ||
+            (isFollowingRules(arg, rules) && tree !== null && typeof arg === 'object')
 
         return setStructMetadata(
-            { type: 'object', schema: guard, optional: false, tree: {}, rules: [] },
-            setRuleMessage('object', guard)
+            {
+                type: 'object',
+                schema: guard,
+                optional: false,
+                tree: {},
+                rules: rules.map(getRuleStructMetadata<ObjectRule>),
+            },
+            setRuleMessage('object', guard, rules)
         )
     }
 
@@ -56,7 +69,8 @@ function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, an
     const config = { validators: normalizedTree, required, optional }
 
     const guard = (arg: unknown): arg is T =>
-        branchIfOptional(arg, []) || BaseValidator.hasValidProperties(arg, config)
+        branchIfOptional(arg, rules) ||
+        (isFollowingRules(arg, rules) && BaseValidator.hasValidProperties(arg, config))
 
     const message = pipe(Object.entries(normalizedTree))
         .pipe(
@@ -80,10 +94,10 @@ function _fn<T extends {}>(tree?: ValidatorMap<T>): TypeGuard<T | Record<any, an
                 (acc, item) => Object.assign(acc, item),
                 {} as { [K in keyof T]: V3.GenericStruct<T[K]> | V3.StructType }
             ),
-        rules: [],
+        rules: rules.map(getRuleStructMetadata<ObjectRule>),
     }
 
-    return setStructMetadata<T>(metadata, setRuleMessage(message, guard))
+    return setStructMetadata<T>(metadata, setRuleMessage(message, guard, rules))
 }
 
 type OptionalizedObject = {
@@ -98,12 +112,13 @@ export const _object = optionalizeOverloadFactory(_fn).optionalize<OptionalizedO
 
 export const object: ObjectSchema = ((tree?: ValidatorMap<any>) => {
     const customRules: Custom<any[], string, object>[] = []
+    const rules: ObjectRule[] = []
     const callStack: { [key: string]: boolean } = {}
 
     const getGuard = () => {
         const resolver = callStack['optional'] ? _object.optional : _object
 
-        return tree ? resolver(tree) : resolver()
+        return tree ? resolver(tree, rules) : resolver(undefined, rules)
     }
 
     const schema = (arg: unknown): arg is object => {
@@ -141,6 +156,8 @@ export const object: ObjectSchema = ((tree?: ValidatorMap<any>) => {
             customRules.push(...(_rules as Custom<any[], string, object>[]))
         } else {
             callStack[fnName] = true
+
+            if (fnName !== 'optional') rules.push(...(_rules as ObjectRule[]))
         }
 
         return copyStructMetadata(getGuard(), schema, {
@@ -149,6 +166,8 @@ export const object: ObjectSchema = ((tree?: ValidatorMap<any>) => {
     }
 
     schema.optional = () => addCall('optional')
+    schema.strict = () =>
+        addCall('strict', [ObjectRules.strict(Object.keys(tree ?? {}) as string[])])
     schema.validator = (throwOnError = true) => addCall('validator', [], { throwOnError })
     // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
     schema.use = (...customRules: Custom<any[], string, object>) => addCall('use', [...customRules])

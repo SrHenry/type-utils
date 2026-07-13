@@ -24,6 +24,7 @@ import type { RuleStruct } from '../../../rules/types/index.ts' // internal path
 import type { FluentSchema } from '../FluentSchema.ts'
 import type { Sanitize } from '../../../types/index.ts'
 import type { RecordRules } from '../../../rules/Record/index.ts'
+import type { ObjectRules } from '../../../rules/Object/index.ts'
 
 describe('GetSchema', () => {
     it('should be importable', () => {
@@ -126,6 +127,19 @@ type GSOptionalObject = Assert<
     GetSchema<{ foo?: string }>
 >
 
+type ObjectSchemaRules = typeof ObjectRules
+
+// GetSchema<{ foo: string }> → FluentSchema<Sanitize<{ foo: string }>, ObjectSchemaRules>
+// Strict: verify ObjectSchemaRules is present (not {}), ensuring .strict() is available
+type GSObjectWithRules = Assert<
+    FluentSchema<Sanitize<{ foo: string }>, ObjectSchemaRules, []>,
+    GetSchema<{ foo: string }>
+>
+
+// Verify object types have .strict() method available (parallels _recordHasNonEmpty)
+type _objectHasStrict = 'strict' extends keyof GetSchema<{ foo: string }> ? true : false
+type _assertObjectStrict = Assert<true, _objectHasStrict>
+
 // GetSchema<string | number> → FluentSchema<string | number>
 type GSUnion = Assert<FluentSchema<string | number>, GetSchema<string | number>>
 
@@ -167,6 +181,9 @@ const _type_checks: [
     GSDate,
     _recordHasNonEmpty,
     _assertNonEmpty,
+    GSObjectWithRules,
+    _objectHasStrict,
+    _assertObjectStrict,
 ] = null as any
 void _type_checks
 

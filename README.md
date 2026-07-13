@@ -99,7 +99,21 @@ const isMyObject = object({
 })
 ```
 
-Supports the fluent `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
+Use `.strict()` to reject objects containing keys not declared in the tree:
+
+```typescript
+import { object, string, number } from '@srhenry/type-utils'
+
+const isUser = object({
+    id: number(),
+    name: string(),
+}).strict()
+
+isUser({ id: 1, name: 'Alice' }) // true
+isUser({ id: 1, name: 'Alice', age: 30 }) // false — 'age' is not declared
+```
+
+Supports the fluent `.strict()`, `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
 
 #### [`Schema.array`](https://srhenry.github.io/type-utils/variables/array.html)
 
