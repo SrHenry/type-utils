@@ -1,7 +1,7 @@
 import type { TypeGuard } from '../../../TypeGuards/index.ts'
 import type { Fn, ThrowFn } from '../../../types/Func.ts'
+import type { Result } from '../../../types/Result.ts'
 import type { Custom } from '../../rules/types/index.ts'
-import type { ValidateReturn } from '../../types/ValidateReturn.ts'
 import type { ValidationErrors } from '../../ValidationErrors.ts'
 import type { StandardSchemaV1 } from '../../standard-schema/types.ts'
 
@@ -26,11 +26,14 @@ export type FluentOptionalSchema<
     validator(throwOnError?: true): ThrowFn<ValidationErrors, [arg: unknown], undefined | T> & {
         validate: ThrowFn<ValidationErrors, [arg: unknown], undefined | T>
     }
-    validator(throwOnError: false): Fn<[arg: unknown], ValidateReturn<undefined | T>> & {
-        validate: ThrowFn<ValidationErrors, [arg: unknown], undefined | T>
+    validator(throwOnError: false): Fn<[arg: unknown], Result<undefined | T, ValidationErrors>> & {
+        validate: Fn<[arg: unknown], Result<undefined | T, ValidationErrors>>
     }
-    validator(throwOnError: boolean): Fn<[arg: unknown], ValidateReturn<undefined | T>> & {
-        validate: Fn<[arg: unknown], ValidateReturn<undefined | T>>
+    validator(throwOnError: boolean): Fn<
+        [arg: unknown],
+        (undefined | T) | Result<undefined | T, ValidationErrors>
+    > & {
+        validate: Fn<[arg: unknown], (undefined | T) | Result<undefined | T, ValidationErrors>>
     }
 } & {
     toStandardSchema(): StandardSchemaV1<undefined | T, undefined | T>
