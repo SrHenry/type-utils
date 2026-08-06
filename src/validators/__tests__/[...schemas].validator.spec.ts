@@ -79,7 +79,10 @@ describe('[...schemas].validator', () => {
             baz: boolean().optional(),
         })
 
-        expect(schema.validator(false).validate(void 0)).toBeInstanceOf(ValidationErrors)
+        {
+            const [err] = schema.validator(false).validate(void 0)
+            expect(err).toBeInstanceOf(ValidationErrors)
+        }
         expect(() => schema.validator().validate({ foo: '' })).toThrow(ValidationErrors)
         expect(() => schema.validator(true).validate({ foo: '', bar: 0 })).not.toThrow(
             ValidationErrors
@@ -100,7 +103,10 @@ describe('[...schemas].validator', () => {
             string().nonEmpty().min(2)
         )
 
-        expect(schema2.validator(false).validate(void 0)).toBeInstanceOf(ValidationErrors)
+        {
+            const [err] = schema2.validator(false).validate(void 0)
+            expect(err).toBeInstanceOf(ValidationErrors)
+        }
         expect(() => schema2.validator().validate({ foo: '' })).toThrow(ValidationErrors)
         expect(() => schema2.validator(true).validate({ foo: '', bar: 0 })).not.toThrow(
             ValidationErrors
