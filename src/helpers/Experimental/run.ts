@@ -1,8 +1,9 @@
 import { isPromise } from '../../helpers/isPromise.ts'
 import type { AsyncFunc, Func } from '../../types/Func.ts'
 import type { AsyncLambda, Lambda } from '../../types/Lambda.ts'
-import type { AsyncResult, ErrorResult, Result, SucessfulResult } from '../../types/Result.ts'
+import type { AsyncResult, Result } from '../../types/Result.ts'
 import { lambda } from './lambda/index.ts'
+import { err, ok } from '../../validators/helpers/result.ts'
 
 export function run<TParams extends any[], ReturnType>(
     callback: AsyncFunc<TParams, ReturnType>
@@ -31,12 +32,10 @@ export function run(
         try {
             const result = callback(...params)
             if (isPromise(result))
-                return result
-                    .then(value => [null, value] as SucessfulResult)
-                    .catch(error => [error, null] as ErrorResult)
-            return [null, result]
+                return result.then(value => ok(value)).catch(error => err(error as Error))
+            return ok(result)
         } catch (error) {
-            return [error as Error, null]
+            return err(error as Error)
         }
     }
 
