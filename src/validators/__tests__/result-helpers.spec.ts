@@ -3,8 +3,7 @@ import { ValidationError } from '../ValidationError.ts'
 import { ValidationErrors } from '../ValidationErrors.ts'
 import { err, isErr, isOk, ok } from '../helpers/result.ts'
 
-// TODO(Task 11): re-enable for composition-with-validators tests.
-// import { string } from '../schema/string.ts'
+import { string } from '../schema/string.ts'
 
 describe('Result helpers', () => {
     describe('constructors', () => {
@@ -134,5 +133,20 @@ describe('Result helpers', () => {
     })
 })
 
-// TODO(Task 11): composition-with-validators tests will land after Task 6
-// (validator refactor) produces Result-returning no-throw branches.
+describe('composition with validators', () => {
+    it('isOk narrows successful no-throw validator result', () => {
+        const validate = string().min(3).validator(false)
+        const pass = validate('foo')
+        if (isOk(pass)) expect(pass[1]).toBe('foo')
+        else throw new Error('expected success')
+    })
+    it('isErr narrows failed no-throw validator result', () => {
+        const validate = string().min(3).validator(false)
+        const fail = validate('ab')
+        if (isErr(fail)) {
+            expect(fail[0]).toBeInstanceOf(ValidationErrors)
+        } else {
+            throw new Error('expected failure')
+        }
+    })
+})
