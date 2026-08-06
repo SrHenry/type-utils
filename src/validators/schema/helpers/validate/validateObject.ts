@@ -1,9 +1,9 @@
 import type { TypeGuard } from '../../../../TypeGuards/types/index.ts'
+import type { Result } from '../../../../types/Result.ts'
 import type { V3 } from '../../types/index.ts'
 import type { ValidationContext } from './ValidationContext.ts'
 
 import { getMessage } from '../../../../TypeGuards/helpers/getMessage.ts'
-import { isInstanceOf } from '../../../../TypeGuards/helpers/isInstanceOf.ts'
 import { validateRules } from '../../../RuleValidator.ts'
 import { updateStructMetadata } from '../updateStructMetadata.ts'
 import { ValidationError } from '../../../ValidationError.ts'
@@ -11,13 +11,13 @@ import { ValidationErrors } from '../../../ValidationErrors.ts'
 import { isOptionalCheck } from './helpers/isOptionalCheck.ts'
 import { buildPath } from './helpers/buildPath.ts'
 
-type ValidateFn = (this: unknown, arg: unknown, schema: TypeGuard<any>, ...args: any[]) => unknown
+type ValidateFn = (
+    arg: unknown,
+    schema: TypeGuard<any>,
+    ...args: any[]
+) => Result<unknown, ValidationErrors>
 
-export function validateObject(
-    ctx: ValidationContext,
-    validate: ValidateFn,
-    mustNotThrowCtx: unknown
-): void {
+export function validateObject(ctx: ValidationContext, validate: ValidateFn): void {
     const metadata = ctx.metadata as V3.ObjectStruct<any> | V3.ArrayStruct<any>
 
     if (isOptionalCheck(metadata, ctx.arg)) return
@@ -39,9 +39,9 @@ export function validateObject(
     }
 
     if ('tree' in metadata) {
-        validateObjectTree(ctx, metadata as V3.ObjectStruct<any>, validate, mustNotThrowCtx)
+        validateObjectTree(ctx, metadata as V3.ObjectStruct<any>, validate)
     } else if ('entries' in metadata) {
-        validateObjectEntries(ctx, metadata as V3.ArrayStruct<any>, validate, mustNotThrowCtx)
+        validateObjectEntries(ctx, metadata as V3.ArrayStruct<any>, validate)
     } else {
         ctx.pushNewError({
             message: 'Invalid metadata for object',
@@ -65,8 +65,7 @@ function isValidObject(arg: unknown): boolean {
 function validateObjectTree(
     ctx: ValidationContext,
     metadata: V3.ObjectStruct<any>,
-    validate: ValidateFn,
-    mustNotThrowCtx: unknown
+    validate: ValidateFn
 ): void {
     if (isOptionalCheck(metadata, ctx.arg)) return
 
@@ -102,7 +101,7 @@ function validateObjectTree(
             if (entries.some(([key]) => key === k))
                 return [
                     schema,
-                    validate.bind(mustNotThrowCtx)(
+                    validate(
                         (ctx.arg as Record<string, unknown>)[k],
                         schema,
                         [ctx.name, k].filter(Boolean).join('.'),
@@ -110,46 +109,39 @@ function validateObjectTree(
                     ),
                 ]
 
-            if (optional) return [schema, void 0]
+            if (optional) return [schema, [null, void 0] as Result<unknown, ValidationErrors>]
 
             return [
                 schema,
-                new ValidationErrors([
-                    new ValidationError({
-                        schema,
-                        value: (ctx.arg as Record<string, unknown>)[k],
-                        message: `Missing key '${k}'`,
-                        name: ctx.name,
-                        parent: ctx.parent,
-                        context: {
-                            structMetadata: metadata,
-                            missingKey: k,
-                        },
-                    }),
-                ]),
+                [
+                    new ValidationErrors([
+                        new ValidationError({
+                            schema,
+                            value: (ctx.arg as Record<string, unknown>)[k],
+                            message: `Missing key '${k}'`,
+                            name: ctx.name,
+                            parent: ctx.parent,
+                            context: {
+                                structMetadata: metadata,
+                                missingKey: k,
+                            },
+                        }),
+                    ]),
+                    null,
+                ] as Result<unknown, ValidationErrors>,
             ]
         })
 
-    results
-        .filter((result): result is [any, ValidationErrors] => {
-            const [, item] = result
-            return (
-                item instanceof ValidationErrors ||
-                (Array.isArray(item) &&
-                    item.every(predicate => predicate instanceof ValidationError))
-            )
-        })
-        .forEach(result => {
-            const e = result[1]
-            ctx.errors.push(...e.errors)
-        })
+    for (const [, r] of results) {
+        const [err] = r as Result<unknown, ValidationErrors>
+        if (err) ctx.errors.push(...Array.from(err.errors))
+    }
 }
 
 function validateObjectEntries(
     ctx: ValidationContext,
     metadata: V3.ArrayStruct<any>,
-    validate: ValidateFn,
-    mustNotThrowCtx: unknown
+    validate: ValidateFn
 ): void {
     const { entries, optional } = metadata
 
@@ -165,13 +157,14 @@ function validateObjectEntries(
     }
 
     const results = ctx.arg.map((item, i) =>
-        validate.bind(mustNotThrowCtx)(item, entries.schema, {
+        validate(item, entries.schema, {
             name: buildPath(ctx.name, `[${i}]`),
             parent: ctx.arg,
         })
     )
 
-    results.filter(isInstanceOf(ValidationErrors)).forEach(item => {
-        ctx.errors.push(...item)
-    })
+    for (const r of results) {
+        const [err] = r as Result<unknown, ValidationErrors>
+        if (err) ctx.errors.push(...Array.from(err.errors))
+    }
 }

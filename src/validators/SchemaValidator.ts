@@ -1,16 +1,12 @@
 import type { MessageFormator, TypeGuard } from '../TypeGuards/types/index.ts'
-import type { Merge } from '../types/index.ts'
+import type { Merge, Result } from '../types/index.ts'
 import type { GenericStruct, V3 } from './schema/types/index.ts'
-import type { ValidateReturn } from './types/ValidateReturn.ts'
 import type { ValidatorMessageMap } from './types/index.ts'
 
 export type { ValidateReturn } from './types/ValidateReturn.ts'
 
-import { asTypeGuard } from '../TypeGuards/helpers/asTypeGuard.ts'
-import { getMetadata } from '../TypeGuards/helpers/getMetadata.ts'
 import { getStructMetadata } from './schema/helpers/getStructMetadata.ts'
 import { hasStructMetadata } from './schema/helpers/hasStructMetadata.ts'
-import { setMetadata } from '../TypeGuards/helpers/setMetadata.ts'
 import { setValidatorMessage } from '../TypeGuards/helpers/setValidatorMessage.ts'
 import { setValidatorMessageFormator } from '../TypeGuards/helpers/setValidatorMessageFormator.ts'
 import { AutoBind } from '../helpers/decorators/stage-2/AutoBind.ts'
@@ -29,26 +25,6 @@ type ValidateOptionalArgs<Name extends string = string, Parent = any> = {
     name?: Name
     parent?: Parent
 }
-
-const defaults = {
-    get throws() {
-        return true
-    },
-} as const
-type DefaultThrowsParam = (typeof defaults)['throws']
-
-const throws = Symbol.for('[@srhenry/type-utils]:/validators/SchemaValidator/__throws__')
-
-const shouldThrow = (subject: unknown): boolean =>
-    getMetadata(
-        throws,
-        subject,
-        asTypeGuard<boolean>(e => typeof e === 'boolean')
-    ) ?? defaults.throws
-
-const mustNotThrow = <T>(subject: T = {} as T) => setThrows(false, subject)
-
-const setThrows = <T>(value: boolean, subject: T = {} as T) => setMetadata(throws, value, subject)
 
 type ValidationArgsStaticValues = 'name' | 'parent' | 'schema' | 'value'
 function pushNewErrorFactory<
@@ -91,28 +67,25 @@ function pushNewErrorFactory<
 const NO_PARENT = Symbol('SchemaValidator::validate::NO_PARENT')
 declare type NO_PARENT = typeof NO_PARENT
 
-function validate<T>(arg: unknown, schema: TypeGuard<T>): ValidateReturn<T>
+function validate<T>(arg: unknown, schema: TypeGuard<T>): Result<T, ValidationErrors>
 function validate<T, Name extends string = string, Parent = any>(
     arg: unknown,
     schema: TypeGuard<T>,
     options: ValidateOptionalArgs<Name, Parent>
-): ValidateReturn<T>
+): Result<T, ValidationErrors>
 function validate<T, Name extends string, Parent>(
     arg: unknown,
     schema: TypeGuard<T>,
     name: Name,
     parent: Parent
-): ValidateReturn<T>
+): Result<T, ValidationErrors>
 
 function validate<T, Name extends string, Parent>(
-    this: unknown,
     arg: unknown,
     schema: TypeGuard<T>,
     name_or_options?: Name | ValidateOptionalArgs<Name, Parent>,
     parent: Parent | NO_PARENT = NO_PARENT
-): ValidateReturn<T> {
-    // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
-    const throws = shouldThrow(this)
+): Result<T, ValidationErrors> {
     const metadata = getStructMetadata(schema) as V3.StructType
     const errors: ValidationError[] = []
     let name: Name | undefined
@@ -137,48 +110,34 @@ function validate<T, Name extends string, Parent>(
     } else {
         switch (metadata.type) {
             case 'object':
-                validateObject(
-                    { ...baseCtx, metadata: metadata as V3.ObjectStruct<any> },
-                    validate,
-                    mustNotThrow()
-                )
+                validateObject({ ...baseCtx, metadata: metadata as V3.ObjectStruct<any> }, validate)
                 break
             case 'record':
                 validateRecord(
                     { ...baseCtx, metadata: metadata as V3.RecordStruct<string, any> },
-                    validate,
-                    mustNotThrow()
+                    validate
                 )
                 break
             case 'intersection':
                 validateIntersection(
                     { ...baseCtx, metadata: metadata as V3.IntersectionStruct<any[]> },
-                    validate,
-                    mustNotThrow()
+                    validate
                 )
                 break
             case 'union':
-                validateUnion(
-                    { ...baseCtx, metadata: metadata as V3.UnionStruct<any[]> },
-                    validate,
-                    mustNotThrow()
-                )
+                validateUnion({ ...baseCtx, metadata: metadata as V3.UnionStruct<any[]> }, validate)
                 break
             default:
-                validateDefault({ ...baseCtx, metadata }, validate, mustNotThrow())
+                validateDefault({ ...baseCtx, metadata }, validate)
         }
     }
 
-    if (errors.length > 0) {
-        if (throws) throw new ValidationErrors(errors)
+    if (errors.length > 0) return [new ValidationErrors(errors), null]
 
-        return new ValidationErrors(errors)
-    }
-
-    return arg as T
+    return [null, arg as T]
 }
 
-type ISchemaValidator<T, Throws extends boolean = DefaultThrowsParam> = Merge<
+type ISchemaValidator<T, Throws extends boolean = true> = Merge<
     // biome-ignore lint/complexity/noBannedTypes: {} used as base type for Merge utility
     {},
     Throws extends true
@@ -186,42 +145,44 @@ type ISchemaValidator<T, Throws extends boolean = DefaultThrowsParam> = Merge<
               validate<V>(value: V): T
           }
         : {
-              validate<V>(value: V): T | ValidationErrors
+              validate<V>(value: V): Result<T, ValidationErrors>
           }
 >
 
 type ISchemaValidatorConstructor = {
-    new <T>(schema: TypeGuard<T>): SchemaValidator<T, DefaultThrowsParam>
-    new <T, Throws extends true>(schema: TypeGuard<T>, throws: Throws): SchemaValidator<T, true>
-    new <T, Throws extends false>(schema: TypeGuard<T>, throws: Throws): SchemaValidator<T, false>
+    new <T>(schema: TypeGuard<T>): SchemaValidator<T, true>
     new <T, Throws extends boolean>(
         schema: TypeGuard<T>,
         throws: Throws
-    ): SchemaValidator<T, typeof throws>
+    ): SchemaValidator<T, Throws>
 }
 
-type SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> = ISchemaValidatorConstructor &
+type SchemaValidator<T, Throws extends boolean = true> = ISchemaValidatorConstructor &
     ISchemaValidator<T, Throws>
 
 const NO_ARG = Symbol('SchemaValidator::NO_ARG')
 
-class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
+class __SchemaValidator<T, Throws extends boolean = true> {
     public constructor(schema: TypeGuard<T>)
     public constructor(schema: TypeGuard<T>, throws: Throws)
     public constructor(
         protected schema: TypeGuard<T>,
         // biome-ignore lint/suspicious/noShadow: constructor param shadows module-level symbol
-        protected throws = defaults['throws']
+        protected throws = true
     ) {}
 
-    // biome-ignore lint/suspicious/noShadow: static method T intentionally shadows class T
     public static validate<T>(
         arg: unknown,
         schema: TypeGuard<T>,
-        // biome-ignore lint/suspicious/noShadow: param shadows module-level function
-        shouldThrow: boolean = defaults['throws']
-    ): ValidateReturn<T> {
-        return validate.bind(setThrows(shouldThrow))(arg, schema)
+        shouldThrow = true
+    ): T | Result<T, ValidationErrors> {
+        const result = validate(arg, schema)
+        if (shouldThrow) {
+            const [err, val] = result
+            if (err) throw err
+            return val as T
+        }
+        return result
     }
 
     // biome-ignore lint/suspicious/noShadow: static method T intentionally shadows class T
@@ -284,23 +245,36 @@ class __SchemaValidator<T, Throws extends boolean = DefaultThrowsParam> {
         return schema
     }
 
-    public validate<V>(value: V): T | Throws extends true ? never : ValidationErrors
+    public validate<V>(value: V): T | Result<T, ValidationErrors>
     public validate<V>(value: V, shouldThrow: true): T
-    public validate<V>(value: V, shouldThrow: false): T | ValidationErrors
-    public validate<V>(value: V, shouldThrow: boolean): T | ValidationErrors
+    public validate<V>(value: V, shouldThrow: false): Result<T, ValidationErrors>
+    public validate<V>(value: V, shouldThrow: boolean): T | Result<T, ValidationErrors>
 
     @AutoBind()
     // biome-ignore lint/suspicious/noShadow: callback destructuring — name matches outer scope intentionally
-    public validate<V>(value: V, shouldThrow: boolean = this.throws): T | ValidationErrors {
-        return validate.bind(setThrows(shouldThrow))(value, this.schema)
+    public validate<V>(
+        value: V,
+        shouldThrow: boolean = this.throws
+    ): T | Result<T, ValidationErrors> {
+        const result = validate(value, this.schema)
+        if (shouldThrow) {
+            const [err, val] = result
+            if (err) throw err
+            return val as T
+        }
+        return result
     }
 }
 
 export const SchemaValidator = __SchemaValidator as unknown as ISchemaValidatorConstructor & {
     validate<T>(arg: unknown, schema: TypeGuard<T>): T
     validate<T>(arg: unknown, schema: TypeGuard<T>, shouldThrow: true): T
-    validate<T>(arg: unknown, schema: TypeGuard<T>, shouldThrow: false): ValidateReturn<T>
-    validate<T>(arg: unknown, schema: TypeGuard<T>, shouldThrow: boolean): ValidateReturn<T>
+    validate<T>(arg: unknown, schema: TypeGuard<T>, shouldThrow: false): Result<T, ValidationErrors>
+    validate<T>(
+        arg: unknown,
+        schema: TypeGuard<T>,
+        shouldThrow: boolean
+    ): T | Result<T, ValidationErrors>
 
     setValidatorMessage<T>(message: ValidatorMessageMap<T>, schema: TypeGuard<T>): TypeGuard<T>
     setValidatorMessage<T>(message: ValidatorMessageMap<T>): (schema: TypeGuard<T>) => TypeGuard<T>

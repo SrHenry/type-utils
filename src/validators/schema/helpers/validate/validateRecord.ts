@@ -1,25 +1,25 @@
 import type { TypeGuard } from '../../../../TypeGuards/types/index.ts'
+import type { Result } from '../../../../types/Result.ts'
 import type { V3 } from '../../types/index.ts'
 import type { ValidationContext } from './ValidationContext.ts'
 
 import Generics from '../../../../Generics/index.ts'
 import { asTypeGuard } from '../../../../TypeGuards/helpers/asTypeGuard.ts'
-import { isInstanceOf } from '../../../../TypeGuards/helpers/isInstanceOf.ts'
 import { nonEmpty as nonEmptyRecordRuleFactory } from '../../../rules/Record/factories/nonEmpty.ts'
 import { getRuleStructMetadata } from '../getRuleStructMetadata.ts'
 import { updateStructMetadata } from '../updateStructMetadata.ts'
 import type { ValidationError } from '../../../ValidationError.ts'
-import { ValidationErrors } from '../../../ValidationErrors.ts'
+import type { ValidationErrors } from '../../../ValidationErrors.ts'
 import { isOptionalCheck } from './helpers/isOptionalCheck.ts'
 import { buildPath } from './helpers/buildPath.ts'
 
-type ValidateFn = (this: unknown, arg: unknown, schema: TypeGuard<any>, ...args: any[]) => unknown
+type ValidateFn = (
+    arg: unknown,
+    schema: TypeGuard<any>,
+    ...args: any[]
+) => Result<unknown, ValidationErrors>
 
-export function validateRecord(
-    ctx: ValidationContext,
-    validate: ValidateFn,
-    mustNotThrowCtx: unknown
-): void {
+export function validateRecord(ctx: ValidationContext, validate: ValidateFn): void {
     const metadata = ctx.metadata as V3.RecordStruct<string, any>
 
     if (isOptionalCheck(metadata, ctx.arg)) return
@@ -45,8 +45,7 @@ export function validateRecord(
                 ctx,
                 keyMetadata as V3.EnumStruct<PropertyKey>,
                 valueMetadata,
-                validate,
-                mustNotThrowCtx
+                validate
             )
             break
         }
@@ -54,7 +53,7 @@ export function validateRecord(
         case 'number':
         case 'symbol':
         case 'custom': {
-            validateRecordPropertyKeys(ctx, keyMetadata, valueMetadata, validate, mustNotThrowCtx)
+            validateRecordPropertyKeys(ctx, keyMetadata, valueMetadata, validate)
             break
         }
         default:
@@ -68,8 +67,7 @@ function validateRecordEnumKeys(
     ctx: ValidationContext,
     keyMetadata: V3.EnumStruct<PropertyKey>,
     valueMetadata: V3.RecordMetadata<Record<PropertyKey, unknown>>['valueMetadata'],
-    validate: ValidateFn,
-    mustNotThrowCtx: unknown
+    validate: ValidateFn
 ): void {
     if (
         !keyMetadata.types.every(({ type: enumInnerType }) =>
@@ -87,7 +85,7 @@ function validateRecordEnumKeys(
 
     const recordValidationResult = ownKeys
         .flatMap(k => [
-            validate.bind(mustNotThrowCtx)(
+            validate(
                 k,
                 (_i: unknown): _i is string | symbol =>
                     keyMetadata.types
@@ -113,7 +111,7 @@ function validateRecordEnumKeys(
                     parent: ctx.arg,
                 }
             ),
-            validate.bind(mustNotThrowCtx)(
+            validate(
                 (ctx.arg as Record<PropertyKey, unknown>)[k as keyof typeof ctx.arg],
                 valueMetadata.schema,
                 {
@@ -125,8 +123,10 @@ function validateRecordEnumKeys(
                 }
             ),
         ])
-        .filter(isInstanceOf(ValidationErrors))
-        .flatMap(validationErrors => validationErrors.errors)
+        .flatMap((r): ValidationError[] => {
+            const [err] = r as Result<unknown, ValidationErrors>
+            return err ? Array.from(err.errors) : []
+        })
 
     ctx.errors.push(...recordValidationResult)
 }
@@ -146,8 +146,7 @@ function validateRecordPropertyKeys(
     ctx: ValidationContext,
     keyMetadata: V3.RecordMetadata<Record<PropertyKey, unknown>>['keyMetadata'],
     valueMetadata: V3.RecordMetadata<Record<PropertyKey, unknown>>['valueMetadata'],
-    validate: ValidateFn,
-    mustNotThrowCtx: unknown
+    validate: ValidateFn
 ): void {
     updateStructMetadata<string | number | symbol>(keyMetadata.schema, {
         rules: keyMetadata.rules as any,
@@ -203,15 +202,7 @@ function validateRecordPropertyKeys(
         const keys = config.getKeys(ctx.arg as object)
 
         for (const k of keys) {
-            validateRecordKeyEntry(
-                ctx,
-                keyMetadata,
-                valueMetadata,
-                k,
-                config,
-                validate,
-                mustNotThrowCtx
-            )
+            validateRecordKeyEntry(ctx, keyMetadata, valueMetadata, k, config, validate)
         }
     }
 }
@@ -222,8 +213,7 @@ function validateRecordKeyEntry(
     valueMetadata: V3.RecordMetadata<Record<PropertyKey, unknown>>['valueMetadata'],
     k: string | number | symbol,
     config: KeyAccessorConfig,
-    validate: ValidateFn,
-    mustNotThrowCtx: unknown
+    validate: ValidateFn
 ): void {
     if (config.keyType === 'number' && typeof k === 'string') {
         if (!Number.isNaN(Number(k)))
@@ -241,22 +231,14 @@ function validateRecordKeyEntry(
 
     const keyForValidation = config.coerceKey ? config.coerceKey(k) : k
 
-    const recordKeyValidationResult = validate.bind(mustNotThrowCtx)(
-        keyForValidation,
-        keyMetadata.schema,
-        {
-            name: buildPath(ctx.name, config.formatKeyName(k)),
-            parent: ctx.arg,
-        }
-    )
+    const keyResult = validate(keyForValidation, keyMetadata.schema, {
+        name: buildPath(ctx.name, config.formatKeyName(k)),
+        parent: ctx.arg,
+    })
+    const [keyErr] = keyResult as Result<unknown, ValidationErrors>
+    if (keyErr) ctx.errors.push(...(Array.from(keyErr.errors) as ValidationError<any, any>[]))
 
-    if (
-        recordKeyValidationResult !== keyForValidation &&
-        recordKeyValidationResult instanceof ValidationErrors
-    )
-        ctx.errors.push(...(recordKeyValidationResult.errors as ValidationError<any, any>[]))
-
-    const recordValueValidationResult = validate.bind(mustNotThrowCtx)(
+    const valueResult = validate(
         (ctx.arg as Record<PropertyKey, unknown>)[k],
         valueMetadata.schema,
         {
@@ -264,9 +246,6 @@ function validateRecordKeyEntry(
             parent: ctx.arg,
         }
     )
-    if (
-        recordValueValidationResult !== (ctx.arg as Record<PropertyKey, unknown>)[k] &&
-        recordValueValidationResult instanceof ValidationErrors
-    )
-        ctx.errors.push(...(recordValueValidationResult.errors as ValidationError<any, any>[]))
+    const [valueErr] = valueResult as Result<unknown, ValidationErrors>
+    if (valueErr) ctx.errors.push(...(Array.from(valueErr.errors) as ValidationError<any, any>[]))
 }
