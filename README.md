@@ -509,21 +509,36 @@ const isStringNumber = string().use(StringNumber())
 
 > Since [`v0.6.1`](https://github.com/SrHenry/type-utils/releases/tag/v0.6.1)
 
-It allows you to get a validator instance to validate a value against the schema. By default, the validator throws on failure. Pass `false` to get a `ValidateReturn<T>` instead.
+It allows you to get a validator instance to validate a value against the schema. By default, the validator throws on failure. Pass `false` to get a `Result<T, ValidationErrors>` tuple instead.
 
 ```typescript
 import { string, object } from '@srhenry/type-utils'
+import type { Result } from '@srhenry/type-utils'
 
 const validator = object({ name: string().min(1) }).validator()
 validator({ name: 'Alice' }) // { name: 'Alice' } — passes, returns the value
 validator({ name: '' }) // throws ValidationErrors
 
 const softValidator = object({ name: string().min(1) }).validator(false)
-softValidator({ name: 'Alice' }) // { name: 'Alice' }
-softValidator({ name: '' }) // ValidationErrors (no throw)
+const [err, value] = softValidator({ name: 'Alice' }) // [null, { name: 'Alice' }]
+const [err2, value2] = softValidator({ name: '' }) // [ValidationErrors(...), null]
 
 // Also available as .validate on the validator:
-validator.validate({ name: 'Bob' }) // { name: 'Bob' }
+const [err3, value3] = validator.validate({ name: 'Bob' }, false)
+```
+
+> Since [`v0.9.0`](https://github.com/SrHenry/type-utils/releases/tag/v0.9.0), the no-throw branch returns a tuple `Result<T, ValidationErrors>` instead of `T | ValidationErrors`. Use the `isOk`/`isErr` helpers from `@srhenry/type-utils` to narrow the result ergonomically:
+
+```typescript
+import { string, isOk, isErr } from '@srhenry/type-utils'
+
+const validate = string().min(3).validator(false)
+const result = validate('ab')
+if (isErr(result)) {
+    console.error(result[0]) // ValidationErrors
+} else {
+    console.log(result[1]) // string
+}
 ```
 
 ### Standard Schema Interop
@@ -795,6 +810,26 @@ import type { Result } from '@srhenry/type-utils'
 
 declare const res1: Result<number> // res1: [null, number] | [Error, null]
 declare const res2: Result<string, TypeError> // res2: [null, string] | [TypeError, null]
+```
+
+##### `ok(value)` / `err(error)` / `isOk(result)` / `isErr(result)`
+
+> Since [`v0.9.0`](https://github.com/SrHenry/type-utils/releases/tag/v0.9.0)
+
+Result helpers shipped alongside the tuple type. `ok`/`err` construct results; `isOk`/`isErr` narrow them at runtime (with strict shape validation — `isOk`/`isErr` throw `TypeError` for malformed tuples, non-Error error slots, or violation of mutual exclusivity).
+
+```typescript
+import { ok, err, isOk, isErr, string } from '@srhenry/type-utils'
+
+const r = ok(42) // [null, 42]
+const e = err(new Error('boom')) // [Error('boom'), null]
+
+const validate = string().min(3).validator(false)
+const result = validate('ab')
+if (isErr(result)) {
+    // result[0] is ValidationErrors
+    console.error(result[0].message)
+}
 ```
 
 #### [`AsyncResult`](https://srhenry.github.io/type-utils/types/AsyncResult.html)
