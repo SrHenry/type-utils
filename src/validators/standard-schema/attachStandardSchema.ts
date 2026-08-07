@@ -3,8 +3,7 @@ import type { StandardSchemaV1 } from './types.ts'
 
 type SchemaValidateCallback = (
     value: unknown,
-    guard: TypeGuard<any>,
-    shouldThrow: boolean
+    guard: TypeGuard<any>
 ) => StandardSchemaV1.Result<any>
 
 let _schemaValidateCallback: SchemaValidateCallback | null = null
@@ -22,7 +21,7 @@ export function attachStandardSchema<T>(guard: TypeGuard<T>): void {
         validate: (value: unknown): StandardSchemaV1.Result<T> => {
             if (!_schemaValidateCallback)
                 throw new Error('Standard Schema validate callback not registered')
-            return _schemaValidateCallback(value, guard, false) as StandardSchemaV1.Result<T>
+            return _schemaValidateCallback(value, guard) as StandardSchemaV1.Result<T>
         },
         types: {
             input: undefined as unknown as T,

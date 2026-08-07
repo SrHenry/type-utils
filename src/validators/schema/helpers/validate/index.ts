@@ -4,4 +4,10 @@ export { validateRecord } from './validateRecord.ts'
 export { validateIntersection } from './validateIntersection.ts'
 export { validateUnion } from './validateUnion.ts'
 export { validateDefault } from './validateDefault.ts'
-export type { ValidationContext, PushNewError } from './ValidationContext.ts'
+export type {
+    ValidationContext,
+    PushNewError,
+    ValidateFn,
+    ValidateOptionalArgs,
+} from './ValidationContext.ts'
+export { NO_PARENT } from './ValidationContext.ts'

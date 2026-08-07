@@ -1,10 +1,11 @@
-import type ValidationError from '../ValidationError.ts'
+import type { Result } from '../../types/Result.ts'
 import type { ValidationErrors } from '../ValidationErrors.ts'
 
-export type ValidateReturn<T> =
-    | T
-    | ValidationErrors<
-          | ValidationError<unknown, T>
-          | ValidationError<unknown, T[Extract<keyof T, string>], Extract<keyof T, string>, T>
-          | ValidationError
-      >
+/**
+ * @deprecated since 0.9.0 — use `Result<T, ValidationErrors>` instead.
+ * `ValidateReturn<T>` is aliased to `Result<T, ValidationErrors>` and will be
+ * removed in 0.10.0. The no-throw branches of `schema.validator(false)` and
+ * `SchemaValidator.validate(arg, schema, false)` now return `Result`, not the
+ * bare `T | ValidationErrors` union this type previously modeled.
+ */
+export type ValidateReturn<T> = Result<T, ValidationErrors>

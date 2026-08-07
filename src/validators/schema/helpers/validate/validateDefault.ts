@@ -1,26 +1,18 @@
-import type { TypeGuard } from '../../../../TypeGuards/types/index.ts'
+import type { Result } from '../../../../types/Result.ts'
 import type { V3 } from '../../types/index.ts'
-import type { ValidationContext } from './ValidationContext.ts'
+import type { ValidationContext, ValidateFn } from './ValidationContext.ts'
 
 import Generics from '../../../../Generics/index.ts'
 import { ensureInterface } from '../../../../TypeGuards/helpers/ensureInterface.ts'
 import { getValidatorMessage } from '../../../../TypeGuards/helpers/getValidatorMessage.ts'
-import { isInstanceOf } from '../../../../TypeGuards/helpers/isInstanceOf.ts'
 import { TypeGuardError } from '../../../../TypeGuards/TypeErrors.ts'
 import { doesNotMatchRules, validateRules } from '../../../RuleValidator.ts'
 import { isStruct } from '../isStruct.ts'
-import { ValidationErrors } from '../../../ValidationErrors.ts'
+import type { ValidationErrors } from '../../../ValidationErrors.ts'
 import { isOptionalCheck } from './helpers/isOptionalCheck.ts'
+import { NO_PARENT } from './ValidationContext.ts'
 
-const NO_PARENT = Symbol('SchemaValidator::validate::NO_PARENT')
-
-type ValidateFn = (this: unknown, arg: unknown, schema: TypeGuard<any>, ...args: any[]) => unknown
-
-export function validateDefault(
-    ctx: ValidationContext,
-    validate: ValidateFn,
-    mustNotThrowCtx: unknown
-): void {
+export function validateDefault(ctx: ValidationContext, validate: ValidateFn): void {
     if (isOptionalCheck(ctx.metadata, ctx.arg)) return
 
     try {
@@ -34,15 +26,11 @@ export function validateDefault(
                 cause: e,
             })
 
-        validateDefaultInner(ctx, validate, mustNotThrowCtx)
+        validateDefaultInner(ctx, validate)
     }
 }
 
-function validateDefaultInner(
-    ctx: ValidationContext,
-    validate: ValidateFn,
-    mustNotThrowCtx: unknown
-): void {
+function validateDefaultInner(ctx: ValidationContext, validate: ValidateFn): void {
     switch (ctx.metadata.type) {
         case 'custom':
             if (!(ctx.metadata as V3.CustomStruct<any>).schema(ctx.arg)) {
@@ -62,7 +50,7 @@ function validateDefaultInner(
         case 'any':
             break
         case 'tuple':
-            validateDefaultTuple(ctx, validate, mustNotThrowCtx)
+            validateDefaultTuple(ctx, validate)
             break
         case 'primitive':
             if (
@@ -79,7 +67,7 @@ function validateDefaultInner(
                 })
             break
         case 'enum':
-            validateDefaultEnum(ctx, validate, mustNotThrowCtx)
+            validateDefaultEnum(ctx, validate)
             break
         case 'null':
             if (ctx.arg !== null)
@@ -131,11 +119,7 @@ function validateDefaultInner(
     ctx.errors.push(...ruleErrors)
 }
 
-function validateDefaultTuple(
-    ctx: ValidationContext,
-    validate: ValidateFn,
-    mustNotThrowCtx: unknown
-): void {
+function validateDefaultTuple(ctx: ValidationContext, validate: ValidateFn): void {
     const metadata = ctx.metadata as V3.TupleStruct<any[]>
 
     if (!Array.isArray(ctx.arg) || ctx.arg.length !== metadata.elements.length) {
@@ -166,24 +150,15 @@ function validateDefaultTuple(
 
     metadata.elements
         .map((innerStruct: V3.GenericStruct<any>, i: number) =>
-            validate.bind(mustNotThrowCtx)(
-                arg[i],
-                innerStruct.schema,
-                `${ctx.name}[<tuple>.at{${i}}]`,
-                ctx.parent
-            )
+            validate(arg[i], innerStruct.schema, `${ctx.name}[<tuple>.at{${i}}]`, ctx.parent)
         )
-        .filter(isInstanceOf(ValidationErrors))
-        .forEach((innerErrors: ValidationErrors) => {
-            ctx.errors.push(...innerErrors)
+        .forEach((r: Result<unknown, ValidationErrors>) => {
+            const [err] = r
+            if (err) ctx.errors.push(...Array.from(err.errors))
         })
 }
 
-function validateDefaultEnum(
-    ctx: ValidationContext,
-    validate: ValidateFn,
-    mustNotThrowCtx: unknown
-): void {
+function validateDefaultEnum(ctx: ValidationContext, validate: ValidateFn): void {
     const metadata = ctx.metadata as V3.EnumStruct<any>
 
     if (metadata.types.length < 2)
@@ -200,13 +175,16 @@ function validateDefaultEnum(
         })
 
     const enumResults = metadata.types.map(enumElementStruct =>
-        validate.bind(mustNotThrowCtx)(ctx.arg, enumElementStruct.schema, {
+        validate(ctx.arg, enumElementStruct.schema, {
             name: ctx.name,
             parent: ctx.parent === NO_PARENT ? undefined : ctx.parent,
         })
     )
 
-    const enumErrorCount = enumResults.filter(isInstanceOf(ValidationErrors)).length
+    const enumErrors = enumResults.filter(
+        (r): r is [ValidationErrors, null] => (r as Result<unknown, ValidationErrors>)[0] !== null
+    )
+    const enumErrorCount = enumErrors.length
 
     if (enumResults.length - enumErrorCount > 1)
         throw new TypeError('Invalid Enum State! Multiple matches found!')

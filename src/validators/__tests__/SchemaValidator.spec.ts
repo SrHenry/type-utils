@@ -69,13 +69,17 @@ describe('SchemaValidator', () => {
 
         expect(SchemaValidator.validate("I'm a string", schema2)).toBe("I'm a string")
         expect(() => SchemaValidator.validate(value3, schema2)).toThrow(ValidationErrors)
-        expect(SchemaValidator.validate(value1, schema2, false)).toBe(value1)
+        {
+            const [, val] = SchemaValidator.validate(value1, schema2, false)
+            expect(val).toBe(value1)
+        }
         expect(SchemaValidator.validate(value2, schema2)).toBe(value2)
 
         expect(() => SchemaValidator.validate(value3, schema2)).toThrow(ValidationErrors)
-        expect(SchemaValidator.validate(value3, schema2, false)).toHaveProperty('errors')
+        const [err3] = SchemaValidator.validate(value3, schema2, false)
+        expect(err3).toBeInstanceOf(ValidationErrors)
         expect(
-            (SchemaValidator.validate(value3, schema2, false) as ValidationErrors).errors.some(
+            (err3 as ValidationErrors).errors.some(
                 e => e.message === 'Value does not match any of the union types' //&& e.path === '$'
             )
         ).toBe(true)
@@ -128,9 +132,11 @@ describe('SchemaValidator', () => {
             ValidationErrors
         )
         expect(() => SchemaValidator.validate(value3, schema1, false)).not.toThrow(ValidationErrors)
+        const [innerErr] = SchemaValidator.validate(value3, schema1, false)
+        expect(innerErr).toBeInstanceOf(ValidationErrors)
         expect(() =>
             SchemaValidator.validate(
-                SchemaValidator.validate(value3, schema1, false),
+                innerErr,
                 and(
                     isInstanceOf(ValidationErrors),
                     asTypeGuard(
@@ -142,7 +148,7 @@ describe('SchemaValidator', () => {
         ).not.toThrow(ValidationErrors)
         expect(() =>
             SchemaValidator.validate(
-                SchemaValidator.validate(value3, schema1, false),
+                innerErr,
                 useSchema(isInstanceOf(ValidationErrors)).use(
                     createInlineRule<ValidationErrors>(
                         ({ errors }) => errors.length === 1 && errors[0]!.path === '$.a'
@@ -189,12 +195,15 @@ describe('SchemaValidator', () => {
         expect(() => SchemaValidator.validate([value1, value3, value2], schema2)).toThrow(
             ValidationErrors
         )
-        expect(validatedValue3(SchemaValidator.validate(value3, schema1, false))).toBe(true)
-        expect(
-            validatedValues1324(
-                SchemaValidator.validate([value1, value3, value2, value4], schema2, false)
-            )
-        ).toBe(true)
+        const [value3Err] = SchemaValidator.validate(value3, schema1, false)
+        expect(validatedValue3(value3Err as ValidationErrors)).toBe(true)
+
+        const [values1324Err] = SchemaValidator.validate(
+            [value1, value3, value2, value4],
+            schema2,
+            false
+        )
+        expect(validatedValues1324(values1324Err as ValidationErrors)).toBe(true)
     })
 
     it('should validate using a schema with optional branches', () => {
@@ -382,10 +391,25 @@ describe('SchemaValidator', () => {
                 errors[3]!.message === 'must be a string') as TypeGuard<ValidationErrors>
         )
 
-        expect(validatedValue9(SchemaValidator.validate(value9, schema, false))).toBe(true)
-        expect(validatedValue10(SchemaValidator.validate(value10, schema, false))).toBe(true)
-        expect(validatedValue11(SchemaValidator.validate(value11, schema, false))).toBe(true)
-        expect(validatedValue12(SchemaValidator.validate(value12, schema, false))).toBe(true)
-        expect(validatedValue13(SchemaValidator.validate(value13, schema, false))).toBe(true)
+        {
+            const [err] = SchemaValidator.validate(value9, schema, false)
+            expect(validatedValue9(err as ValidationErrors)).toBe(true)
+        }
+        {
+            const [err] = SchemaValidator.validate(value10, schema, false)
+            expect(validatedValue10(err as ValidationErrors)).toBe(true)
+        }
+        {
+            const [err] = SchemaValidator.validate(value11, schema, false)
+            expect(validatedValue11(err as ValidationErrors)).toBe(true)
+        }
+        {
+            const [err] = SchemaValidator.validate(value12, schema, false)
+            expect(validatedValue12(err as ValidationErrors)).toBe(true)
+        }
+        {
+            const [err] = SchemaValidator.validate(value13, schema, false)
+            expect(validatedValue13(err as ValidationErrors)).toBe(true)
+        }
     })
 })

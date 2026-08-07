@@ -140,9 +140,9 @@ It represents a record (key-value map) to typescript's type infers and runtime v
 ```typescript
 import { record, string, number } from '@srhenry/type-utils'
 
-const isRecord = record()                        // Record<string, any>
-const isStringMap = record(string(), string())    // Record<string, string>
-const isNumKeyed = record(number(), number())     // Record<number, number>
+const isRecord = record() // Record<string, any>
+const isStringMap = record(string(), string()) // Record<string, string>
+const isNumKeyed = record(number(), number()) // Record<number, number>
 ```
 
 Records support `string | number | symbol` key types, `StandardSchemaV1` inputs for key/value guards, and the fluent `.nonEmpty()`, `.optional()`, `.validator()`, `.use()`, and `.toStandardSchema()` APIs.
@@ -255,7 +255,7 @@ import { object, string, number } from '@srhenry/type-utils'
 
 const objectMaybeHasFoo = object({
     foo: string().optional(),
-    bar: number().optional()
+    bar: number().optional(),
 })
 // it checks if is object and if has `foo`.
 // if it has `foo` then check if it is string or undefined,
@@ -276,7 +276,7 @@ interface Item {
 
 const isItem = object<Item>({
     id: string(),
-    name: string().optional()
+    name: string().optional(),
 })
 
 isItem({ id: 'item-1' }) // true
@@ -454,7 +454,6 @@ It constrains a record to not be empty.
 ```typescript
 import { record } from '@srhenry/type-utils'
 
-
 const isNonEmptyRecord = record().nonEmpty()
 ```
 
@@ -498,10 +497,10 @@ It allows you to create custom validation rules to be used in schemas.
 import { string, createRule } from '@srhenry/type-utils'
 
 const StringNumber = createRule({
-    name: "Custom.StringNumber",
-    message: "number",
+    name: 'Custom.StringNumber',
+    message: 'number',
     handler: (value: string) => () => !Number.isNaN(Number(value)),
-});
+})
 
 const isStringNumber = string().use(StringNumber())
 ```
@@ -510,21 +509,36 @@ const isStringNumber = string().use(StringNumber())
 
 > Since [`v0.6.1`](https://github.com/SrHenry/type-utils/releases/tag/v0.6.1)
 
-It allows you to get a validator instance to validate a value against the schema. By default, the validator throws on failure. Pass `false` to get a `ValidateReturn<T>` instead.
+It allows you to get a validator instance to validate a value against the schema. By default, the validator throws on failure. Pass `false` to get a `Result<T, ValidationErrors>` tuple instead.
 
 ```typescript
 import { string, object } from '@srhenry/type-utils'
 
 const validator = object({ name: string().min(1) }).validator()
 validator({ name: 'Alice' }) // { name: 'Alice' } — passes, returns the value
-validator({ name: '' })      // throws ValidationErrors
+validator({ name: '' }) // throws ValidationErrors
 
 const softValidator = object({ name: string().min(1) }).validator(false)
-softValidator({ name: 'Alice' }) // { name: 'Alice' }
-softValidator({ name: '' })      // ValidationErrors (no throw)
+const [err, value] = softValidator({ name: 'Alice' }) // err=null, value={ name: 'Alice' }
+const [err2, value2] = softValidator({ name: '' }) // err2=ValidationErrors(...), value2=null
 
-// Also available as .validate on the validator:
-validator.validate({ name: 'Bob' }) // { name: 'Bob' }
+// Also available as .validate on the validator (pass false to get a Result tuple
+// even from the throwing validator):
+const [err3, value3] = validator.validate({ name: 'Bob' }, false)
+```
+
+> Since [`v0.9.0`](https://github.com/SrHenry/type-utils/releases/tag/v0.9.0), the no-throw branch returns a tuple `Result<T, ValidationErrors>` instead of `T | ValidationErrors`. Use the `isOk`/`isErr` helpers from `@srhenry/type-utils` to narrow the result ergonomically:
+
+```typescript
+import { string, isOk, isErr } from '@srhenry/type-utils'
+
+const validate = string().min(3).validator(false)
+const result = validate('ab')
+if (isErr(result)) {
+    console.error(result[0]) // ValidationErrors
+} else {
+    console.log(result[1]) // string
+}
 ```
 
 ### Standard Schema Interop
@@ -534,7 +548,12 @@ validator.validate({ name: 'Bob' }) // { name: 'Bob' }
 type-utils implements the [Standard Schema v1](https://github.com/standard-schema/standard-schema) specification for interoperability with other validation libraries (Zod, Valibot, ArkType, etc.).
 
 ```typescript
-import { toStandardSchema, fromStandardSchema, normalizeSchema, isStandardSchema } from '@srhenry/type-utils/standard-schema'
+import {
+    toStandardSchema,
+    fromStandardSchema,
+    normalizeSchema,
+    isStandardSchema,
+} from '@srhenry/type-utils/standard-schema'
 import type { StandardSchemaV1, InferInput, InferOutput } from '@srhenry/type-utils/standard-schema'
 ```
 
@@ -578,8 +597,8 @@ import { object, string } from '@srhenry/type-utils'
 import { z } from 'zod'
 
 const schema = object({
-  name: normalizeSchema(string()),
-  age: normalizeSchema(z.number()),
+    name: normalizeSchema(string()),
+    age: normalizeSchema(z.number()),
 })
 ```
 
@@ -596,12 +615,12 @@ import { string, isNativeSchema } from '@srhenry/type-utils'
 import { isStandardSchema } from '@srhenry/type-utils/standard-schema'
 
 const guard = string()
-isNativeSchema(guard)         // true
-isStandardSchema(guard)       // true (type-utils guards also implement Standard Schema)
+isNativeSchema(guard) // true
+isStandardSchema(guard) // true (type-utils guards also implement Standard Schema)
 
 import { z } from 'zod'
-isNativeSchema(z.string())    // false
-isStandardSchema(z.string())  // true
+isNativeSchema(z.string()) // false
+isStandardSchema(z.string()) // true
 ```
 
 #### [`StandardSchemaV1` type](https://srhenry.github.io/type-utils/types/StandardSchemaV1.html)
@@ -642,7 +661,7 @@ console.log('foo', foo) // foo
 console.log('bar', bar) // bar
 ```
 
-***NOTE:** You can use schema directly to validate a value.*
+_**NOTE:** You can use schema directly to validate a value._
 
 ```typescript
 import { object, number } from "@srhenry/type-utils"
@@ -671,12 +690,14 @@ import { match, object, string, array, pick } from '@srhenry/type-utils'
 const matcher = match()
     .with(object({ foo: string().min(3) }), obj => `Foo is valid: '${obj.foo}'`)
     .with(string().nonEmpty(), str => `String is valid: '${str}'`)
-    .default(() => { throw new TypeError('😭') })
+    .default(() => {
+        throw new TypeError('😭')
+    })
 
 matcher.exec('foo') //String is valid: 'foo'
 matcher.exec({ foo: 'bar' }) //Foo is valid: 'bar'
 matcher.exec({ foo: 'ba' }) //TypeError: 😭
-matcher.exec("") //TypeError: 😭
+matcher.exec('') //TypeError: 😭
 ```
 
 Inline matcher example:
@@ -685,47 +706,62 @@ Inline matcher example:
 import { match, object, string, array, pick } from '@srhenry/type-utils'
 
 //API endpoint processing example:
-    const { data } = payload
+const { data } = payload
 
-    const responses = await Promise.allSettled(
-        match(data)
-            .with(object({ events: array() }), ({ events }) => events.map(e =>
+const responses = await Promise.allSettled(
+    match(data)
+        .with(object({ events: array() }), ({ events }) =>
+            events.map(e =>
                 match(e)
                     .with(
-                        object({ type: string("USER_EVENT"), uid: string() }),
-                        ({ type: _, uid, ...data }) => UserEvent.send({ from:uid, ...data }))
-                    .with(
-                        object({ type: string("SYSTEM_EVENT") }),
-                        ({ type: _, ...data }) => SystemEvent.process({ ...data }))
+                        object({ type: string('USER_EVENT'), uid: string() }),
+                        ({ type: _, uid, ...data }) => UserEvent.send({ from: uid, ...data })
+                    )
+                    .with(object({ type: string('SYSTEM_EVENT') }), ({ type: _, ...data }) =>
+                        SystemEvent.process({ ...data })
+                    )
                     .default(() => null)
-                    .exec()))
-            .default(() => [])
+                    .exec()
+            )
+        )
+        .default(() => [])
+        .exec()
+        .filter(Boolean)
+).then(results =>
+    results.map(result =>
+        match(result)
+            .with(object({ status: string('fulfilled') }), ({ value }) => parseToResponse(value))
+            .with(object({ status: string('rejected') }), ({ reason }) => {
+                log.error('Event processing failed:', reason)
+
+                // Guard arbitrary rejection values — Promise.allSettled rejects can be
+                // undefined, null, or any primitive; safe-read .type only after type check.
+                if (
+                    reason === null ||
+                    typeof reason !== 'object' ||
+                    !('type' in (reason as Record<PropertyKey, unknown>))
+                )
+                    return reason
+
+                switch ((reason as { type: PropertyKey }).type) {
+                    case 'UserEventError':
+                        //specific handling for user event errors
+                        return UserEventError.from(reason)
+                        break
+                    case 'SystemError':
+                        //specific handling for system event errors
+                        return SystemError.from(reason)
+                        break
+
+                    default:
+                        return reason
+                }
+            })
             .exec()
-            .filter(Boolean))
-        .then(results =>
-            results.map(result => match(result)
-                .with(
-                    object({ status: string("fulfilled") }),
-                    ({ value }) => parseToResponse(value))
-                .with(
-                    object({ status: string("rejected") }), ({ reason }) => {
-                        log.error('Event processing failed:', reason)
-                        switch(reason.type) {
-                            case 'UserEventError':
-                                //specific handling for user event errors
-                                return UserEventError.from(reason)
-                                break;
-                            case 'SystemError':
-                                //specific handling for system event errors
-                                return SystemError.from(reason)
-                                break;
+    )
+)
 
-                            default:
-                                return reason
-                        }})
-                .exec()))
-
-    return new JsonResponse({ success:true, event_responses: responses }) //formatted response
+return new JsonResponse({ success: true, event_responses: responses }) //formatted response
 ```
 
 ### `Util Types`
@@ -786,6 +822,26 @@ declare const res1: Result<number> // res1: [null, number] | [Error, null]
 declare const res2: Result<string, TypeError> // res2: [null, string] | [TypeError, null]
 ```
 
+##### `ok(value)` / `err(error)` / `isOk(result)` / `isErr(result)`
+
+> Since [`v0.9.0`](https://github.com/SrHenry/type-utils/releases/tag/v0.9.0)
+
+Result helpers shipped alongside the tuple type. `ok`/`err` construct results; `isOk`/`isErr` narrow them at runtime (with strict shape validation — `isOk`/`isErr` throw `TypeError` for malformed tuples, non-Error error slots, or violation of mutual exclusivity).
+
+```typescript
+import { ok, err, isOk, isErr, string } from '@srhenry/type-utils'
+
+const r = ok(42) // [null, 42]
+const e = err(new Error('boom')) // [Error('boom'), null]
+
+const validate = string().min(3).validator(false)
+const result = validate('ab')
+if (isErr(result)) {
+    // result[0] is ValidationErrors
+    console.error(result[0].message)
+}
+```
+
 #### [`AsyncResult`](https://srhenry.github.io/type-utils/types/AsyncResult.html)
 
 It represents an asynchronous result type tuple.
@@ -844,12 +900,12 @@ Maps a TypeScript type `T` to the `FluentSchema` result type you'd get from call
 ```typescript
 import type { GetSchema } from '@srhenry/type-utils'
 
-type T1 = GetSchema<string>     // FluentSchema<string, StringSchemaRules>
-type T2 = GetSchema<number>     // FluentSchema<number, NumberSchemaRules>
-type T3 = GetSchema<boolean>    // FluentSchema<boolean>
-type T4 = GetSchema<string[]>   // FluentSchema<string[], ArraySchemaRules>
+type T1 = GetSchema<string> // FluentSchema<string, StringSchemaRules>
+type T2 = GetSchema<number> // FluentSchema<number, NumberSchemaRules>
+type T3 = GetSchema<boolean> // FluentSchema<boolean>
+type T4 = GetSchema<string[]> // FluentSchema<string[], ArraySchemaRules>
 type T5 = GetSchema<{ foo: string }> // FluentSchema<{ foo: string }>
-type T6 = GetSchema<never>      // never
+type T6 = GetSchema<never> // never
 ```
 
 #### [`Tag`](https://srhenry.github.io/type-utils/types/Tag.html)
@@ -968,17 +1024,17 @@ import { Experimental } from '@srhenry/type-utils'
 const { pipe } = Experimental
 
 const result = pipe('hello')
-  .pipe(s => s.toUpperCase())
-  .pipe(s => s.split(''))
-  .depipe() // ['H', 'E', 'L', 'L', 'O']
+    .pipe(s => s.toUpperCase())
+    .pipe(s => s.split(''))
+    .depipe() // ['H', 'E', 'L', 'L', 'O']
 ```
 
 When a `Promise` is passed, the pipeline becomes async:
 
 ```typescript
 const result = await pipe(Promise.resolve(42))
-  .pipe(n => n * 2)
-  .depipe() // 84
+    .pipe(n => n * 2)
+    .depipe() // 84
 ```
 
 #### `.pipe(transform)`
@@ -987,9 +1043,9 @@ Applies a transform function to the boxed value. If the transform returns a `Pro
 
 ```typescript
 const result = pipe(5)
-  .pipe(n => n * 10)          // PipelineBox<number>
-  .pipe(n => Promise.resolve(n + 1)) // AsyncPipelineBox<number>
-  .depipe() // Promise<51>
+    .pipe(n => n * 10) // PipelineBox<number>
+    .pipe(n => Promise.resolve(n + 1)) // AsyncPipelineBox<number>
+    .depipe() // Promise<51>
 ```
 
 #### `.pipe(callWith(...args))`
@@ -1003,9 +1059,7 @@ const { pipe, callWith } = Experimental
 
 const greet = (name: string) => `Hello, ${name}!`
 
-const result = pipe(greet)
-  .pipe(callWith('World'))
-  .depipe() // 'Hello, World!'
+const result = pipe(greet).pipe(callWith('World')).depipe() // 'Hello, World!'
 ```
 
 With multi-arg functions:
@@ -1013,9 +1067,7 @@ With multi-arg functions:
 ```typescript
 const add = (a: number, b: number) => a + b
 
-const result = pipe(add)
-  .pipe(callWith(3, 4))
-  .depipe() // 7
+const result = pipe(add).pipe(callWith(3, 4)).depipe() // 7
 ```
 
 #### `.pipe(apply(fn, ...args))`
@@ -1030,8 +1082,8 @@ const { pipe, apply } = Experimental
 const multiply = (a: number, b: number) => a * b
 
 const result = pipe(5)
-  .pipe(apply(multiply, 3))  // applies 3 as first arg, incoming 5 as second
-  .depipe() // 15
+    .pipe(apply(multiply, 3)) // applies 3 as first arg, incoming 5 as second
+    .depipe() // 15
 ```
 
 #### `tap(fn, options?)` / `tapAsync(fn, options?)`
@@ -1042,19 +1094,26 @@ Side-effect factories that pass the value through unchanged. Errors are swallowe
 const { pipe, tap } = Experimental
 
 const result = pipe('hello')
-  .pipe(tap(v => console.log(v)))
-  .pipe(tap(() => { throw new Error('boom') }, { catch: e => console.error(e) }))
-  .pipe(s => s.toUpperCase())
-  .depipe() // 'HELLO'
+    .pipe(tap(v => console.log(v)))
+    .pipe(
+        tap(
+            () => {
+                throw new Error('boom')
+            },
+            { catch: e => console.error(e) }
+        )
+    )
+    .pipe(s => s.toUpperCase())
+    .depipe() // 'HELLO'
 ```
 
 Fluent `.tap()` / `.tapAsync()` are also available directly on the box:
 
 ```typescript
 const result = pipe('hello')
-  .tap(v => console.log(v))
-  .pipe(s => s.toUpperCase())
-  .depipe()
+    .tap(v => console.log(v))
+    .pipe(s => s.toUpperCase())
+    .depipe()
 ```
 
 #### `enpipe(value)` / `enpipe(fn, ...args)`
@@ -1069,8 +1128,8 @@ import { Experimental } from '@srhenry/type-utils'
 const { enpipe, callWith } = Experimental
 
 const p = enpipe('hello')
-p.depipe()   // 'hello'
-p('unused')  // 'hello' (callable)
+p.depipe() // 'hello'
+p('unused') // 'hello' (callable)
 p.pipe(s => s.toUpperCase()).depipe() // 'HELLO'
 ```
 
@@ -1088,50 +1147,48 @@ import { Experimental } from '@srhenry/type-utils'
 
 const { pipe, callWith, apply, tap } = Experimental
 
-const addUserFactory =
-  (db: Record<string, Record<string, any>[]>) => (user: Record<string, any>) =>
-  new Promise<string>(resolve => {
-    setTimeout(() => {
-      const id = uuid()
-      db['users'] ??= []
-      db['users']?.push({ id, ...user })
-      resolve(id)
-    }, 200)
-  })
+const addUserFactory = (db: Record<string, Record<string, any>[]>) => (user: Record<string, any>) =>
+    new Promise<string>(resolve => {
+        setTimeout(() => {
+            const id = uuid()
+            db['users'] ??= []
+            db['users']?.push({ id, ...user })
+            resolve(id)
+        }, 200)
+    })
 const addPostFactory =
-  (db: Record<string, Record<string, any>[]>) => (user_id: string, post: Record<string, any>) =>
-  new Promise<boolean>(resolve => {
-    setTimeout(() => {
-      db['posts'] ??= []
-      db['posts']?.push({ user_id, ...post })
-      resolve(true)
-    }, 300)
-  })
+    (db: Record<string, Record<string, any>[]>) => (user_id: string, post: Record<string, any>) =>
+        new Promise<boolean>(resolve => {
+            setTimeout(() => {
+                db['posts'] ??= []
+                db['posts']?.push({ user_id, ...post })
+                resolve(true)
+            }, 300)
+        })
 
 const db = {
-  users: [] as Record<string, any>[],
-  posts: [] as Record<string, any>[],
-} as Record<string, Record<string, any>[]>[]
+    users: [] as Record<string, any>[],
+    posts: [] as Record<string, any>[],
+} as Record<string, Record<string, any>[]>
 
 const addPostCurried = (post: Record<string, any>) => (id: string) =>
-  pipe(addPostFactory)
-    .pipe(callWith(db))
-    .pipe(callWith(id, post))
-    .depipe()
+    pipe(addPostFactory).pipe(callWith(db)).pipe(callWith(id, post)).depipe()
 
 const result = await pipe(addUserFactory)
-  .pipe(callWith(db))
-  .pipe(callWith({ name: 'Marcus', email: 'example@email.com' }))
-  .pipeAsync(addPostCurried({
-    title: 'Hello World',
-    content: 'Lorem ipsum dolor sit amet',
-  }))
-  .pipeAsync(() => {
-    if (db['users']!.length === 0 || db['posts']!.length === 0) return false
-    db['replies'] = []
-    return true
-  })
-  .depipe() // true | false
+    .pipe(callWith(db))
+    .pipe(callWith({ name: 'Marcus', email: 'example@email.com' }))
+    .pipeAsync(
+        addPostCurried({
+            title: 'Hello World',
+            content: 'Lorem ipsum dolor sit amet',
+        })
+    )
+    .pipeAsync(() => {
+        if (db['users']!.length === 0 || db['posts']!.length === 0) return false
+        db['replies'] = []
+        return true
+    })
+    .depipe() // true | false
 ```
 
 ---
@@ -1142,7 +1199,7 @@ const result = await pipe(addUserFactory)
 >
 > Use the new [`match()`](#match) factory instead.
 
-This helper enables you to build switch expressions as it is not available in Javascript vanilla. Each branch allows you to define the matchers or values ahead of time with literal values or inline expressions, or define with callbacks to customize handling of each branch, making it a powerfull way to describe a complex switch without *if-else-if* language syntax. It defines a lambda as the switch runner, so you can define and run it in the row with more readability.
+This helper enables you to build switch expressions as it is not available in Javascript vanilla. Each branch allows you to define the matchers or values ahead of time with literal values or inline expressions, or define with callbacks to customize handling of each branch, making it a powerful way to describe a complex switch without _if-else-if_ language syntax. It defines a lambda as the switch runner, so you can define and run it in the row with more readability.
 
 #### [Reusable switcher](https://srhenry.github.io/type-utils/functions/Experimental._switch.html#switch)
 
