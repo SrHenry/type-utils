@@ -21,11 +21,7 @@ import {
     validateDefault,
     NO_PARENT,
 } from './schema/helpers/validate/index.ts'
-
-type ValidateOptionalArgs<Name extends string = string, Parent = any> = {
-    name?: Name
-    parent?: Parent
-}
+import type { ValidateOptionalArgs } from './schema/helpers/validate/index.ts'
 
 type ValidationArgsStaticValues = 'name' | 'parent' | 'schema' | 'value'
 function pushNewErrorFactory<

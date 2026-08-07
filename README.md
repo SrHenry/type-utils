@@ -733,7 +733,17 @@ const responses = await Promise.allSettled(
             .with(object({ status: string('fulfilled') }), ({ value }) => parseToResponse(value))
             .with(object({ status: string('rejected') }), ({ reason }) => {
                 log.error('Event processing failed:', reason)
-                switch (reason.type) {
+
+                // Guard arbitrary rejection values — Promise.allSettled rejects can be
+                // undefined, null, or any primitive; safe-read .type only after type check.
+                if (
+                    reason === null ||
+                    typeof reason !== 'object' ||
+                    !('type' in (reason as Record<PropertyKey, unknown>))
+                )
+                    return reason
+
+                switch ((reason as { type: PropertyKey }).type) {
                     case 'UserEventError':
                         //specific handling for user event errors
                         return UserEventError.from(reason)
@@ -1159,7 +1169,7 @@ const addPostFactory =
 const db = {
     users: [] as Record<string, any>[],
     posts: [] as Record<string, any>[],
-} as Record<string, Record<string, any>[]>[]
+} as Record<string, Record<string, any>[]>
 
 const addPostCurried = (post: Record<string, any>) => (id: string) =>
     pipe(addPostFactory).pipe(callWith(db)).pipe(callWith(id, post)).depipe()
