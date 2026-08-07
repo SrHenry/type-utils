@@ -19,6 +19,7 @@ import {
     validateIntersection,
     validateUnion,
     validateDefault,
+    NO_PARENT,
 } from './schema/helpers/validate/index.ts'
 
 type ValidateOptionalArgs<Name extends string = string, Parent = any> = {
@@ -64,9 +65,6 @@ function pushNewErrorFactory<
     return pushNewError
 }
 
-const NO_PARENT = Symbol('SchemaValidator::validate::NO_PARENT')
-declare type NO_PARENT = typeof NO_PARENT
-
 function validate<T>(arg: unknown, schema: TypeGuard<T>): Result<T, ValidationErrors>
 function validate<T, Name extends string = string, Parent = any>(
     arg: unknown,
@@ -84,7 +82,7 @@ function validate<T, Name extends string, Parent>(
     arg: unknown,
     schema: TypeGuard<T>,
     name_or_options?: Name | ValidateOptionalArgs<Name, Parent>,
-    parent: Parent | NO_PARENT = NO_PARENT
+    parent: Parent | typeof NO_PARENT = NO_PARENT
 ): Result<T, ValidationErrors> {
     const metadata = getStructMetadata(schema) as V3.StructType
     const errors: ValidationError[] = []
@@ -137,6 +135,17 @@ function validate<T, Name extends string, Parent>(
     return [null, arg as T]
 }
 
+/**
+ * Throw-branch unwrap: throw the ValidationErrors slot if non-null, otherwise
+ * return the bare success value. Used by both the static and instance
+ * `validate` methods so the throwing path is defined in one place only.
+ */
+function unwrap<T>(result: Result<T, ValidationErrors>): T {
+    const [err, val] = result
+    if (err) throw err
+    return val as T
+}
+
 type ISchemaValidator<T, Throws extends boolean = true> = Merge<
     // biome-ignore lint/complexity/noBannedTypes: {} used as base type for Merge utility
     {},
@@ -177,11 +186,7 @@ class __SchemaValidator<T, Throws extends boolean = true> {
         shouldThrow = true
     ): T | Result<T, ValidationErrors> {
         const result = validate(arg, schema)
-        if (shouldThrow) {
-            const [err, val] = result
-            if (err) throw err
-            return val as T
-        }
+        if (shouldThrow) return unwrap(result)
         return result
     }
 
@@ -257,11 +262,7 @@ class __SchemaValidator<T, Throws extends boolean = true> {
         shouldThrow: boolean = this.throws
     ): T | Result<T, ValidationErrors> {
         const result = validate(value, this.schema)
-        if (shouldThrow) {
-            const [err, val] = result
-            if (err) throw err
-            return val as T
-        }
+        if (shouldThrow) return unwrap(result)
         return result
     }
 }

@@ -1,7 +1,6 @@
-import type { TypeGuard } from '../../../../TypeGuards/types/index.ts'
 import type { Result } from '../../../../types/Result.ts'
 import type { V3 } from '../../types/index.ts'
-import type { ValidationContext } from './ValidationContext.ts'
+import type { ValidationContext, ValidateFn } from './ValidationContext.ts'
 
 import { getMessage } from '../../../../TypeGuards/helpers/getMessage.ts'
 import { validateRules } from '../../../RuleValidator.ts'
@@ -10,12 +9,6 @@ import { ValidationError } from '../../../ValidationError.ts'
 import { ValidationErrors } from '../../../ValidationErrors.ts'
 import { isOptionalCheck } from './helpers/isOptionalCheck.ts'
 import { buildPath } from './helpers/buildPath.ts'
-
-type ValidateFn = (
-    arg: unknown,
-    schema: TypeGuard<any>,
-    ...args: any[]
-) => Result<unknown, ValidationErrors>
 
 export function validateObject(ctx: ValidationContext, validate: ValidateFn): void {
     const metadata = ctx.metadata as V3.ObjectStruct<any> | V3.ArrayStruct<any>

@@ -5,6 +5,9 @@ import type { AsyncResult, Result } from '../../types/Result.ts'
 import { lambda } from './lambda/index.ts'
 import { err, ok } from '../../validators/helpers/result.ts'
 
+const toError = (error: unknown): Error =>
+    error instanceof Error ? error : new Error(String(error))
+
 export function run<TParams extends any[], ReturnType>(
     callback: AsyncFunc<TParams, ReturnType>
 ): AsyncLambda<TParams, Result<ReturnType>>
@@ -32,10 +35,10 @@ export function run(
         try {
             const result = callback(...params)
             if (isPromise(result))
-                return result.then(value => ok(value)).catch(error => err(error as Error))
+                return result.then(value => ok(value)).catch(error => err(toError(error)))
             return ok(result)
         } catch (error) {
-            return err(error as Error)
+            return err(toError(error))
         }
     }
 

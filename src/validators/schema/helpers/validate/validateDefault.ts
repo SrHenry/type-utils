@@ -1,7 +1,6 @@
-import type { TypeGuard } from '../../../../TypeGuards/types/index.ts'
 import type { Result } from '../../../../types/Result.ts'
 import type { V3 } from '../../types/index.ts'
-import type { ValidationContext } from './ValidationContext.ts'
+import type { ValidationContext, ValidateFn } from './ValidationContext.ts'
 
 import Generics from '../../../../Generics/index.ts'
 import { ensureInterface } from '../../../../TypeGuards/helpers/ensureInterface.ts'
@@ -11,14 +10,7 @@ import { doesNotMatchRules, validateRules } from '../../../RuleValidator.ts'
 import { isStruct } from '../isStruct.ts'
 import type { ValidationErrors } from '../../../ValidationErrors.ts'
 import { isOptionalCheck } from './helpers/isOptionalCheck.ts'
-
-const NO_PARENT = Symbol('SchemaValidator::validate::NO_PARENT')
-
-type ValidateFn = (
-    arg: unknown,
-    schema: TypeGuard<any>,
-    ...args: any[]
-) => Result<unknown, ValidationErrors>
+import { NO_PARENT } from './ValidationContext.ts'
 
 export function validateDefault(ctx: ValidationContext, validate: ValidateFn): void {
     if (isOptionalCheck(ctx.metadata, ctx.arg)) return

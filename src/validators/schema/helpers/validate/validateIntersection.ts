@@ -1,18 +1,11 @@
-import type { TypeGuard } from '../../../../TypeGuards/types/index.ts'
 import type { Result } from '../../../../types/Result.ts'
 import type { V3 } from '../../types/index.ts'
-import type { ValidationContext } from './ValidationContext.ts'
+import type { ValidationContext, ValidateFn } from './ValidationContext.ts'
 
 import { validateRules } from '../../../RuleValidator.ts'
 import { updateStructMetadata } from '../updateStructMetadata.ts'
 import type { ValidationErrors } from '../../../ValidationErrors.ts'
 import { isOptionalCheck } from './helpers/isOptionalCheck.ts'
-
-type ValidateFn = (
-    arg: unknown,
-    schema: TypeGuard<any>,
-    ...args: any[]
-) => Result<unknown, ValidationErrors>
 
 export function validateIntersection(ctx: ValidationContext, validate: ValidateFn): void {
     const metadata = ctx.metadata as V3.IntersectionStruct<any[]>
@@ -44,18 +37,21 @@ export function validateIntersection(ctx: ValidationContext, validate: ValidateF
 
     ctx.errors.push(...intersectionRulesResults)
 
-    const intersectionErrors = intersectionResults.filter(
-        (r): r is [ValidationErrors, null] => (r as Result<unknown, ValidationErrors>)[0] !== null
-    )
+    // Single pass: derive failing indexes and the per-result error list together.
+    // We need both (a) the flat list of ValidationError instances for the failing
+    // sub-results (consumed by ctx.pushNewError's `errors` context and ctx.errors)
+    // and (b) the indexes so we can filter `metadata.types` for the `types` field.
+    const failing = intersectionResults
+        .map((r, idx) => {
+            const [err] = r as Result<unknown, ValidationErrors>
+            return [idx, err] as const
+        })
+        .filter((entry): entry is readonly [number, ValidationErrors] => entry[1] !== null)
 
-    if (intersectionErrors.length === 0) return
+    if (failing.length === 0) return
 
-    const intersectionErrorList = intersectionErrors.flatMap(([err]) => Array.from(err))
-
-    const failingIndexes = intersectionResults
-        .map((r, idx) => [idx, r] as const)
-        .filter(([, r]) => (r as Result<unknown, ValidationErrors>)[0] !== null)
-        .map(([idx]) => idx)
+    const intersectionErrorList = failing.flatMap(([, err]) => Array.from(err))
+    const failingIndexes = failing.map(([idx]) => idx)
 
     ctx.pushNewError({
         message: 'Value does not match all intersection types',

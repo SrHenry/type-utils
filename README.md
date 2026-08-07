@@ -513,17 +513,17 @@ It allows you to get a validator instance to validate a value against the schema
 
 ```typescript
 import { string, object } from '@srhenry/type-utils'
-import type { Result } from '@srhenry/type-utils'
 
 const validator = object({ name: string().min(1) }).validator()
 validator({ name: 'Alice' }) // { name: 'Alice' } — passes, returns the value
 validator({ name: '' }) // throws ValidationErrors
 
 const softValidator = object({ name: string().min(1) }).validator(false)
-const [err, value] = softValidator({ name: 'Alice' }) // [null, { name: 'Alice' }]
-const [err2, value2] = softValidator({ name: '' }) // [ValidationErrors(...), null]
+const [err, value] = softValidator({ name: 'Alice' }) // err=null, value={ name: 'Alice' }
+const [err2, value2] = softValidator({ name: '' }) // err2=ValidationErrors(...), value2=null
 
-// Also available as .validate on the validator:
+// Also available as .validate on the validator (pass false to get a Result tuple
+// even from the throwing validator):
 const [err3, value3] = validator.validate({ name: 'Bob' }, false)
 ```
 
@@ -1189,7 +1189,7 @@ const result = await pipe(addUserFactory)
 >
 > Use the new [`match()`](#match) factory instead.
 
-This helper enables you to build switch expressions as it is not available in Javascript vanilla. Each branch allows you to define the matchers or values ahead of time with literal values or inline expressions, or define with callbacks to customize handling of each branch, making it a powerfull way to describe a complex switch without _if-else-if_ language syntax. It defines a lambda as the switch runner, so you can define and run it in the row with more readability.
+This helper enables you to build switch expressions as it is not available in Javascript vanilla. Each branch allows you to define the matchers or values ahead of time with literal values or inline expressions, or define with callbacks to customize handling of each branch, making it a powerful way to describe a complex switch without _if-else-if_ language syntax. It defines a lambda as the switch runner, so you can define and run it in the row with more readability.
 
 #### [Reusable switcher](https://srhenry.github.io/type-utils/functions/Experimental._switch.html#switch)
 

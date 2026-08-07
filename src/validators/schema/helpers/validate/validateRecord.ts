@@ -1,7 +1,7 @@
 import type { TypeGuard } from '../../../../TypeGuards/types/index.ts'
 import type { Result } from '../../../../types/Result.ts'
 import type { V3 } from '../../types/index.ts'
-import type { ValidationContext } from './ValidationContext.ts'
+import type { ValidationContext, ValidateFn } from './ValidationContext.ts'
 
 import Generics from '../../../../Generics/index.ts'
 import { asTypeGuard } from '../../../../TypeGuards/helpers/asTypeGuard.ts'
@@ -12,12 +12,6 @@ import type { ValidationError } from '../../../ValidationError.ts'
 import type { ValidationErrors } from '../../../ValidationErrors.ts'
 import { isOptionalCheck } from './helpers/isOptionalCheck.ts'
 import { buildPath } from './helpers/buildPath.ts'
-
-type ValidateFn = (
-    arg: unknown,
-    schema: TypeGuard<any>,
-    ...args: any[]
-) => Result<unknown, ValidationErrors>
 
 export function validateRecord(ctx: ValidationContext, validate: ValidateFn): void {
     const metadata = ctx.metadata as V3.RecordStruct<string, any>
